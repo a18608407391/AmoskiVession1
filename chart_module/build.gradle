@@ -3,7 +3,6 @@ apply from: "../module.gradle"
 dependencies {
     api project(':zcommonmodule')
     kapt rootProject.ext.dependencies["arouter-compiler"]
-
 }
 
 android {
@@ -18,8 +17,6 @@ android {
             abiFilters 'armeabi', 'armeabi-v7a', 'armeabi-v8a', 'x86', 'x86_64', 'mips', 'mips64'
         }
     }
-
-
     sourceSets {
         main {
             jniLibs.srcDirs = ['libs']
@@ -34,4 +31,6 @@ android {
     lintOptions {
         disable 'GoogleAppIndexingWarning'
     }
+    compileSdkVersion 28
+    buildToolsVersion '27.0.3'
 }

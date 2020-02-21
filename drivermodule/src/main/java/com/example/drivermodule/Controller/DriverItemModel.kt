@@ -2,8 +2,8 @@ package com.example.drivermodule.Controller
 
 import android.databinding.ObservableArrayList
 import android.databinding.ObservableField
-import android.graphics.Color
 import android.support.design.widget.BottomSheetBehavior
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import com.amap.api.location.AMapLocation
@@ -16,6 +16,7 @@ import com.elder.zcommonmodule.DataBases.insertDriverStatus
 import com.elder.zcommonmodule.DriverCancle
 import com.elder.zcommonmodule.Drivering
 import com.elder.zcommonmodule.Entity.*
+import com.elder.zcommonmodule.Inteface.Locationlistener
 import com.elder.zcommonmodule.Service.HttpInteface
 import com.elder.zcommonmodule.Service.HttpRequest
 import com.example.drivermodule.Component.DriverItemController
@@ -35,7 +36,6 @@ import org.cs.tec.library.Base.Utils.context
 import org.cs.tec.library.Base.Utils.getColor
 import org.cs.tec.library.Base.Utils.getString
 import org.cs.tec.library.Base.Utils.uiContext
-import org.cs.tec.library.Bus.RxBus
 import org.cs.tec.library.Bus.RxSubscriptions
 import org.cs.tec.library.Utils.ConvertUtils
 import org.cs.tec.library.http.NetworkUtil
@@ -43,7 +43,11 @@ import java.text.DecimalFormat
 import java.util.concurrent.TimeUnit
 
 
-class DriverItemModel : ItemViewModel<MapFrViewModel>(), HttpInteface.startDriverResult {
+class DriverItemModel : ItemViewModel<MapFrViewModel>(), HttpInteface.startDriverResult, Locationlistener {
+    override fun onLocation(location: AMapLocation) {
+        location(location)
+    }
+
     var timer: Observable<Long>? = null
     var timerDispose: Disposable? = null
 
@@ -63,7 +67,7 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), HttpInteface.startDrive
             UpdateDriverStatus(viewModel?.status)
         }
         if (driverType == 1) {
-        //未骑行导航
+            //未骑行导航
 
 
         }
@@ -101,24 +105,25 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), HttpInteface.startDrive
 
     var locationDispose: Disposable? = null
 
-    var mapFr: MapFragment
+    lateinit var mapFr: MapFragment
 
     var driverController = DriverItemController(this)
 
-    init {
-        viewModel.mapActivity.showProgressDialog(getString(R.string.location_loading))
-        locationDispose = RxBus.default?.toObservable(AMapLocation::class.java)?.subscribe {
-            location(it)
-        }
-        RxSubscriptions.add(locationDispose)
+
+    override fun ItemViewModel(viewModel: MapFrViewModel): ItemViewModel<MapFrViewModel> {
         mapFr = viewModel?.mapActivity
+        mapFr.showProgressDialog(getString(R.string.location_loading))
+        RxSubscriptions.add(locationDispose)
+        viewModel?.listeners = this
+
         driverStatus.set(viewModel?.status.startDriver.get())
-        initView()
+        initView(viewModel)
+        return super.ItemViewModel(viewModel)
     }
 
 
     lateinit var curAmapLocation: AMapLocation
-    lateinit var curPosition: Location
+    var curPosition: Location? = null
     var isUp = false
     var curHeight = 0.0
 
@@ -126,141 +131,144 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), HttpInteface.startDrive
 
     private fun location(amapLocation: AMapLocation?) {
         //处理定位信息
-        if (mapFr.mListener != null && amapLocation != null && amapLocation.errorCode == 0) {
+        if ( amapLocation != null && amapLocation.errorCode == 0) {
             if (amapLocation?.gpsAccuracyStatus == AMapLocation.GPS_ACCURACY_BAD) {
                 if (viewModel?.mapActivity?.onStart!!) {
                     CoroutineScope(uiContext).launch {
                         Toast.makeText(mapFr.activity, getString(R.string.gsp_bad), Toast.LENGTH_SHORT).show()
                     }
                 }
-                mapFr.mListener?.onLocationChanged(amapLocation)// 显示系统小蓝点
-                this.curAmapLocation = amapLocation
-                this.curPosition = Location(amapLocation.latitude, amapLocation.longitude, System.currentTimeMillis().toString(), amapLocation.speed, amapLocation.altitude, amapLocation.bearing)
-                if (driverStatus.get() == Drivering) {
-                    if (mapFr?.mapUtils?.breatheMarker_center != null) {
-                        mapFr?.mapUtils?.breatheMarker_center!!.rotateAngle = amapLocation.bearing
-                    }
-                    if (viewModel.status.locationLat.size == 0) {
-                        viewModel?.status?.locationLat?.add(Location(amapLocation.latitude, amapLocation.longitude, System.currentTimeMillis().toString(), amapLocation.speed, amapLocation.altitude, amapLocation.bearing, amapLocation.aoiName, amapLocation.poiName))
-                        addStartPoint(Location(amapLocation.latitude, amapLocation.longitude, System.currentTimeMillis().toString(), amapLocation.speed, amapLocation.altitude, amapLocation.bearing, amapLocation.aoiName, amapLocation.poiName))
-                    } else {
-                        if (amapLocation.locationType == 1) {
-                            if (curHeight < amapLocation.altitude) {
-                                if (!isUp) {
-                                    isUp = true
-                                }
-                                viewModel?.status.UpValue += amapLocation.altitude - curHeight
-                                viewModel?.status.UpCount++
-                                if (curHeight > viewModel?.status.maxHeight) {
-                                    viewModel?.status.maxHeight = curHeight
-                                }
+            }
+            mapFr.mListener?.onLocationChanged(amapLocation)// 显示系统小蓝点
+            if (curPosition == null) {
+                viewModel?.mapActivity.dismissProgressDialog()
+            }
+            this.curAmapLocation = amapLocation
+            this.curPosition = Location(amapLocation.latitude, amapLocation.longitude, System.currentTimeMillis().toString(), amapLocation.speed, amapLocation.altitude, amapLocation.bearing)
+            if (driverStatus.get() == Drivering) {
+                if (mapFr?.mapUtils?.breatheMarker_center != null) {
+                    mapFr?.mapUtils?.breatheMarker_center!!.rotateAngle = amapLocation.bearing
+                }
+                if (viewModel.status.locationLat.size == 0) {
+                    viewModel?.status?.locationLat?.add(Location(amapLocation.latitude, amapLocation.longitude, System.currentTimeMillis().toString(), amapLocation.speed, amapLocation.altitude, amapLocation.bearing, amapLocation.aoiName, amapLocation.poiName))
+                    addStartPoint(Location(amapLocation.latitude, amapLocation.longitude, System.currentTimeMillis().toString(), amapLocation.speed, amapLocation.altitude, amapLocation.bearing, amapLocation.aoiName, amapLocation.poiName))
+                } else {
+                    if (amapLocation.locationType == 1) {
+                        if (curHeight < amapLocation.altitude) {
+                            if (!isUp) {
+                                isUp = true
+                            }
+                            viewModel?.status.UpValue += amapLocation.altitude - curHeight
+                            viewModel?.status.UpCount++
+                            if (curHeight > viewModel?.status.maxHeight) {
+                                viewModel?.status.maxHeight = curHeight
+                            }
+                        } else {
+                            //爬坡结束
+                            if (isUp) {
+                                isUp = false
+                            }
+                        }
+                        curHeight = amapLocation.altitude
+                        if (amapLocation.accuracy <= 30 && amapLocation.speed > 1) {
+                            if (viewModel?.status.maxSpeed < amapLocation.speed) {
+                                viewModel?.status.maxSpeed = amapLocation.speed
+                            }
+                            if (last == null) {
+                                last = viewModel?.status.driverStartPoint!!
+                            }
+                            viewModel?.status.distance += AMapUtils.calculateLineDistance(LatLng(last?.latitude!!, last?.longitude!!), LatLng(amapLocation?.latitude!!, amapLocation?.longitude!!))
+                            last = this.curPosition!!
+                            viewModel?.mapActivity.mapUtils!!.setLocation(last!!)
+                            var distanceTv = ""
+                            if (viewModel?.status!!.distance > 1000) {
+                                distanceTv = DecimalFormat("0.0").format(viewModel?.status!!.distance / 1000) + "KM"
                             } else {
-                                //爬坡结束
-                                if (isUp) {
-                                    isUp = false
-                                }
+                                distanceTv = DecimalFormat("0.0").format(viewModel?.status!!.distance) + "M"
                             }
-                            curHeight = amapLocation.altitude
-                            if (amapLocation.accuracy <= 30 && amapLocation.speed > 1) {
-                                if (viewModel?.status.maxSpeed < amapLocation.speed) {
-                                    viewModel?.status.maxSpeed = amapLocation.speed
-                                }
-                                if (last == null) {
-                                    last = viewModel?.status.driverStartPoint
-                                }
-                                viewModel?.status.distance += AMapUtils.calculateLineDistance(LatLng(last?.latitude!!, last?.longitude!!), LatLng(amapLocation?.latitude!!, amapLocation?.longitude!!))
-                                last = this.curPosition
-                                viewModel?.mapActivity.mapUtils!!.setLocation(last!!)
-                                var distanceTv = ""
-                                if (viewModel?.status!!.distance > 1000) {
-                                    distanceTv = DecimalFormat("0.0").format(viewModel?.status!!.distance / 1000) + "KM"
-                                } else {
-                                    distanceTv = DecimalFormat("0.0").format(viewModel?.status!!.distance) + "M"
-                                }
-                                driverDistance.set(distanceTv)
-                                viewModel?.mapActivity.mAmap.moveCamera(CameraUpdateFactory.changeLatLng(viewModel?.mapActivity?.mapUtils?.breatheMarker_center?.position))
-                                viewModel.status.locationLat.add(curPosition!!)
-                                driverController?.setLineDatas(viewModel?.status?.locationLat, getColor(R.color.line_color))
+                            driverDistance.set(distanceTv)
+                            viewModel?.mapActivity.mAmap.moveCamera(CameraUpdateFactory.changeLatLng(viewModel?.mapActivity?.mapUtils?.breatheMarker_center?.position))
+                            viewModel.status.locationLat.add(curPosition!!)
+                            driverController?.setLineDatas(viewModel?.status?.locationLat, getColor(R.color.line_color))
 
-                            }
                         }
                     }
                 }
             }
         }
-    }
+}
 
-    var weatherDatas = ObservableArrayList<WeatherEntity>().apply {
-        for (i in 0..24) {
-            if (i < 10) {
-                this.add(WeatherEntity(ObservableField(context.getDrawable(R.drawable.ic_sun)), ObservableField("0$i:00"), ObservableField("14℃")))
-            } else {
-                this.add(WeatherEntity(ObservableField(context.getDrawable(R.drawable.ic_sun)), ObservableField("$i:00"), ObservableField("14℃")))
-            }
-        }
-    }
-
-    private fun addStartPoint(amapLocation: Location) {
-        mapFr.dismissProgressDialog()
-        mapFr.setDriverStyle()
-        mapFr.mAmap.clear()
-        mapFr?.mapUtils?.createAnimationMarker(true, LatLonPoint(amapLocation.latitude, amapLocation.longitude))
-//        mapActivity.getMapPointFragment().viewModel?.mapPointController?.startMaker = mapFr?.mapUtils!!.createMaker(amapLocation)
-        driverController?.startMarker = mapFr?.mapUtils!!.createMaker(amapLocation)
-        if (amapLocation?.aoiName != null && !amapLocation?.aoiName.isEmpty()) {
-            viewModel?.status?.startAoiName = amapLocation?.aoiName
+var weatherDatas = ObservableArrayList<WeatherEntity>().apply {
+    for (i in 0..24) {
+        if (i < 10) {
+            this.add(WeatherEntity(ObservableField(context.getDrawable(R.drawable.ic_sun)), ObservableField("0$i:00"), ObservableField("14℃")))
         } else {
-            viewModel?.status?.startAoiName = amapLocation?.poiName
+            this.add(WeatherEntity(ObservableField(context.getDrawable(R.drawable.ic_sun)), ObservableField("$i:00"), ObservableField("14℃")))
         }
+    }
+}
 
-        viewModel?.status?.driverStartPoint = Location(amapLocation.latitude, amapLocation.longitude, amapLocation.time.toString(), amapLocation.speed, amapLocation.height, amapLocation.bearing)
-
-        UpdateDriverStatus(viewModel?.status!!)
+private fun addStartPoint(amapLocation: Location) {
+    mapFr.dismissProgressDialog()
+    mapFr.setDriverStyle()
+    mapFr.mAmap.clear()
+    mapFr?.mapUtils?.createAnimationMarker(true, LatLonPoint(amapLocation.latitude, amapLocation.longitude))
+//        mapActivity.getMapPointFragment().viewModel?.mapPointController?.startMaker = mapFr?.mapUtils!!.createMaker(amapLocation)
+    driverController?.startMarker = mapFr?.mapUtils!!.createMaker(amapLocation)
+    if (amapLocation?.aoiName != null && !amapLocation?.aoiName.isEmpty()) {
+        viewModel?.status?.startAoiName = amapLocation?.aoiName
+    } else {
+        viewModel?.status?.startAoiName = amapLocation?.poiName
     }
 
-    private fun initView() {
-        //进入方式判断
-        if (viewModel?.status.driverStartPoint != null) {
-            Observable.create(ObservableOnSubscribe<DriverDataStatus> {
-                viewModel?.mapActivity.mAmap.clear()
-                driverController?.startMarker = viewModel?.mapActivity.mapUtils?.createMaker(Location(viewModel?.status!!.driverStartPoint!!.latitude, viewModel?.status!!.driverStartPoint!!.longitude, System.currentTimeMillis().toString(), 0F, 0.0, 0F))
+    viewModel?.status?.driverStartPoint = Location(amapLocation.latitude, amapLocation.longitude, amapLocation.time.toString(), amapLocation.speed, amapLocation.height, amapLocation.bearing)
+
+    UpdateDriverStatus(viewModel?.status!!)
+}
+
+private fun initView(viewModel: MapFrViewModel) {
+    //进入方式判断
+    if (viewModel?.status.driverStartPoint != null) {
+        Observable.create(ObservableOnSubscribe<DriverDataStatus> {
+            viewModel?.mapActivity.mAmap.clear()
+            driverController?.startMarker = this.viewModel?.mapActivity.mapUtils?.createMaker(Location(viewModel?.status!!.driverStartPoint!!.latitude, viewModel?.status!!.driverStartPoint!!.longitude, System.currentTimeMillis().toString(), 0F, 0.0, 0F))
 //            viewModel?.driverController?.startMarker = mapActivity?.mapUtils?.createAnimationMarker(true, LatLonPoint(viewModel?.status!!.driverStartPoint!!.latitude, viewModel?.status!!.driverStartPoint!!.longitude))
-            })
+        })
+    }
+}
+
+
+fun onClick(view: View) {
+    when (view.id) {
+        R.id.item_start_navagation -> {
+            //开始骑行
+        }
+        R.id.item_long_press_btn -> {
+            //取消骑行
+        }
+        R.id.item_continue_drivering -> {
+            //继续骑行
         }
     }
+}
 
-
-    fun onClick(view: View) {
-        when (view.id) {
-            R.id.item_start_navagation -> {
-                //开始骑行
-            }
-            R.id.item_long_press_btn -> {
-                //取消骑行
-            }
-            R.id.item_continue_drivering -> {
-                //继续骑行
-            }
-        }
+var driverType = 0
+fun startDriver(type: Int) {
+    this.driverType = type
+    //开始骑行逻辑操作
+    if (!NetworkUtil.isNetworkAvailable(context)) {
+        Toast.makeText(context, getString(R.string.network_notAvailable), Toast.LENGTH_SHORT).show()
+        return
     }
-
-    var driverType = 0
-    fun startDriver(type: Int) {
-        this.driverType = type
-        //开始骑行逻辑操作
-        if (!NetworkUtil.isNetworkAvailable(context)) {
-            Toast.makeText(context, getString(R.string.network_notAvailable), Toast.LENGTH_SHORT).show()
-            return
-        }
-        viewModel.mapActivity.showProgressDialog(getString(R.string.start_driver))
-        HttpRequest.instance.startDriver = this
-        HttpRequest.instance.startDriver(HashMap())
-    }
+    viewModel.mapActivity.showProgressDialog(getString(R.string.start_driver))
+    HttpRequest.instance.startDriver = this
+    HttpRequest.instance.startDriver(HashMap())
+}
 
 
-    fun dontHaveOneMetre(string: String, string1: String, string2: String, i: Int) {
+fun dontHaveOneMetre(string: String, string1: String, string2: String, i: Int) {
 
-    }
+}
 
 
 }

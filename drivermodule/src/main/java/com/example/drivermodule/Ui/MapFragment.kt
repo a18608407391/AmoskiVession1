@@ -203,11 +203,12 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
     }
 
     private fun initStatus() {
-        var status = queryDriverStatus(PreferenceUtils.getString(context, USERID))[0]
-        if(status==null){
-            viewModel?.status?.uid = PreferenceUtils.getString(context, USERID)
+        var statusList = queryDriverStatus(PreferenceUtils.getString(context, USERID))
+        if (statusList.isNullOrEmpty()) {
             viewModel?.status = DriverDataStatus()
-        }else{
+            viewModel?.status?.uid = PreferenceUtils.getString(context, USERID)
+        } else {
+            var status = queryDriverStatus(PreferenceUtils.getString(context, USERID))[0]
             viewModel?.status = status
         }
     }
@@ -364,7 +365,7 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
                 viewModel?.selectTab(2)
                 viewModel?.changerFragment(3)
                 if (PreferenceUtils.getString(activity, PreferenceUtils.getString(context, USERID) + "hot") == null && hotData == null) {
-                 getRoadBookFragment().viewModel?.doLoadDatas(hotData!!)
+                    getRoadBookFragment().viewModel?.doLoadDatas(hotData!!)
                 }
             }
         } else if (resume == "fastTeam") {

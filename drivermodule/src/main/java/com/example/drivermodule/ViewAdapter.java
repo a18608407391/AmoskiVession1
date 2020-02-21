@@ -93,6 +93,9 @@ public class ViewAdapter {
 
     @BindingAdapter("SuitLines")
     public static void initSuitLines(SuitLines chart, DriverDataStatus status) {
+        if (status == null) {
+            return;
+        }
         ArrayList height = new ArrayList<Double>();
         long time = status.getSecond();
         ObservableArrayList<Location> locations = status.getLocationLat();

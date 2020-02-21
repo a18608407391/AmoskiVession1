@@ -16,6 +16,10 @@ android {
         }
     }
     buildToolsVersion '27.0.3'
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 dependencies {
     api fileTree(include: ['*.jar'], dir: 'libs')
@@ -29,10 +33,8 @@ dependencies {
     //    api 'com.amap.api:3dmap:latest.integration'
     api 'com.amap.api:map2d:latest.integration'
     api 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.9.21'
-
     api 'com.amap.api:navi-3dmap:latest.integration'
     api 'com.amap.api:search:latest.integration'
-
     //    api 'tech.linjiang:suitlines:1.1.0'
     api 'com.dinuscxj:recycleritemdecoration:1.0.0'
     api 'com.github.traex.expandablelayout:library:1.2.2'
@@ -44,5 +46,4 @@ dependencies {
     //    api 'com.diogobernardino:williamchart:2.5.0'
     api 'mbanje.kurt:fabbutton:1.2.4@aar'
     api 'cn.carbs.android:ExpandableTextView:1.0.3'
-
 }

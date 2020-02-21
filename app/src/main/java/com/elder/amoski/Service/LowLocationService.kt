@@ -12,6 +12,7 @@ import android.os.Build
 import android.os.IBinder
 import android.os.RemoteException
 import android.support.annotation.RequiresApi
+import android.util.Log
 import com.amap.api.location.AMapLocation
 import com.amap.api.location.AMapLocationClient
 import com.amap.api.location.AMapLocationClientOption
@@ -41,6 +42,7 @@ class LowLocationService : IntentService, AMapLocationListener {
 //            if (amapLocation.locationType == 1) {
             RxBus.default?.post(amapLocation)
             builder?.setContentText("当前位置")
+            Log.e("result",amapLocation.toStr())
             if (amapLocation.accuracy < 30 && action == "driver") {
                 var aoi = ""
                 var poi = ""

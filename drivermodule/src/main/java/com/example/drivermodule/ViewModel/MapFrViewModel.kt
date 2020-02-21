@@ -3,6 +3,7 @@ package com.example.drivermodule.ViewModel
 import android.content.Intent
 import android.databinding.ObservableArrayList
 import android.databinding.ObservableField
+import android.location.LocationListener
 import android.support.design.widget.BottomSheetBehavior
 import android.support.design.widget.TabLayout
 import android.support.v4.app.Fragment
@@ -24,6 +25,7 @@ import com.elder.zcommonmodule.Drivering
 import com.elder.zcommonmodule.Entity.DriverDataStatus
 import com.elder.zcommonmodule.Entity.HotData
 import com.elder.zcommonmodule.Entity.Location
+import com.elder.zcommonmodule.Inteface.Locationlistener
 import com.elder.zcommonmodule.REQUEST_LOAD_ROADBOOK
 import com.example.drivermodule.BR
 import com.example.drivermodule.Component.DriverController
@@ -34,6 +36,7 @@ import com.example.drivermodule.Controller.TeamItemModel
 import com.example.drivermodule.Ui.*
 import com.google.gson.Gson
 import com.zk.library.Base.ItemViewModel
+import com.zk.library.Bus.ServiceEven
 import com.zk.library.Utils.PreferenceUtils
 import com.zk.library.Utils.RouterUtils
 import io.reactivex.disposables.Disposable
@@ -161,12 +164,7 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
 
     var adapter = BindingViewPagerAdapter<ItemViewModel<MapFrViewModel>>()
 
-    var items = ObservableArrayList<ItemViewModel<MapFrViewModel>>().apply {
-        this.add(DriverItemModel())
-        this.add(TeamItemModel())
-        this.add(RoadBookItemModel())
-        this.add(MapPointItemModel())
-    }
+    var items = ObservableArrayList<ItemViewModel<MapFrViewModel>>()
 
 
     var itemBinding = ItemBinding.of<ItemViewModel<MapFrViewModel>> { itemBinding, position, item ->
@@ -236,8 +234,24 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
 //        tans.add(R.id.fr_main_rootlay, point)
 //        tans.add(R.id.fr_main_rootlay, ro)
 //        tans.commitAllowingStateLoss()
+        var pos = ServiceEven()
+        pos.type = "HomeDriver"
+        RxBus.default?.post(pos)
+        component.setHomeStyle()
+        items.apply {
+            this.add(DriverItemModel().ItemViewModel(this@MapFrViewModel))
+            this.add(TeamItemModel().ItemViewModel(this@MapFrViewModel))
+            this.add(RoadBookItemModel().ItemViewModel(this@MapFrViewModel))
+            this.add(MapPointItemModel().ItemViewModel(this@MapFrViewModel))
+        }
         a = RxBus.default?.toObservable(AMapLocation::class.java)?.subscribe {
             //            fr.loacation(it)
+
+            Log.e("result","获取到定位信息")
+
+            if (listeners != null) {
+                listeners?.onLocation(it)
+            }
         }
         RxSubscriptions.add(a)
         component.setCallBack(this)
@@ -245,6 +259,9 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
         initTab()
 //        changerFragment(0)
     }
+
+
+    var listeners: Locationlistener? = null
 
     lateinit var tab: TabLayout
     private fun initTab() {
