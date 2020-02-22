@@ -29,7 +29,7 @@
             android:onClick="@{data::onClick}"
             android:paddingBottom="@dimen/d_10"
             android:paddingTop="@dimen/d_10"
-            app:MapBottoimChange="@{data.driverStatus}" />
+            app:MapBottoimItemChange="@{data.driverStatus}" />
 
 
         <LinearLayout

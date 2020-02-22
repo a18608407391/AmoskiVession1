@@ -1,15 +1,14 @@
 package com.elder.amoski.ViewModel
 
-import android.content.Intent
 import android.databinding.ObservableField
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.support.annotation.RequiresApi
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentTransaction
+import android.util.Log
 import android.view.View
 import android.widget.RadioGroup
-import android.widget.Toast
 import com.alibaba.android.arouter.launcher.ARouter
 import com.cstec.administrator.social.Fragment.SocialFragment
 import com.elder.amoski.Activity.HomeActivity
@@ -18,29 +17,26 @@ import com.elder.amoski.R
 import com.elder.logrecodemodule.UI.LogRecodeFragment
 import com.elder.zcommonmodule.CALL_BACK_STATUS
 import com.elder.zcommonmodule.DriverCancle
-import com.elder.zcommonmodule.Entity.DriverDataStatus
 import com.elder.zcommonmodule.Even.ActivityResultEven
-import com.elder.zcommonmodule.Even.BooleanEven
+import com.elder.zcommonmodule.Even.RxBusEven
 import com.elder.zcommonmodule.Utils.Utils
-import com.elder.zcommonmodule.Utils.getScaleUpAnimation
-import com.example.drivermodule.Activity.MapActivity
 import com.example.drivermodule.Ui.MapFragment
 import com.example.private_module.UI.UserInfoFragment
 import com.zk.library.Base.AppManager
 import com.zk.library.Base.BaseViewModel
-import com.zk.library.Bus.ServiceEven
 import com.zk.library.Utils.RouterUtils
 import kotlinx.android.synthetic.main.fragment_main.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import org.cs.tec.library.Base.Utils.context
-import org.cs.tec.library.Base.Utils.getString
+import org.cs.tec.library.Base.Utils.uiContext
 import org.cs.tec.library.Bus.RxBus
 import org.cs.tec.library.Bus.RxSubscriptions
 import org.cs.tec.library.Utils.ConvertUtils
-import org.cs.tec.library.http.NetworkUtil
 import java.util.ArrayList
 
 
-class MainFragmentViewModel  :BaseViewModel, RadioGroup.OnCheckedChangeListener {
+class MainFragmentViewModel : BaseViewModel, RadioGroup.OnCheckedChangeListener {
     override fun onCheckedChanged(group: RadioGroup?, checkedId: Int) {
         when (checkedId) {
             R.id.same_city -> {
@@ -52,17 +48,19 @@ class MainFragmentViewModel  :BaseViewModel, RadioGroup.OnCheckedChangeListener 
                 }
 //                StatusbarUtils.setStatusBarMode(homeActivity, false, 0x000000)
                 changerFragment(0)
-                lastChecked = checkedId
+                returnCheckId = R.id.same_city
+                checkModel = 0
             }
             R.id.main_left -> {
                 Utils.setStatusTextColor(true, homeActivity.activity as HomeActivity)
                 changerFragment(1)
-                lastChecked = checkedId
+                if (checkModel == 1) {
+                    checkModel = 2
+                }
             }
             R.id.driver_middle -> {
-                Utils.setStatusTextColor(true, homeActivity.activity as HomeActivity)
+
                 changerFragment(2)
-                lastChecked = checkedId
 //                if (!NetworkUtil.isNetworkAvailable(homeActivity.activity as HomeActivity)) {
 //                    Toast.makeText(context, getString(R.string.network_notAvailable), Toast.LENGTH_SHORT).show()
 //                    return
@@ -80,22 +78,30 @@ class MainFragmentViewModel  :BaseViewModel, RadioGroup.OnCheckedChangeListener 
 //                RxBus.default?.post(pos)
 //                ARouter.getInstance().build(RouterUtils.MapModuleConfig.MAP_ACTIVITY).addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT).withOptionsCompat(getScaleUpAnimation(homeActivity.rootlayout)).withString(RouterUtils.MapModuleConfig.RESUME_MAP_ACTIVITY, "nomal").navigation()
 //                homeActivity.main_bottom_bg.check(lastChecked)
+                if (checkModel == 2) {
+                    checkModel = 1
+                }
             }
             R.id.dynamics -> {
                 Utils.setStatusTextColor(true, homeActivity.activity as HomeActivity)
                 changerFragment(3)
-                lastChecked = checkedId
+                returnCheckId = R.id.same_city
+                checkModel = 0
             }
             R.id.main_right -> {
                 Utils.setStatusTextColor(true, homeActivity.activity as HomeActivity)
                 changerFragment(4)
-                lastChecked = checkedId
+                returnCheckId = R.id.same_city
+                checkModel = 0
             }
         }
     }
 
 
-    var lastChecked = 0
+    var returnCheckId = 0
+    var checkModel = 0
+
+
     var bottomVisible = ObservableField<Boolean>(true)
 
     lateinit var homeActivity: HomeFragment
@@ -123,19 +129,52 @@ class MainFragmentViewModel  :BaseViewModel, RadioGroup.OnCheckedChangeListener 
     var party: Fragment? = null
     var social: SocialFragment? = null
     var logmodule: LogRecodeFragment? = null
-    var mapFr :MapFragment ? = null
+    var mapFr: MapFragment? = null
 
     var tans: FragmentTransaction? = null
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     fun inject(homeActivity: HomeFragment) {
         this.homeActivity = homeActivity
-        lastChecked = R.id.same_city
+        returnCheckId = R.id.same_city
         changerFragment(0)
-        Utils.setStatusTextColor(false, homeActivity.activity as HomeActivity)
-        RxSubscriptions.add(RxBus.default?.toObservable(BooleanEven::class.java)?.subscribe {
-            bottomVisible.set(it.flag)
-            if (it.type == 1) {
-                homeActivity.main_bottom_bg.check(R.id.main_right)
+//        Utils.setStatusTextColor(false, homeActivity.activity as HomeActivity)
+        RxSubscriptions.add(RxBus.default?.toObservable(RxBusEven::class.java)?.subscribe {
+            when (it.type) {
+                RxBusEven.DriverReturnRequest -> {
+                   homeActivity.main_bottom_bg.check(R.id.same_city)
+//                    if (checkModel == 0) {
+//                        homeActivity.main_bottom_bg.check(returnCheckId)
+//                    } else if (checkModel == 1) {
+//                        if (homeActivity.main_bottom_bg.checkedRadioButtonId == R.id.driver_middle) {
+//                            homeActivity.main_bottom_bg.check(returnCheckId)
+//                        } else {
+//                            homeActivity.main_bottom_bg.check(R.id.driver_middle)
+//                        }
+//                    } else if (checkModel == 2) {
+//                        if (homeActivity.main_bottom_bg.checkedRadioButtonId == R.id.main_left) {
+//                            homeActivity.main_bottom_bg.check(returnCheckId)
+//                        } else {
+//                            homeActivity.main_bottom_bg.check(R.id.main_left)
+//                        }
+//                    }
+
+                    CoroutineScope(uiContext).launch {
+                        bottomVisible.set(true)
+                    }
+
+                }
+                RxBusEven.PartyWebViewReturn -> {
+                    bottomVisible.set(it.value as Boolean)
+                    if (it.secondValue as Int == 1) {
+                        if (checkModel == 0) {
+                            homeActivity.main_bottom_bg.check(returnCheckId)
+                        } else if (checkModel == 1) {
+                            homeActivity.main_bottom_bg.check(R.id.driver_middle)
+                        } else if (checkModel == 2) {
+                            homeActivity.main_bottom_bg.check(R.id.main_left)
+                        }
+                    }
+                }
             }
         })
     }
@@ -157,21 +196,23 @@ class MainFragmentViewModel  :BaseViewModel, RadioGroup.OnCheckedChangeListener 
             }
             logSelected.set(true)
             privateSelected.set(false)
-
         } else if (position == 1) {
             if (party == null) {
                 party = ARouter.getInstance().build(RouterUtils.PartyConfig.PARTY_MAIN).navigation() as Fragment
                 mFragments.add(party!!)
                 tans!!.add(R.id.rootlayout, party!!)
             }
-        }else if(position==2){
 
-            if(mapFr==null){
+        } else if (position == 2) {
+
+            if (mapFr == null) {
                 mapFr = ARouter.getInstance().build(RouterUtils.MapModuleConfig.MAP_FR).navigation() as MapFragment?
-               mFragments.add(mapFr!!)
-                tans!!.add(R.id.rootlayout,mapFr!!)
-
+                mFragments.add(mapFr!!)
+                tans!!.add(R.id.rootlayout, mapFr!!)
+            }else{
+                mapFr!!.setDark()
             }
+            bottomVisible.set(false)
 
         } else if (position == 3) {
             if (social == null) {
@@ -213,7 +254,7 @@ class MainFragmentViewModel  :BaseViewModel, RadioGroup.OnCheckedChangeListener 
         }
         if (position == 1) {
             tans!!.show(party!!)
-        }else if(position==2){
+        } else if (position == 2) {
             tans!!.show(mapFr!!)
         } else if (position == 3) {
             tans!!.show(social!!)
@@ -291,9 +332,6 @@ class MainFragmentViewModel  :BaseViewModel, RadioGroup.OnCheckedChangeListener 
             }
         }
 
-        var n = RxBus.default?.toObservableSticky(DriverDataStatus::class.java)?.subscribe {
-
-        }
         var s = RxBus.default?.toObservable(String::class.java)?.subscribe {
             if (it == "ShareFinish") {
                 homeActivity.main_bottom_bg.check(R.id.same_city)
@@ -310,6 +348,5 @@ class MainFragmentViewModel  :BaseViewModel, RadioGroup.OnCheckedChangeListener 
         }
         RxSubscriptions.add(m)
         RxSubscriptions.add(s)
-        RxSubscriptions.add(n)
     }
 }

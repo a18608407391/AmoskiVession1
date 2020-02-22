@@ -6,6 +6,7 @@ import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Build;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Display;
 import android.view.View;
 import android.view.Window;
@@ -202,6 +203,7 @@ public class Utils {
      * @param activity
      */
     public static void setStatusTextColor(boolean useDart, Activity activity) {
+        Log.e("MapFragment","调用了几次");
         if (isFlyme()) {
             processFlyMe(useDart, activity);
         } else if (isMIUI()) {

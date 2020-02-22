@@ -19,6 +19,7 @@ import com.elder.zcommonmodule.Entity.*
 import com.elder.zcommonmodule.Inteface.Locationlistener
 import com.elder.zcommonmodule.Service.HttpInteface
 import com.elder.zcommonmodule.Service.HttpRequest
+import com.elder.zcommonmodule.Utils.Utils
 import com.example.drivermodule.Component.DriverItemController
 import com.example.drivermodule.R
 import com.example.drivermodule.Ui.MapFragment
@@ -242,12 +243,18 @@ fun onClick(view: View) {
     when (view.id) {
         R.id.item_start_navagation -> {
             //开始骑行
+
+
         }
         R.id.item_long_press_btn -> {
             //取消骑行
+
+
         }
         R.id.item_continue_drivering -> {
             //继续骑行
+
+
         }
     }
 }

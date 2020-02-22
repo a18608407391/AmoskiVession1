@@ -25,6 +25,7 @@ import com.elder.zcommonmodule.Drivering
 import com.elder.zcommonmodule.Entity.DriverDataStatus
 import com.elder.zcommonmodule.Entity.HotData
 import com.elder.zcommonmodule.Entity.Location
+import com.elder.zcommonmodule.Even.RxBusEven
 import com.elder.zcommonmodule.Inteface.Locationlistener
 import com.elder.zcommonmodule.REQUEST_LOAD_ROADBOOK
 import com.example.drivermodule.BR
@@ -138,6 +139,16 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
     var cur = 0L
 
     override fun onComponentClick(view: View) {
+
+        if (currentPosition == 3) {
+
+        } else {
+            var even = RxBusEven()
+            even.type = RxBusEven.DriverReturnRequest
+            RxBus.default?.post(even)
+        }
+        return
+
         if (currentPosition == 0) {
             mapActivity.getDrverFragment().viewModel?.onComponentClick(view)
         } else if (currentPosition == 1) {
@@ -154,9 +165,9 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
             mapActivity.getDrverFragment().viewModel?.onComponentFinish(view)
         } else if (currentPosition == 1) {
             mapActivity.getTeamFragment().viewModel?.onComponentFinish(view)
-        } else if (currentPosition == 2) {
-            mapActivity.getMapPointFragment().viewModel?.onComponentFinish(view)
         } else if (currentPosition == 3) {
+            mapActivity.getMapPointFragment().viewModel?.onComponentFinish(view)
+        } else if (currentPosition == 2) {
             mapActivity.getRoadBookFragment().viewModel?.onComponentFinish(view)
         }
     }
@@ -247,7 +258,7 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
         a = RxBus.default?.toObservable(AMapLocation::class.java)?.subscribe {
             //            fr.loacation(it)
 
-            Log.e("result","获取到定位信息")
+            Log.e("result", "获取到定位信息")
 
             if (listeners != null) {
                 listeners?.onLocation(it)

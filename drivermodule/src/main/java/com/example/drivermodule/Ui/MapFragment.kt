@@ -17,15 +17,12 @@ import com.amap.api.maps.model.BitmapDescriptorFactory
 import com.amap.api.maps.model.LatLng
 import com.amap.api.maps.model.Marker
 import com.amap.api.maps.model.MyLocationStyle
-import com.amap.api.services.core.LatLonPoint
-import com.elder.zcommonmodule.DataBases.UpdateDriverStatus
-import com.elder.zcommonmodule.DataBases.deleteDriverStatus
 import com.elder.zcommonmodule.DataBases.queryDriverStatus
 import com.elder.zcommonmodule.Driver_Navigation
 import com.elder.zcommonmodule.Drivering
 import com.elder.zcommonmodule.Entity.DriverDataStatus
 import com.elder.zcommonmodule.Entity.HotData
-import com.elder.zcommonmodule.Entity.Location
+import com.elder.zcommonmodule.Utils.Utils
 import com.example.drivermodule.BR
 import com.example.drivermodule.R
 import com.example.drivermodule.Utils.MapUtils
@@ -109,6 +106,16 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
         }
     }
 
+
+    override fun onUserVisible() {
+        super.onUserVisible()
+
+    }
+
+    override fun onUserInvisible() {
+        super.onUserInvisible()
+    }
+
     override fun getInfoWindow(maker: Marker?): View {
         var s = viewModel?.mFragments!![1] as TeamFragment
         var flag = s.viewModel?.markerList?.containsValue(maker)
@@ -157,6 +164,15 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
     override fun onTouch(p0: MotionEvent?) {
 
     }
+
+
+    fun setDark() {
+        CoroutineScope(uiContext).launch {
+            delay(500)
+            Utils.setStatusTextColor(true, activity)
+        }
+    }
+
 
     override fun onInfoWindowClick(it: Marker?) {
         if (it!!.title == null || it!!.title == "null" || getTeamFragment().viewModel?.markerList?.containsValue(it)!!) {
@@ -218,6 +234,7 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
     override fun initMap(savedInstanceState: Bundle?) {
         super.initMap(savedInstanceState)
         fr_map_view.onCreate(savedInstanceState)
+        Utils.setStatusTextColor(true, activity)
         mAmap = fr_map_view.map
         setUpMap()
         mAmap.moveCamera(CameraUpdateFactory.zoomTo(15F))
@@ -411,6 +428,7 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
         }
     }
 
+
     fun getDrverFragment(): DriverFragment {
         return viewModel?.mFragments!![0] as DriverFragment
     }
@@ -440,11 +458,13 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
         super.onPause()
         fr_map_view.onPause()
         onStart = false
+        Log.e("MapFragment", "onPause")
     }
 
     override fun onResume() {
         super.onResume()
         fr_map_view.onResume()
+        Log.e("MapFragment", "onResult")
         onStart = true
     }
 

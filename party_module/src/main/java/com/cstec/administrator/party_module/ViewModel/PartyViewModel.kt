@@ -1,7 +1,6 @@
 package com.cstec.administrator.party_module.ViewModel
 
 import android.app.Dialog
-import android.app.ProgressDialog
 import android.content.Intent
 import android.databinding.ObservableField
 import android.graphics.Bitmap
@@ -14,7 +13,7 @@ import com.cstec.administrator.party_module.Fragment.PartyFragment
 import com.cstec.administrator.party_module.R
 import com.cstec.administrator.party_module.WebJavaScriptInterface
 import com.elder.zcommonmodule.Base_URL
-import com.elder.zcommonmodule.Even.BooleanEven
+import com.elder.zcommonmodule.Even.RxBusEven
 import com.elder.zcommonmodule.USER_TOKEN
 import com.elder.zcommonmodule.Utils.DialogUtils
 import com.tencent.mm.opensdk.modelmsg.SendMessageToWX
@@ -67,20 +66,23 @@ class PartyViewModel : BaseViewModel() {
     var roadCommand = BindingCommand(object : BindingConsumer<String> {
         override fun call(t: String) {
             if (t.contains("AmoskiWebActivity/personalcenter/roadbookActivitype/activity/activityList.html?")) {
-                var flag = BooleanEven()
-                flag.flag = true
+                var flag = RxBusEven()
+                flag.type = RxBusEven.PartyWebViewReturn
+                flag.value = true
                 RxBus.default?.post(flag)
                 partyFragment.web_active1.loadUrl(t)
                 Log.e("result", "发送开机消息")
             } else {
-                var flag = BooleanEven()
-                flag.flag = false
+                var flag = RxBusEven()
+                flag.type = RxBusEven.PartyWebViewReturn
+                flag.value = false
                 RxBus.default?.post(flag)
                 Log.e("result", "发送关机消息")
                 if (t.endsWith("gotoApp")) {
-                    var flag = BooleanEven()
-                    flag.flag = true
-                    flag.type = 1
+                    var flag = RxBusEven()
+                    flag.type = RxBusEven.PartyWebViewReturn
+                    flag.value = true
+                    flag.secondValue = 1
                     RxBus.default?.post(flag)
                     webUrl.set("$Base_URL/AmoskiWebActivity/personalcenter/roadbookActivitype/activity/activityList.html?appToken=" + PreferenceUtils.getString(context, USER_TOKEN) + "&type=app")
 
@@ -180,8 +182,9 @@ class PartyViewModel : BaseViewModel() {
                         partyFragment.web_active1.loadUrl(t)
                     }
                 } else if (t.startsWith("$Base_URL/AmoskiWebActivity/personalcenter/roadbookActivitype/activity/activityList.html?")) {
-                    var flag = BooleanEven()
-                    flag.flag = true
+                    var flag = RxBusEven()
+                    flag.type = RxBusEven.PartyWebViewReturn
+                    flag.value = true
                     RxBus.default?.post(flag)
                 } else {
                     var url = t

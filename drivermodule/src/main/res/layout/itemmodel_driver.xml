@@ -27,34 +27,6 @@
                 android:layout_height="match_parent"
                 android:gravity="center_horizontal"
                 android:orientation="vertical">
-
-                <!--<LinearLayout-->
-                <!--android:layout_width="match_parent"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:background="@color/white"-->
-                <!--android:fitsSystemWindows="true"-->
-                <!--android:orientation="vertical"></LinearLayout>-->
-
-                <!--<include-->
-                <!--layout="@layout/base_tab_driver_layout"-->
-                <!--app:data="@{driver_model.component}"></include>-->
-
-                <!--<include-->
-                <!--android:id="@+id/top_layout"-->
-                <!--layout="@layout/base_driver_layout"-->
-                <!--app:data="@{driver_model.component}"></include>-->
-
-                <!--<HorizontalScrollView-->
-                <!--android:layout_width="match_parent"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:scrollbars="none">-->
-
-                <!--<LinearLayout-->
-                <!--android:id="@+id/driver_top_hori_linear"-->
-                <!--android:layout_width="match_parent"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:orientation="horizontal"></LinearLayout>-->
-                <!--</HorizontalScrollView>-->
             </LinearLayout>
 
             <include

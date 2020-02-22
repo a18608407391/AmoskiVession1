@@ -382,7 +382,34 @@ public class ViewAdapter {
             }
         }
     }
-
+    @BindingAdapter("MapBottoimItemChange")
+    public static void setCurrentModelItemChange(ImageView img, int mode) {
+        int i = img.getId();
+        if (i == R.id.item_start_navagation) {
+            if (mode == 0) {
+                //Driving
+                img.setVisibility(View.VISIBLE);
+                img.setImageResource(R.drawable.driver_main_play);
+            } else if (mode == 1) {
+                img.setVisibility(View.GONE);
+            } else if (mode == 0) {
+                img.setVisibility(View.VISIBLE);
+                img.setImageResource(R.drawable.start_driver);
+            } else if (mode == 2) {
+                img.setVisibility(View.VISIBLE);
+                img.setImageResource(R.drawable.start_driver);
+            } else if (mode == 3) {
+                img.setVisibility(View.VISIBLE);
+                img.setImageResource(R.drawable.start_driver);
+            }
+        } else if (i == R.id.stop_navagation) {
+            if (mode == 0 || mode == 2) {
+                img.setVisibility(View.GONE);
+            } else if (mode == 1) {
+                img.setVisibility(View.VISIBLE);
+            }
+        }
+    }
     @BindingAdapter("setExTextContent")
     public static void setExTextContent(ExpandableTextView ex, String content) {
         ex.setText(content);
