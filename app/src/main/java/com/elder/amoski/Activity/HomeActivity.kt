@@ -49,7 +49,7 @@ class HomeActivity : BaseActivity<ActivityHomeBinding, HomeViewModel>() {
     }
 
     override fun initContentView(savedInstanceState: Bundle?): Int {
-        Utils.setStatusBar(this, false, false)
+//        Utils.setStatusBar(this, false, false)
 //        StatusbarUtils.setStatusBarMode(this, true, 0x000000)
 //        val fragmentManagerImpl = fragmentManager as FragmentManagerImpl
         return R.layout.activity_home
@@ -95,7 +95,7 @@ class HomeActivity : BaseActivity<ActivityHomeBinding, HomeViewModel>() {
         pos.type = "HomeStart"
         RxBus.default?.post(pos)
         StatusbarUtils.setTranslucentStatus(this)
-        StatusbarUtils.setStatusBarMode(this, true, 0x00000000)
+        StatusbarUtils.setStatusBarMode(this, false, 0x00000000)
         mViewModel?.inject(this)
 
         RxSubscriptions.add(RxBus.default?.toObservable(RequestErrorEven::class.java)?.subscribe {

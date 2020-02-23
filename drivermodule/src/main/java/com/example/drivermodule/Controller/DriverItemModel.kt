@@ -119,6 +119,7 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), HttpInteface.startDrive
 
         driverStatus.set(viewModel?.status.startDriver.get())
         initView(viewModel)
+        bottomLayoutVisible.set(true)
         return super.ItemViewModel(viewModel)
     }
 

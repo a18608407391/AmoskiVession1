@@ -59,7 +59,7 @@ class MainFragmentViewModel : BaseViewModel, RadioGroup.OnCheckedChangeListener 
                 }
             }
             R.id.driver_middle -> {
-
+                Utils.setStatusTextColor(true, homeActivity.activity as HomeActivity)
                 changerFragment(2)
 //                if (!NetworkUtil.isNetworkAvailable(homeActivity.activity as HomeActivity)) {
 //                    Toast.makeText(context, getString(R.string.network_notAvailable), Toast.LENGTH_SHORT).show()
@@ -85,13 +85,13 @@ class MainFragmentViewModel : BaseViewModel, RadioGroup.OnCheckedChangeListener 
             R.id.dynamics -> {
                 Utils.setStatusTextColor(true, homeActivity.activity as HomeActivity)
                 changerFragment(3)
-                returnCheckId = R.id.same_city
+                returnCheckId = R.id.dynamics
                 checkModel = 0
             }
             R.id.main_right -> {
                 Utils.setStatusTextColor(true, homeActivity.activity as HomeActivity)
                 changerFragment(4)
-                returnCheckId = R.id.same_city
+                returnCheckId = R.id.main_right
                 checkModel = 0
             }
         }
@@ -141,22 +141,22 @@ class MainFragmentViewModel : BaseViewModel, RadioGroup.OnCheckedChangeListener 
         RxSubscriptions.add(RxBus.default?.toObservable(RxBusEven::class.java)?.subscribe {
             when (it.type) {
                 RxBusEven.DriverReturnRequest -> {
-                   homeActivity.main_bottom_bg.check(R.id.same_city)
-//                    if (checkModel == 0) {
-//                        homeActivity.main_bottom_bg.check(returnCheckId)
-//                    } else if (checkModel == 1) {
-//                        if (homeActivity.main_bottom_bg.checkedRadioButtonId == R.id.driver_middle) {
-//                            homeActivity.main_bottom_bg.check(returnCheckId)
-//                        } else {
-//                            homeActivity.main_bottom_bg.check(R.id.driver_middle)
-//                        }
-//                    } else if (checkModel == 2) {
-//                        if (homeActivity.main_bottom_bg.checkedRadioButtonId == R.id.main_left) {
-//                            homeActivity.main_bottom_bg.check(returnCheckId)
-//                        } else {
-//                            homeActivity.main_bottom_bg.check(R.id.main_left)
-//                        }
-//                    }
+//                   homeActivity.main_bottom_bg.check(R.id.same_city)
+                    if (checkModel == 0) {
+                        homeActivity.main_bottom_bg.check(returnCheckId)
+                    } else if (checkModel == 1) {
+                        if (homeActivity.main_bottom_bg.checkedRadioButtonId == R.id.driver_middle) {
+                            homeActivity.main_bottom_bg.check(returnCheckId)
+                        } else {
+                            homeActivity.main_bottom_bg.check(R.id.driver_middle)
+                        }
+                    } else if (checkModel == 2) {
+                        if (homeActivity.main_bottom_bg.checkedRadioButtonId == R.id.main_left) {
+                            homeActivity.main_bottom_bg.check(returnCheckId)
+                        } else {
+                            homeActivity.main_bottom_bg.check(R.id.main_left)
+                        }
+                    }
 
                     CoroutineScope(uiContext).launch {
                         bottomVisible.set(true)
@@ -210,7 +210,7 @@ class MainFragmentViewModel : BaseViewModel, RadioGroup.OnCheckedChangeListener 
                 mFragments.add(mapFr!!)
                 tans!!.add(R.id.rootlayout, mapFr!!)
             }else{
-                mapFr!!.setDark()
+//                mapFr!!.setDark()
             }
             bottomVisible.set(false)
 

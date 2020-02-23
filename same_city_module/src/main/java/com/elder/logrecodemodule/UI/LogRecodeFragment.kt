@@ -119,19 +119,29 @@ class LogRecodeFragment : BaseFragment<FragmentLogrecodeBinding, LogRecodeViewMo
         }
     }
 
+
+    var lastColor = false
+
     var curOffset = 0
     override fun onOffsetChanged(p0: AppBarLayout?, p1: Int) {
         curOffset = p1
         if (p1 >= -ConvertUtils.dp2px(122F)) {
-            Utils.setStatusTextColor(false, activity)
+            if (lastColor) {
+                Utils.setStatusTextColor(false, activity)
+                lastColor = false
+            }
             viewModel?.VisField!!.set(false)
             log_swipe.isEnabled = p1 >= 0
         } else {
-            Utils.setStatusTextColor(true, activity)
+            if (!lastColor) {
+                Utils.setStatusTextColor(true, activity)
+                lastColor = true
+            }
             log_swipe.isEnabled = false
             viewModel?.VisField!!.set(true)
         }
     }
+
 
     var onCreate = false
 

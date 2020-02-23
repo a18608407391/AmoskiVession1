@@ -57,11 +57,11 @@ class DriverHomeActivity : BaseActivity<ActivityDriverhomeBinding, DriverHomeVie
         curOffset = p1
 //        Log.e("result","offset"+ConvertUtils.px2dp(800F))
         if (p1 >= -ConvertUtils.dp2px(278F)) {
-            Utils.setStatusTextColor(false, this)
+//            Utils.setStatusTextColor(false, this)
             mViewModel?.visible!!.set(false)
             driver_homes_swipe.isEnabled = p1 >= 0
         } else {
-            Utils.setStatusTextColor(true, this)
+//            Utils.setStatusTextColor(true, this)
             driver_homes_swipe.isEnabled = false
             mViewModel?.visible!!.set(true)
         }

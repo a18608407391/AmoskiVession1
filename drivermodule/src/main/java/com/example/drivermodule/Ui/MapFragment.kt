@@ -22,9 +22,9 @@ import com.elder.zcommonmodule.Driver_Navigation
 import com.elder.zcommonmodule.Drivering
 import com.elder.zcommonmodule.Entity.DriverDataStatus
 import com.elder.zcommonmodule.Entity.HotData
-import com.elder.zcommonmodule.Utils.Utils
 import com.example.drivermodule.BR
 import com.example.drivermodule.R
+import com.example.drivermodule.Sliding.SlidingUpPanelLayout
 import com.example.drivermodule.Utils.MapUtils
 import com.example.drivermodule.ViewModel.MapFrViewModel
 import com.example.drivermodule.databinding.FragmentMapBinding
@@ -40,10 +40,11 @@ import kotlinx.coroutines.launch
 import org.cs.tec.library.Base.Utils.uiContext
 import org.cs.tec.library.Bus.RxBus
 import org.cs.tec.library.USERID
+import org.cs.tec.library.Utils.ConvertUtils
 
 
 @Route(path = RouterUtils.MapModuleConfig.MAP_FR)
-class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), LocationSource, AMap.InfoWindowAdapter, AMap.OnMapClickListener, AMap.OnMapTouchListener, AMap.OnInfoWindowClickListener {
+class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), LocationSource, AMap.InfoWindowAdapter, AMap.OnMapClickListener, AMap.OnMapTouchListener, AMap.OnInfoWindowClickListener, SlidingUpPanelLayout.PanelSlideListener {
     var onStart = false
     var mLocationOption: AMapLocationClientOption? = null
     var mListener: LocationSource.OnLocationChangedListener? = null
@@ -169,7 +170,7 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
     fun setDark() {
         CoroutineScope(uiContext).launch {
             delay(500)
-            Utils.setStatusTextColor(true, activity)
+//            Utils.setStatusTextColor(true, activity)
         }
     }
 
@@ -215,6 +216,7 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
     override fun initData() {
         super.initData()
         initStatus()
+        panel.addPanelSlideListener(this)
         viewModel?.inject(this)
     }
 
@@ -234,8 +236,15 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
     override fun initMap(savedInstanceState: Bundle?) {
         super.initMap(savedInstanceState)
         fr_map_view.onCreate(savedInstanceState)
-        Utils.setStatusTextColor(true, activity)
+//        Utils.setStatusTextColor(true, activity)
         mAmap = fr_map_view.map
+
+
+        fr_map_view.post {
+            layoutMaxHeight = fr_map_view.height
+        }
+//
+
         setUpMap()
         mAmap.moveCamera(CameraUpdateFactory.zoomTo(15F))
         mAmap.uiSettings.isZoomControlsEnabled = false
@@ -247,6 +256,7 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
         mAmap.setOnMapClickListener(this)
         mAmap.setOnMapTouchListener(this)
         mAmap.setOnInfoWindowClickListener(this)
+
         //TODO
 //        mapUtils = MapUtils(this)
 
@@ -480,6 +490,7 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
 
     var mlocationClient: AMapLocationClient? = null
     lateinit var myLocationStyle: MyLocationStyle
+    var layoutMaxHeight = 0
     fun setupLocationStyle() {
         // 自定义系统定位蓝点
         myLocationStyle = MyLocationStyle()
@@ -495,4 +506,22 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
         // 将自定义的 myLocationStyle 对象添加到地图上
         mAmap.myLocationStyle = myLocationStyle
     }
+
+    override fun onPanelSlide(panel: View?, slideOffset: Float) {
+
+//        activity!!.runOnUiThread {
+//            var parameter = contentMap.layoutParams
+//            parameter.height = ((1 - slideOffset) * (layoutMaxHeight)).toInt() + (ConvertUtils.dp2px(110F)*slideOffset).toInt()
+//            contentMap.layoutParams = parameter
+//            Log.e("SlidingUpPanelLayout", "slideOffset$slideOffset")
+//        }
+//        CoroutineScope(uiContext).launch {
+//
+//        }
+    }
+
+    override fun onPanelStateChanged(panel: View?, previousState: SlidingUpPanelLayout.PanelState?, newState: SlidingUpPanelLayout.PanelState?) {
+        Log.e("SlidingUpPanelLayout", "onPanelStateChanged${view!!.y}")
+    }
+
 }

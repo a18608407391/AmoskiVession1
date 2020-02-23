@@ -25,7 +25,6 @@ import com.zk.library.Utils.CANONICAL_NAME
 import com.zk.library.Utils.CLASS
 import org.cs.tec.library.status.StatusLayoutManager
 import java.lang.reflect.ParameterizedType
-import android.support.v4.app.SupportActivity
 import android.view.animation.Animation
 import com.zk.library.Base.Transaction.SupportHelper
 

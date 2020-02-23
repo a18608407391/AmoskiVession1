@@ -20,7 +20,6 @@
         android:background="@color/transparent"
         android:orientation="horizontal">
 
-
         <ImageView
             android:id="@+id/item_start_navagation"
             android:layout_width="0dp"
