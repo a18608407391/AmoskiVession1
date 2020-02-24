@@ -131,6 +131,7 @@ class LogRecodeFragment : BaseFragment<FragmentLogrecodeBinding, LogRecodeViewMo
                 lastColor = false
             }
             viewModel?.VisField!!.set(false)
+
             log_swipe.isEnabled = p1 >= 0
         } else {
             if (!lastColor) {
