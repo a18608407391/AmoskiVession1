@@ -1,31 +1,41 @@
 package com.example.drivermodule.Controller
 
+import android.content.Intent
 import android.databinding.ObservableArrayList
 import android.databinding.ObservableField
 import android.support.design.widget.BottomSheetBehavior
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import com.alibaba.android.arouter.launcher.ARouter
 import com.amap.api.location.AMapLocation
 import com.amap.api.maps.AMapUtils
 import com.amap.api.maps.CameraUpdateFactory
-import com.amap.api.maps.model.LatLng
+import com.amap.api.maps.model.*
 import com.amap.api.services.core.LatLonPoint
+import com.amap.api.services.core.PoiItem
+import com.elder.zcommonmodule.*
 import com.elder.zcommonmodule.DataBases.UpdateDriverStatus
+import com.elder.zcommonmodule.DataBases.deleteDriverStatus
 import com.elder.zcommonmodule.DataBases.insertDriverStatus
-import com.elder.zcommonmodule.DriverCancle
-import com.elder.zcommonmodule.Drivering
 import com.elder.zcommonmodule.Entity.*
 import com.elder.zcommonmodule.Inteface.Locationlistener
 import com.elder.zcommonmodule.Service.HttpInteface
 import com.elder.zcommonmodule.Service.HttpRequest
+import com.elder.zcommonmodule.Utils.Dialog.OnBtnClickL
+import com.elder.zcommonmodule.Utils.DialogUtils
 import com.elder.zcommonmodule.Utils.Utils
+import com.example.drivermodule.AMapUtil
 import com.example.drivermodule.Component.DriverItemController
 import com.example.drivermodule.R
 import com.example.drivermodule.Ui.MapFragment
+import com.example.drivermodule.Ui.TeamFragment
 import com.example.drivermodule.ViewModel.MapFrViewModel
 import com.google.gson.Gson
+import com.zk.library.Base.BaseApplication
 import com.zk.library.Base.ItemViewModel
+import com.zk.library.Utils.PreferenceUtils
+import com.zk.library.Utils.RouterUtils
 import io.reactivex.Observable
 import io.reactivex.ObservableOnSubscribe
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -37,7 +47,9 @@ import org.cs.tec.library.Base.Utils.context
 import org.cs.tec.library.Base.Utils.getColor
 import org.cs.tec.library.Base.Utils.getString
 import org.cs.tec.library.Base.Utils.uiContext
+import org.cs.tec.library.Bus.RxBus
 import org.cs.tec.library.Bus.RxSubscriptions
+import org.cs.tec.library.USERID
 import org.cs.tec.library.Utils.ConvertUtils
 import org.cs.tec.library.http.NetworkUtil
 import java.text.DecimalFormat
@@ -67,17 +79,22 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), HttpInteface.startDrive
             driverTime.set(ConvertUtils.formatTimeS(viewModel?.status.second))
             UpdateDriverStatus(viewModel?.status)
         }
-        if (driverType == 1) {
-            //未骑行导航
+        if (driverType == 0) {
 
-
+        } else {
+            //未骑行导航  从骑行界面搜索
+            var wayPoint = ArrayList<LatLng>()
+            if (!viewModel?.status?.passPointDatas.isNullOrEmpty()) {
+                viewModel?.status?.passPointDatas.forEach {
+                    wayPoint.add(LatLng(it.latitude, it.longitude))
+                }
+            }
+            viewModel?.startNavi(viewModel?.status.navigationStartPoint!!, viewModel?.status.navigationEndPoint!!, wayPoint, driverType)
         }
-
-
     }
 
-    override fun startDriverError(error: Throwable) {
 
+    override fun startDriverError(error: Throwable) {
         viewModel.mapActivity.dismissProgressDialog()
     }
 
@@ -99,6 +116,8 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), HttpInteface.startDrive
     //结束时间文本
     var finishTime = ObservableField<String>()
     //骑行头像
+    var deivceInfo = UIdeviceInfo(ObservableField(""), ObservableField(""), ObservableField(""), ObservableField(""), ObservableField(""), ObservableField(""), ObservableField(""), ObservableField(""), ObservableField(""))
+
     var driverAvatar = ObservableField<String>()
     var share = ShareEntity()
 
@@ -133,7 +152,7 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), HttpInteface.startDrive
 
     private fun location(amapLocation: AMapLocation?) {
         //处理定位信息
-        if ( amapLocation != null && amapLocation.errorCode == 0) {
+        if (amapLocation != null && amapLocation.errorCode == 0) {
             if (amapLocation?.gpsAccuracyStatus == AMapLocation.GPS_ACCURACY_BAD) {
                 if (viewModel?.mapActivity?.onStart!!) {
                     CoroutineScope(uiContext).launch {
@@ -146,14 +165,14 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), HttpInteface.startDrive
                 viewModel?.mapActivity.dismissProgressDialog()
             }
             this.curAmapLocation = amapLocation
-            this.curPosition = Location(amapLocation.latitude, amapLocation.longitude, System.currentTimeMillis().toString(), amapLocation.speed, amapLocation.altitude, amapLocation.bearing)
+            this.curPosition = Location(amapLocation.latitude, amapLocation.longitude, System.currentTimeMillis().toString(), amapLocation.speed, amapLocation.altitude, amapLocation.bearing, amapLocation.aoiName, amapLocation.poiName)
             if (driverStatus.get() == Drivering) {
                 if (mapFr?.mapUtils?.breatheMarker_center != null) {
                     mapFr?.mapUtils?.breatheMarker_center!!.rotateAngle = amapLocation.bearing
                 }
                 if (viewModel.status.locationLat.size == 0) {
-                    viewModel?.status?.locationLat?.add(Location(amapLocation.latitude, amapLocation.longitude, System.currentTimeMillis().toString(), amapLocation.speed, amapLocation.altitude, amapLocation.bearing, amapLocation.aoiName, amapLocation.poiName))
-                    addStartPoint(Location(amapLocation.latitude, amapLocation.longitude, System.currentTimeMillis().toString(), amapLocation.speed, amapLocation.altitude, amapLocation.bearing, amapLocation.aoiName, amapLocation.poiName))
+
+                    addStartPoint(curPosition!!)
                 } else {
                     if (amapLocation.locationType == 1) {
                         if (curHeight < amapLocation.altitude) {
@@ -198,85 +217,180 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), HttpInteface.startDrive
                 }
             }
         }
-}
+    }
 
-var weatherDatas = ObservableArrayList<WeatherEntity>().apply {
-    for (i in 0..24) {
-        if (i < 10) {
-            this.add(WeatherEntity(ObservableField(context.getDrawable(R.drawable.ic_sun)), ObservableField("0$i:00"), ObservableField("14℃")))
-        } else {
-            this.add(WeatherEntity(ObservableField(context.getDrawable(R.drawable.ic_sun)), ObservableField("$i:00"), ObservableField("14℃")))
+    var weatherDatas = ObservableArrayList<WeatherEntity>().apply {
+        for (i in 0..24) {
+            if (i < 10) {
+                this.add(WeatherEntity(ObservableField(context.getDrawable(R.drawable.ic_sun)), ObservableField("0$i:00"), ObservableField("14℃")))
+            } else {
+                this.add(WeatherEntity(ObservableField(context.getDrawable(R.drawable.ic_sun)), ObservableField("$i:00"), ObservableField("14℃")))
+            }
         }
     }
-}
 
-private fun addStartPoint(amapLocation: Location) {
-    mapFr.dismissProgressDialog()
-    mapFr.setDriverStyle()
-    mapFr.mAmap.clear()
-    mapFr?.mapUtils?.createAnimationMarker(true, LatLonPoint(amapLocation.latitude, amapLocation.longitude))
+    private fun addStartPoint(amapLocation: Location) {
+        mapFr.dismissProgressDialog()
+        mapFr.setDriverStyle()
+        mapFr.mAmap.clear()
+        viewModel?.status?.locationLat?.add(amapLocation)
+        mapFr?.mapUtils?.createAnimationMarker(true, LatLonPoint(amapLocation.latitude, amapLocation.longitude))
 //        mapActivity.getMapPointFragment().viewModel?.mapPointController?.startMaker = mapFr?.mapUtils!!.createMaker(amapLocation)
-    driverController?.startMarker = mapFr?.mapUtils!!.createMaker(amapLocation)
-    if (amapLocation?.aoiName != null && !amapLocation?.aoiName.isEmpty()) {
-        viewModel?.status?.startAoiName = amapLocation?.aoiName
-    } else {
-        viewModel?.status?.startAoiName = amapLocation?.poiName
+        driverController?.startMarker = mapFr?.mapUtils!!.createMaker(amapLocation)
+        if (amapLocation?.aoiName != null && !amapLocation?.aoiName.isEmpty()) {
+            viewModel?.status?.startAoiName = amapLocation?.aoiName
+        } else {
+            viewModel?.status?.startAoiName = amapLocation?.poiName
+        }
+
+        viewModel?.status?.driverStartPoint = Location(amapLocation.latitude, amapLocation.longitude, amapLocation.time.toString(), amapLocation.speed, amapLocation.height, amapLocation.bearing)
+
+        UpdateDriverStatus(viewModel?.status!!)
     }
 
-    viewModel?.status?.driverStartPoint = Location(amapLocation.latitude, amapLocation.longitude, amapLocation.time.toString(), amapLocation.speed, amapLocation.height, amapLocation.bearing)
-
-    UpdateDriverStatus(viewModel?.status!!)
-}
-
-private fun initView(viewModel: MapFrViewModel) {
-    //进入方式判断
-    if (viewModel?.status.driverStartPoint != null) {
-        Observable.create(ObservableOnSubscribe<DriverDataStatus> {
-            viewModel?.mapActivity.mAmap.clear()
-            driverController?.startMarker = this.viewModel?.mapActivity.mapUtils?.createMaker(Location(viewModel?.status!!.driverStartPoint!!.latitude, viewModel?.status!!.driverStartPoint!!.longitude, System.currentTimeMillis().toString(), 0F, 0.0, 0F))
+    private fun initView(viewModel: MapFrViewModel) {
+        //进入方式判断
+        if (viewModel?.status.driverStartPoint != null) {
+            Observable.create(ObservableOnSubscribe<DriverDataStatus> {
+                viewModel?.mapActivity.mAmap.clear()
+                driverController?.startMarker = this.viewModel?.mapActivity.mapUtils?.createMaker(Location(viewModel?.status!!.driverStartPoint!!.latitude, viewModel?.status!!.driverStartPoint!!.longitude, System.currentTimeMillis().toString(), 0F, 0.0, 0F))
 //            viewModel?.driverController?.startMarker = mapActivity?.mapUtils?.createAnimationMarker(true, LatLonPoint(viewModel?.status!!.driverStartPoint!!.latitude, viewModel?.status!!.driverStartPoint!!.longitude))
+            })
+        }
+    }
+
+
+    fun onClick(view: View) {
+        when (view.id) {
+            R.id.item_start_navagation -> {
+                //开始骑行
+                if (driverStatus.get() == Drivering) {
+                    driverStatus.set(DriverPause)
+                    viewModel.status.startDriver.set(DriverPause)
+                } else if (driverStatus.get() == DriverCancle || driverStatus.get() == TeamModel) {
+                    if (viewModel.status.locationLat.size == 0) {
+                        if (curPosition != null) {
+                            addStartPoint(curPosition!!)
+                            startDriver(0)
+                        } else {
+                            return
+                        }
+                    }
+                }
+            }
+            R.id.item_long_press_btn -> {
+                //取消骑行
+
+            }
+            R.id.item_continue_drivering -> {
+                //继续骑行
+                driverStatus.set(Drivering)
+                viewModel.status.startDriver.set(Drivering)
+            }
+        }
+    }
+
+    var driverType = 0
+    fun startDriver(type: Int) {
+        this.driverType = type
+        //开始骑行逻辑操作
+        if (!NetworkUtil.isNetworkAvailable(context)) {
+            Toast.makeText(context, getString(R.string.network_notAvailable), Toast.LENGTH_SHORT).show()
+            return
+        }
+        viewModel.mapActivity.showProgressDialog(getString(R.string.start_driver))
+        HttpRequest.instance.startDriver = this
+        HttpRequest.instance.startDriver(HashMap())
+    }
+
+
+    fun dontHaveOneMetre(cotent: String, leftBtnTv: String, rightBtnTv: String, type: Int) {
+        var dia = DialogUtils.createNomalDialog(mapFr.activity!!, cotent, leftBtnTv, rightBtnTv)
+        dia.setOnBtnClickL(OnBtnClickL {
+            dia.dismiss()
+            if (BaseApplication.MinaConnected!!) {
+                var fr = viewModel?.items[1] as TeamItemModel
+                fr?.endTeam(true)
+                if (viewModel?.status.distance > 1000) {
+                    driverController.driverOver()
+                } else {
+                    deleteDriverStatus(PreferenceUtils.getString(context, USERID))
+                    cancleDriver(true)
+                }
+            } else {
+                deleteDriverStatus(PreferenceUtils.getString(context, USERID))
+                cancleDriver(true)
+            }
+            dia.dismiss()
+
+        }, OnBtnClickL {
+            if (BaseApplication?.MinaConnected!!) {
+                var fr = viewModel?.items[1] as TeamItemModel
+                if (type == 1 || type == 4) {
+                    ARouter.getInstance().build(RouterUtils.TeamModule.TEAMER_PASS).withSerializable(RouterUtils.TeamModule.TEAM_INFO, fr?.TeamInfo).navigation()
+                }
+            }
+            dia.dismiss()
         })
+        dia.show()
     }
-}
 
+    var isResultPoint = false
 
-fun onClick(view: View) {
-    when (view.id) {
-        R.id.item_start_navagation -> {
-            //开始骑行
-
-
-        }
-        R.id.item_long_press_btn -> {
-            //取消骑行
-
-
-        }
-        R.id.item_continue_drivering -> {
-            //继续骑行
-
-
+    fun setResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        when (requestCode) {
+            RESULT_POINT -> {
+                if (data!!.extras != null) {
+                    if (data?.extras!!["tip"] != null) {
+                        var tip = data?.extras!!["tip"] as PoiItem
+                        if (tip != null) {
+                            if (resultCode == RESULT_POINT) {
+                                if (tip.latLonPoint?.latitude != null && tip.latLonPoint?.longitude != null) {
+                                    mapFr?.mAmap?.isMyLocationEnabled = false
+                                    isResultPoint = true
+                                    mapFr?.mAmap?.moveCamera(CameraUpdateFactory.changeLatLng(AMapUtil.convertToLatLng(tip.latLonPoint)))
+                                    var opotion = MarkerOptions().title(tip.title).snippet(getString(R.string.go_there)).position(LatLng(tip.latLonPoint.latitude, tip.latLonPoint.longitude))
+                                            .icon(BitmapDescriptorFactory
+                                                    .defaultMarker(BitmapDescriptorFactory.HUE_RED))
+                                    var makder = mapFr?.mAmap?.addMarker(opotion)
+                                    makder?.showInfoWindow()
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
-}
 
-var driverType = 0
-fun startDriver(type: Int) {
-    this.driverType = type
-    //开始骑行逻辑操作
-    if (!NetworkUtil.isNetworkAvailable(context)) {
-        Toast.makeText(context, getString(R.string.network_notAvailable), Toast.LENGTH_SHORT).show()
-        return
+    fun onComponentFinish() {
+        ARouter.getInstance().build(RouterUtils.MapModuleConfig.SEARCH_ACTIVITY).withInt(RouterUtils.MapModuleConfig.SEARCH_MODEL, 0).navigation(mapFr.activity, RESULT_POINT)
     }
-    viewModel.mapActivity.showProgressDialog(getString(R.string.start_driver))
-    HttpRequest.instance.startDriver = this
-    HttpRequest.instance.startDriver(HashMap())
-}
 
+    fun onInfoWindowClick(it: Marker?) {
 
-fun dontHaveOneMetre(string: String, string1: String, string2: String, i: Int) {
+    }
 
-}
+    fun cancleDriver(b: Boolean) {
+        driverStatus.set(DriverCancle)
+        if (b) {
+            mapFr.mAmap.clear()
+        }
+        driverController.cancleDriver()
+        timerDispose?.dispose()
+        timerDispose = null
+        timer = null
+        mapFr.mLocationOption?.isSensorEnable = false
+        mapFr.mlocationClient?.setLocationOption(mapFr.mLocationOption)
+        mapFr.myLocationStyle.showMyLocation(true)
+        mapFr.mAmap.isMyLocationEnabled = true
+        mapFr.mAmap.moveCamera(CameraUpdateFactory.zoomTo(15F))
+        mapFr.myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_LOCATION_ROTATE)
+        mapFr.mAmap.myLocationStyle = mapFr.myLocationStyle
+        driverDistance.set("00:00")
+        RxBus.default?.post("DriverCancle")
+        viewModel?.status.reset()
+    }
 
 
 }

@@ -160,15 +160,16 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
         }
     }
 
+
     override fun onComponentFinish(view: View) {
         if (currentPosition == 0) {
-            mapActivity.getDrverFragment().viewModel?.onComponentFinish(view)
+            (items[0] as DriverItemModel).onComponentFinish()
         } else if (currentPosition == 1) {
-            mapActivity.getTeamFragment().viewModel?.onComponentFinish(view)
+            (items[0] as TeamItemModel).onComponentFinish()
         } else if (currentPosition == 3) {
-            mapActivity.getMapPointFragment().viewModel?.onComponentFinish(view)
+            (items[0] as MapPointItemModel).onComponentFinish()
         } else if (currentPosition == 2) {
-            mapActivity.getRoadBookFragment().viewModel?.onComponentFinish(view)
+            (items[0] as RoadBookItemModel).onComponentFinish()
         }
     }
 
@@ -213,9 +214,10 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
     }
 
     override fun onMarkerClick(p0: Marker?): Boolean {
+        Log.e("result", "onMarkerClick")
         when (currentPosition) {
             3 -> {
-                mapActivity.getRoadBookFragment().viewModel?.markerChange(p0)
+//                mapActivity.getRoadBookFragment().viewModel?.markerChange(p0)
             }
         }
         return false
@@ -231,20 +233,6 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
     var a: Disposable? = null
     fun inject(mapActivity: MapFragment) {
         this.mapActivity = mapActivity
-//        var fr = ARouter.getInstance().build(RouterUtils.MapModuleConfig.TEST_FR).navigation() as TestFragment
-//        var team = ARouter.getInstance().build(RouterUtils.MapModuleConfig.TEAM_FR).navigation() as TeamFragment
-//        var point = ARouter.getInstance().build(RouterUtils.MapModuleConfig.MAP_POINT_FR).navigation() as MapPointFragment
-//        var ro = ARouter.getInstance().build(RouterUtils.MapModuleConfig.ROUTE_BOOK_FR).navigation() as RoadBookFragment
-//        mFragments.add(fr)
-//        mFragments.add(team)
-//        mFragments.add(point)
-//        mFragments.add(ro)
-//        var tans = mapActivity.childFragmentManager.beginTransaction()
-//        tans.add(R.id.fr_main_rootlay, fr)
-//        tans.add(R.id.fr_main_rootlay, team)
-//        tans.add(R.id.fr_main_rootlay, point)
-//        tans.add(R.id.fr_main_rootlay, ro)
-//        tans.commitAllowingStateLoss()
         var pos = ServiceEven()
         pos.type = "HomeDriver"
         RxBus.default?.post(pos)
@@ -256,10 +244,6 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
             this.add(MapPointItemModel().ItemViewModel(this@MapFrViewModel))
         }
         a = RxBus.default?.toObservable(AMapLocation::class.java)?.subscribe {
-            //            fr.loacation(it)
-
-            Log.e("result", "获取到定位信息")
-
             if (listeners != null) {
                 listeners?.onLocation(it)
             }
@@ -341,7 +325,7 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
         }
     }
 
-    fun startNavi(navigationStartPoint: Location, navigationEndPoint: Location, wayPoint: ArrayList<LatLng>, b: Boolean) {
+    fun startNavi(navigationStartPoint: Location, navigationEndPoint: Location, wayPoint: ArrayList<LatLng>, b: Int) {
         if (navigationEndPoint != null && navigationStartPoint != null) {
             status.navigationType = 1
             var list = ArrayList<LatLng>()

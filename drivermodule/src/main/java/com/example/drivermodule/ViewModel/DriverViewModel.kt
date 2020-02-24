@@ -240,7 +240,7 @@ class DriverViewModel : BaseViewModel, DriverComponent.onFiveClickListener, Http
 
     var TeamStatus: SoketTeamStatus? = null
     fun GoTeam() {
-        if (mapActivity.getTeamFragment()?.viewModel?.minaConnectedDispose == null|| mapActivity.getTeamFragment()?.viewModel?.minaConnectedDispose!!.isDisposed) {
+        if (mapActivity.getTeamFragment()?.viewModel?.minaConnectedDispose == null || mapActivity.getTeamFragment()?.viewModel?.minaConnectedDispose!!.isDisposed) {
             mapActivity.getTeamFragment()?.viewModel?.setMina()
         }
         if (TeamStatus == null || TeamStatus?.teamStatus == TeamNomal) {
@@ -315,7 +315,7 @@ class DriverViewModel : BaseViewModel, DriverComponent.onFiveClickListener, Http
             status.navigationStartPoint = status.locationLat[status.locationLat.size - 1]
         }
         mapActivity.mAmap.clear()
-        mapActivity.getMapPointFragment().viewModel?.mapPointController!!.startMaker =  mapActivity.mapUtils?.createMaker(Location(status.navigationStartPoint!!.latitude,status.navigationStartPoint!!.longitude))
+        mapActivity.getMapPointFragment().viewModel?.mapPointController!!.startMaker = mapActivity.mapUtils?.createMaker(Location(status.navigationStartPoint!!.latitude, status.navigationStartPoint!!.longitude))
 //        mapActivity.getMapPointFragment().viewModel?.mapPointController!!.startMaker = mapActivity.mapUtils?.createAnimationMarker(false, LatLonPoint(status.navigationStartPoint!!.latitude, status.navigationStartPoint!!.longitude))
         mapActivity.getMapPointFragment().viewModel?.mapPointController!!.screenMaker = mapActivity.mapUtils?.createScreenMarker()
         //添加可移动marker
@@ -369,7 +369,7 @@ class DriverViewModel : BaseViewModel, DriverComponent.onFiveClickListener, Http
                 }
             } else {
 //                if (mapActivity.resume != null) {
-                    ARouter.getInstance().build(RouterUtils.ActivityPath.HOME).navigation()
+                ARouter.getInstance().build(RouterUtils.ActivityPath.HOME).navigation()
 //                }
 //                SPUtils.getInstance().put("Action", "start")
 //                KeepLiveHelper.getDefault().setAction("start")
@@ -394,7 +394,7 @@ class DriverViewModel : BaseViewModel, DriverComponent.onFiveClickListener, Http
         }
     }
 
-    fun onComponentFinish(view: View) {
+    fun onComponentFinish(view:View) {
         if (System.currentTimeMillis() - CurrentClickTime < 500) {
             return
         } else {
@@ -405,11 +405,7 @@ class DriverViewModel : BaseViewModel, DriverComponent.onFiveClickListener, Http
 
 
     fun ComponentFinish() {
-        if (status.curModel == 0) {
-            ARouter.getInstance().build(RouterUtils.MapModuleConfig.SEARCH_ACTIVITY).withInt(RouterUtils.MapModuleConfig.SEARCH_MODEL, status.curModel).navigation(mapActivity.activity, RESULT_POINT)
-        } else if (status.curModel == 1) {
-
-        }
+        ARouter.getInstance().build(RouterUtils.MapModuleConfig.SEARCH_ACTIVITY).withInt(RouterUtils.MapModuleConfig.SEARCH_MODEL,0).navigation(mapActivity.activity, RESULT_POINT)
     }
 
 
@@ -693,7 +689,7 @@ class DriverViewModel : BaseViewModel, DriverComponent.onFiveClickListener, Http
     }
 
     fun cancleDriver(flag: Boolean) {
-        status.startDriver.set(DriverCancle)
+
         if (flag) {
             mapActivity.mAmap.clear()
         }
@@ -710,9 +706,10 @@ class DriverViewModel : BaseViewModel, DriverComponent.onFiveClickListener, Http
         mapActivity.myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_LOCATION_ROTATE)
         mapActivity.mAmap.myLocationStyle = mapActivity.myLocationStyle
         linearBg.set(Color.TRANSPARENT)
-        status.reset()
-        driverDistance.set("00:00")
         RxBus.default?.post("DriverCancle")
+        driverDistance.set("00:00")
+        status.reset()
+        status.startDriver.set(DriverCancle)
     }
 
     lateinit var fr: DriverFragment
