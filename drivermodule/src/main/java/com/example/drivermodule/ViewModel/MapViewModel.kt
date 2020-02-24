@@ -253,6 +253,8 @@ class MapViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarkerD
         }
         bt.show(mFragments!![position])
         bt.commitAllowingStateLoss()
+
+
     }
 
     fun onClick(view: View) {
