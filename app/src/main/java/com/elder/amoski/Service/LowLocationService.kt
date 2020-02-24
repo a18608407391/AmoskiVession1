@@ -42,7 +42,6 @@ class LowLocationService : IntentService, AMapLocationListener {
 //            if (amapLocation.locationType == 1) {
             RxBus.default?.post(amapLocation)
             builder?.setContentText("当前位置")
-            Log.e("result",amapLocation.toStr())
             if (amapLocation.accuracy < 30 && action == "driver") {
                 var aoi = ""
                 var poi = ""

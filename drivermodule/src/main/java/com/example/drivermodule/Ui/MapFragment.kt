@@ -1,5 +1,6 @@
 package com.example.drivermodule.Ui
 
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
@@ -17,14 +18,18 @@ import com.amap.api.maps.model.BitmapDescriptorFactory
 import com.amap.api.maps.model.LatLng
 import com.amap.api.maps.model.Marker
 import com.amap.api.maps.model.MyLocationStyle
+import com.elder.zcommonmodule.*
 import com.elder.zcommonmodule.DataBases.queryDriverStatus
-import com.elder.zcommonmodule.Driver_Navigation
-import com.elder.zcommonmodule.Drivering
 import com.elder.zcommonmodule.Entity.DriverDataStatus
 import com.elder.zcommonmodule.Entity.HotData
 import com.elder.zcommonmodule.Utils.Utils
 import com.example.drivermodule.BR
+import com.example.drivermodule.Controller.DriverItemModel
+import com.example.drivermodule.Controller.MapPointItemModel
+import com.example.drivermodule.Controller.RoadBookItemModel
+import com.example.drivermodule.Controller.TeamItemModel
 import com.example.drivermodule.R
+import com.example.drivermodule.Utils.MapControllerUtils
 import com.example.drivermodule.Utils.MapUtils
 import com.example.drivermodule.ViewModel.MapFrViewModel
 import com.example.drivermodule.databinding.FragmentMapBinding
@@ -83,29 +88,70 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
     }
 
     override fun getInfoContents(maker: Marker?): View {
-        var s = viewModel?.mFragments!![1] as TeamFragment
-        var flag = s.viewModel?.markerList?.containsValue(maker)
-        if (flag!!) {
-            var view = layoutInflater?.inflate(R.layout.team_popuwindow_custom, null, false)
-            s.custionView(maker, view)
-            return view!!
-        } else {
+        if (viewModel?.currentPosition == 0 || viewModel?.currentPosition == 3) {
             if (maker?.title == null || maker?.title.isEmpty() || maker?.title == "null") {
                 return null!!
             } else {
-                if (getRoadBookFragment().viewModel?.makerList!!.contains(maker)) {
-                    var view = layoutInflater?.inflate(R.layout.roadbook_popuwindow_custom1, null, false)
-                    getRoadBookFragment().viewModel?.customView(maker, view)
-                    return view!!
-                } else {
-                    var view = layoutInflater?.inflate(R.layout.popuwindow_custom, null, false)
-                    custionView(maker, view)
-                    return view!!
-                }
+                var view = layoutInflater?.inflate(R.layout.popuwindow_custom, null, false)
+                custionView(maker, view)
+                return view!!
+            }
+        } else if (viewModel?.currentPosition == 1) {
+            var model = viewModel?.items!![1] as TeamItemModel
+            var flag = model.markerList?.containsValue(maker)
+            if (flag) {
+                var view = layoutInflater?.inflate(R.layout.team_popuwindow_custom, null, false)
+                model.custionView(maker, view)
+                return view!!
+            } else {
+                return null!!
+            }
+
+        } else if (viewModel?.currentPosition == 2) {
+            if (maker?.title == null || maker?.title.isEmpty() || maker?.title == "null") {
+                return null!!
+            } else {
+                var model = viewModel?.items!![2] as RoadBookItemModel
+                var view = layoutInflater?.inflate(R.layout.roadbook_popuwindow_custom1, null, false)
+                model.customView(maker, view)
+                return view!!
             }
         }
+        return null!!
     }
 
+    override fun getInfoWindow(maker: Marker?): View {
+        if (viewModel?.currentPosition == 0 || viewModel?.currentPosition == 3) {
+            if (maker?.title == null || maker?.title.isEmpty() || maker?.title == "null") {
+                return null!!
+            } else {
+                var view = layoutInflater?.inflate(R.layout.popuwindow_custom, null, false)
+                custionView(maker, view)
+                return view!!
+            }
+        } else if (viewModel?.currentPosition == 1) {
+            var model = viewModel?.items!![1] as TeamItemModel
+            var flag = model.markerList?.containsValue(maker)
+            if (flag) {
+                var view = layoutInflater?.inflate(R.layout.team_popuwindow_custom, null, false)
+                model.custionView(maker, view)
+                return view!!
+            } else {
+                return null!!
+            }
+
+        } else if (viewModel?.currentPosition == 2) {
+            if (maker?.title == null || maker?.title.isEmpty() || maker?.title == "null") {
+                return null!!
+            } else {
+                var model = viewModel?.items!![2] as RoadBookItemModel
+                var view = layoutInflater?.inflate(R.layout.roadbook_popuwindow_custom1, null, false)
+                model.customView(maker, view)
+                return view!!
+            }
+        }
+        return null!!
+    }
 
     override fun onUserVisible() {
         super.onUserVisible()
@@ -116,29 +162,6 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
         super.onUserInvisible()
     }
 
-    override fun getInfoWindow(maker: Marker?): View {
-        var s = viewModel?.mFragments!![1] as TeamFragment
-        var flag = s.viewModel?.markerList?.containsValue(maker)
-        if (flag!!) {
-            var view = layoutInflater?.inflate(R.layout.team_popuwindow_custom, null, false)
-            s.custionView(maker, view)
-            return view!!
-        } else {
-            if (maker?.title == null || maker?.title.isEmpty() || maker?.title == "null") {
-                return null!!
-            } else {
-                if (getRoadBookFragment().viewModel?.makerList!!.contains(maker)) {
-                    var view = layoutInflater?.inflate(R.layout.roadbook_popuwindow_custom1, null, false)
-                    getRoadBookFragment().viewModel?.customView(maker, view)
-                    return view!!
-                } else {
-                    var view = layoutInflater?.inflate(R.layout.popuwindow_custom, null, false)
-                    custionView(maker, view)
-                    return view!!
-                }
-            }
-        }
-    }
 
     private fun custionView(maker: Marker?, view: View?) {
         var title = maker?.title.toString()
@@ -149,8 +172,10 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
     }
 
     override fun onMapClick(p0: LatLng?) {
-        var fr = viewModel?.mFragments!![1] as TeamFragment
-        fr?.MapClick(p0)
+
+        Log.e("result", "onMapClick")
+//        var fr = viewModel?.mFragments!![1] as TeamFragment
+//        fr?.MapClick(p0)
     }
 
     fun setDriverStyle() {
@@ -175,28 +200,42 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
 
 
     override fun onInfoWindowClick(it: Marker?) {
-        if (it!!.title == null || it!!.title == "null" || getTeamFragment().viewModel?.markerList?.containsValue(it)!!) {
-
-        } else {
-            if (viewModel?.currentPosition == 0) {
-                if (it.position != null && it.position.longitude != null && it.position.latitude != null && !it.title.isEmpty() && !it.title.contains("台湾省")) {
-                    getDrverFragment().onInfoWindowClick(it)
-                } else {
-                    Toast.makeText(org.cs.tec.library.Base.Utils.context, getString(R.string.cannot_go_to_there), Toast.LENGTH_SHORT).show()
-                }
-            } else if (viewModel?.currentPosition == 1) {
-
-
-            } else if (viewModel?.currentPosition == 2) {
-                if (it.position != null && it.position.longitude != null && it.position.latitude != null && !it.title.isEmpty() && !it.title.contains("台湾省")) {
-                    getMapPointFragment().onInfoWindowClick(it)
-                } else {
-                    Toast.makeText(context, getString(R.string.cannot_go_to_there), Toast.LENGTH_SHORT).show()
-                }
-            } else if (viewModel?.currentPosition == 3) {
-
-            }
+        Log.e("result", "onInfoWindowClick")
+        if (viewModel?.currentPosition == 0) {
+            var model = viewModel?.items!![0] as DriverItemModel
+            model.onInfoWindowClick(it)
+        } else if (viewModel?.currentPosition == 1) {
+            var model = viewModel?.items!![0] as TeamItemModel
+            model.onInfoWindowClick(it)
+        } else if (viewModel?.currentPosition == 2) {
+            var model = viewModel?.items!![0] as RoadBookItemModel
+            model.onInfoWindowClick(it)
+        } else if (viewModel?.currentPosition == 3) {
+            var model = viewModel?.items!![0] as MapPointItemModel
+            model.onInfoWindowClick(it)
         }
+//        if (it!!.title == null || it!!.title == "null" || getTeamFragment().viewModel?.markerList?.containsValue(it)!!) {
+//
+//        } else {
+//            if (viewModel?.currentPosition == 0) {
+//                if (it.position != null && it.position.longitude != null && it.position.latitude != null && !it.title.isEmpty() && !it.title.contains("台湾省")) {
+//                    getDrverFragment().onInfoWindowClick(it)
+//                } else {
+//                    Toast.makeText(org.cs.tec.library.Base.Utils.context, getString(R.string.cannot_go_to_there), Toast.LENGTH_SHORT).show()
+//                }
+//            } else if (viewModel?.currentPosition == 1) {
+//
+//
+//            } else if (viewModel?.currentPosition == 2) {
+//                if (it.position != null && it.position.longitude != null && it.position.latitude != null && !it.title.isEmpty() && !it.title.contains("台湾省")) {
+//                    getMapPointFragment().onInfoWindowClick(it)
+//                } else {
+//                    Toast.makeText(context, getString(R.string.cannot_go_to_there), Toast.LENGTH_SHORT).show()
+//                }
+//            } else if (viewModel?.currentPosition == 3) {
+//
+//            }
+//        }
     }
 
 
@@ -229,7 +268,7 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
         }
     }
 
-    var mapUtils: MapUtils? = null
+    var mapUtils: MapControllerUtils? = null
     lateinit var mAmap: AMap
     override fun initMap(savedInstanceState: Bundle?) {
         super.initMap(savedInstanceState)
@@ -248,7 +287,7 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
         mAmap.setOnMapTouchListener(this)
         mAmap.setOnInfoWindowClickListener(this)
         //TODO
-//        mapUtils = MapUtils(this)
+        mapUtils = MapControllerUtils(this)
 
 //        initResume()
     }
@@ -352,7 +391,7 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
                     viewModel!!.status.passPointDatas.forEach {
                         wayPoint.add(LatLng(it.latitude, it.longitude))
                     }
-                    viewModel?.startNavi(viewModel?.status?.navigationStartPoint!!, viewModel?.status?.navigationEndPoint!!, wayPoint, false)
+                    viewModel?.startNavi(viewModel?.status?.navigationStartPoint!!, viewModel?.status?.navigationEndPoint!!, wayPoint, 0)
                 } else {
                     viewModel?.status?.passPointDatas?.clear()
                 }
@@ -370,7 +409,7 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
                     viewModel!!.status.passPointDatas.forEach {
                         wayPoint.add(LatLng(it.latitude, it.longitude))
                     }
-                    viewModel?.startNavi(viewModel?.status?.navigationStartPoint!!, viewModel?.status?.navigationEndPoint!!, wayPoint, false)
+                    viewModel?.startNavi(viewModel?.status?.navigationStartPoint!!, viewModel?.status?.navigationEndPoint!!, wayPoint, 0)
                 } else {
                     viewModel?.status?.passPointDatas?.clear()
                 }
@@ -396,7 +435,7 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
                     viewModel!!.status.passPointDatas.forEach {
                         wayPoint.add(LatLng(it.latitude, it.longitude))
                     }
-                    viewModel?.startNavi(viewModel?.status?.navigationStartPoint!!, viewModel?.status?.navigationEndPoint!!, wayPoint, false)
+                    viewModel?.startNavi(viewModel?.status?.navigationStartPoint!!, viewModel?.status?.navigationEndPoint!!, wayPoint, 0)
                 } else {
                     viewModel?.status?.passPointDatas?.clear()
                 }
@@ -416,7 +455,7 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
                     viewModel!!.status.passPointDatas.forEach {
                         wayPoint.add(LatLng(it.latitude, it.longitude))
                     }
-                    viewModel?.startNavi(viewModel?.status?.navigationStartPoint!!, viewModel?.status?.navigationEndPoint!!, wayPoint, false)
+                    viewModel?.startNavi(viewModel?.status?.navigationStartPoint!!, viewModel?.status?.navigationEndPoint!!, wayPoint, 0)
                 } else {
                     viewModel?.status?.passPointDatas?.clear()
                 }
@@ -458,13 +497,11 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
         super.onPause()
         fr_map_view.onPause()
         onStart = false
-        Log.e("MapFragment", "onPause")
     }
 
     override fun onResume() {
         super.onResume()
         fr_map_view.onResume()
-        Log.e("MapFragment", "onResult")
         onStart = true
     }
 
@@ -494,5 +531,34 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
 //        myLocationStyle.radiusFillColor(Color.TRANSPARENT)
         // 将自定义的 myLocationStyle 对象添加到地图上
         mAmap.myLocationStyle = myLocationStyle
+    }
+
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        Log.e("result", "requestCode" + requestCode + "resultCode" + resultCode)
+        if (resultCode == REQUEST_CREATE_JOIN) {
+            viewModel?.changerFragment(1)
+            (viewModel?.items!![1] as TeamItemModel).doCreate(data)
+        } else {
+            if (requestCode == RESULT_POINT) {
+                (viewModel?.items!![0] as DriverItemModel).setResult(requestCode, resultCode, data)
+            } else {
+                if (requestCode == REQUEST_LOAD_ROADBOOK) {
+                    if (data != null) {
+                        viewModel?.changerFragment(2)
+                        viewModel?.items!![2].doLoadDatas(data!!)
+                    } else {
+                        Log.e("result", "data为Null")
+                        if (viewModel?.currentPosition != 2) {
+                            viewModel?.selectTab(viewModel?.currentPosition!!)
+                        }
+                    }
+                } else {
+                    (viewModel?.items!![3] as MapPointItemModel).SearchResult(requestCode, resultCode, data)
+                }
+            }
+        }
+        super.onActivityResult(requestCode, resultCode, data)
+
     }
 }

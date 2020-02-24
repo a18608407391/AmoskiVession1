@@ -115,41 +115,48 @@ class HomeActivity : BaseActivity<ActivityHomeBinding, HomeViewModel>() {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        when (requestCode) {
-            GET_USERINFO -> {
-                if (data != null) {
-                    var info = data?.extras!!["userInfo"] as UserInfo
-                    var fr = homeFr?.viewModel?.myself as UserInfoFragment
-                    fr.callback(info)
+        if(homeFr?.viewModel?.curPosition==2){
+            homeFr?.viewModel?.mapFr?.onActivityResult(requestCode,resultCode, data)
+
+        }else{
+            when (requestCode) {
+                GET_USERINFO -> {
+                    if (data != null) {
+                        var info = data?.extras!!["userInfo"] as UserInfo
+                        var fr = homeFr?.viewModel?.myself as UserInfoFragment
+                        fr.callback(info)
 //                    var even = ActivityResultEven(requestCode, )
 //                    RxBus.default?.post(even)
+                    }
                 }
-            }
-            999 -> {
-                if (resultCode == 0) {
-                    Toast.makeText(context, "后台活动开启未启动", Toast.LENGTH_SHORT).show()
-                } else if (resultCode == Activity.RESULT_OK) {
-                    PreferenceUtils.putBoolean(context, "OPEN_GOD_MODEL", true)
+                999 -> {
+                    if (resultCode == 0) {
+                        Toast.makeText(context, "后台活动开启未启动", Toast.LENGTH_SHORT).show()
+                    } else if (resultCode == Activity.RESULT_OK) {
+                        PreferenceUtils.putBoolean(context, "OPEN_GOD_MODEL", true)
+                    }
                 }
-            }
-            REQUEST_LOAD_ROADBOOK -> {
-                if (data != null) {
-                    var date = data.getSerializableExtra("hotdata") as HotData
-                    RxBus.default?.post(date)
-                    ARouter.getInstance().build(RouterUtils.MapModuleConfig.MAP_ACTIVITY).addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT).withString(RouterUtils.MapModuleConfig.RESUME_MAP_ACTIVITY, "myroad").withSerializable(RouterUtils.MapModuleConfig.RESUME_MAP_ACTIVITY_ROAD, date).navigation()
-                    finish()
+                REQUEST_LOAD_ROADBOOK -> {
+                    if (data != null) {
+                        var date = data.getSerializableExtra("hotdata") as HotData
+                        RxBus.default?.post(date)
+                        ARouter.getInstance().build(RouterUtils.MapModuleConfig.MAP_ACTIVITY).addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT).withString(RouterUtils.MapModuleConfig.RESUME_MAP_ACTIVITY, "myroad").withSerializable(RouterUtils.MapModuleConfig.RESUME_MAP_ACTIVITY_ROAD, date).navigation()
+                        finish()
+                    }
                 }
-            }
-            SOCIAL_DETAIL_RETURN -> {
-                if (data != null) {
-                    homeFr?.viewModel?.social!!.initResult(data)
+                SOCIAL_DETAIL_RETURN -> {
+                    if (data != null) {
+                        homeFr?.viewModel?.social!!.initResult(data)
+                    }
                 }
-            }
-            PRIVATE_DATA_RETURN -> {
-                var fr = homeFr?.viewModel?.myself as UserInfoFragment
-                fr.getUserInfo(false)
+                PRIVATE_DATA_RETURN -> {
+                    var fr = homeFr?.viewModel?.myself as UserInfoFragment
+                    fr.getUserInfo(false)
+                }
             }
         }
+
+
         super.onActivityResult(requestCode, resultCode, data)
     }
 

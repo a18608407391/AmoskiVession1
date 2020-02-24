@@ -1,5 +1,6 @@
 package com.zk.library.Base
 
+import android.content.Intent
 import android.support.annotation.NonNull
 
 
@@ -16,5 +17,9 @@ open class ItemViewModel<VM : BaseViewModel>() {
     }
 
   open  fun initDatas(t:Int) {
+    }
+
+    fun doLoadDatas(data: Intent) {
+
     }
 }
