@@ -280,6 +280,57 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), HttpInteface.startDrive
             }
             R.id.item_long_press_btn -> {
                 //取消骑行
+                if (BaseApplication?.MinaConnected!!) {
+                    if (viewModel?.status.startDriver.get() != DriverCancle) {
+                        var model = viewModel?.items[1] as TeamItemModel
+                        if (viewModel?.status.distance < 1000) {
+                            //小于一公里
+                            //是否是队长  //成员人数
+                            if (model?.user?.data?.memberId == model?.teamer.toString()) {
+                                //是队长
+                                if (model?.TeamInfo?.redisData?.dtoList?.size == 1) {
+                                    //只有自己一人
+                                    dontHaveOneMetre(org.cs.tec.library.Base.Utils.getString(R.string.TeamnotEnoughOneKm), org.cs.tec.library.Base.Utils.getString(R.string.release_team), org.cs.tec.library.Base.Utils.getString(R.string.continue_driving), 0)
+                                } else {
+                                    //多人
+                                    dontHaveOneMetre(org.cs.tec.library.Base.Utils.getString(R.string.TeamernotEnoughOneKmAndOther), org.cs.tec.library.Base.Utils.getString(R.string.release_team), org.cs.tec.library.Base.Utils.getString(R.string.pass_timer), 1)
+                                }
+                            } else {
+                                //不是队长
+                                //直接退出队伍
+                                dontHaveOneMetre(org.cs.tec.library.Base.Utils.getString(R.string.TeamnotEnoughOneKmBymember), org.cs.tec.library.Base.Utils.getString(R.string.leave_team), org.cs.tec.library.Base.Utils.getString(R.string.continue_driving), 2)
+                            }
+                        } else {
+                            //超过一公里
+                            if (model?.user?.data?.memberId == model?.teamer.toString()) {
+                                //队长
+                                if (model?.TeamInfo?.redisData?.dtoList?.size == 1) {
+                                    //只有自己一人
+                                    dontHaveOneMetre(getString(R.string.EnoughOneKmByTeamerAndOne),getString(R.string.leave_team), getString(R.string.continue_driving), 3)
+                                } else {
+                                    //多人
+                                    dontHaveOneMetre(getString(R.string.EnoughOneKmByTeamerAndPass), getString(R.string.release_team),getString(R.string.pass_timer), 4)
+                                }
+                            } else {
+                                //不是队长
+                                dontHaveOneMetre(getString(R.string.EnoughOneKmByTeam), getString(R.string.leave_team),getString(R.string.continue_driving), 5)
+                            }
+                        }
+                    }
+                } else {
+                    if (viewModel?.status.curModel == 0) {
+                        if (viewModel?.status.startDriver.get() != DriverCancle) {
+                            //取消骑行
+//                        mapActivity.queryTrack()
+                            //结束骑行
+                            if (viewModel?.status.distance < 1000) {
+                                dontHaveOneMetre(getString(R.string.notEnoughOneKm), getString(R.string.cancle_riding), getString(R.string.continue_driving), 0)
+                            } else {
+                                driverController.driverOver()
+                            }
+                        }
+                    }
+                }
 
             }
             R.id.item_continue_drivering -> {

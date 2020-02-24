@@ -251,6 +251,7 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
         RxSubscriptions.add(a)
         component.setCallBack(this)
         component.setOnFiveClickListener(this)
+        component.type.set(1)
         initTab()
 //        changerFragment(0)
     }
