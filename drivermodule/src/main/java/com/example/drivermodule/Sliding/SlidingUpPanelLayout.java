@@ -170,6 +170,7 @@ public class SlidingUpPanelLayout extends ViewGroup {
     public enum PanelState {
         EXPANDED,
         COLLAPSED,
+        HALF,
         ANCHORED,
         HIDDEN,
         DRAGGING
@@ -196,7 +197,7 @@ public class SlidingUpPanelLayout extends ViewGroup {
     /**
      * An anchor point where the panel can stop during sliding
      */
-    private float mAnchorPoint = 50.f;
+    private float mAnchorPoint = 0.5F;
 
     /**
      * A panel view is locked into internal scrolling or another condition that
@@ -545,11 +546,15 @@ public class SlidingUpPanelLayout extends ViewGroup {
                 @Override
                 public void onClick(View v) {
                     if (!isEnabled() || !isTouchEnabled()) return;
-                    if (mSlideState != PanelState.EXPANDED && mSlideState != PanelState.ANCHORED) {
-                        if (mAnchorPoint < 1.0f) {
+                    if (mSlideState != PanelState.EXPANDED && mSlideState != PanelState.ANCHORED && mSlideState != PanelState.HALF) {
+                        if (mAnchorPoint < 1.0f && mAnchorPoint != 0.5F) {
                             setPanelState(PanelState.ANCHORED);
                         } else {
-                            setPanelState(PanelState.EXPANDED);
+                            if (mAnchorPoint == 0.5F) {
+                                setPanelState(PanelState.HALF);
+                            } else {
+                                setPanelState(PanelState.EXPANDED);
+                            }
                         }
                     } else {
                         setPanelState(PanelState.COLLAPSED);
@@ -824,6 +829,9 @@ public class SlidingUpPanelLayout extends ViewGroup {
             switch (mSlideState) {
                 case EXPANDED:
                     mSlideOffset = 1.0f;
+                    break;
+                case HALF:
+                    mSlideOffset = 0.5f;
                     break;
                 case ANCHORED:
                     mSlideOffset = mAnchorPoint;
@@ -1102,7 +1110,7 @@ public class SlidingUpPanelLayout extends ViewGroup {
     public void setPanelState(PanelState state) {
 
         // Abort any running animation, to allow state change
-        if(mDragHelper.getViewDragState() == ViewDragHelper.STATE_SETTLING){
+        if (mDragHelper.getViewDragState() == ViewDragHelper.STATE_SETTLING) {
             Log.d(TAG, "View is settling. Aborting animation.");
             mDragHelper.abort();
         }
@@ -1131,6 +1139,9 @@ public class SlidingUpPanelLayout extends ViewGroup {
                     break;
                 case EXPANDED:
                     smoothSlideTo(1.0f, 0);
+                    break;
+                case HALF:
+                    smoothSlideTo(0.5f, 0);
                     break;
                 case HIDDEN:
                     int newTop = computePanelTopPosition(0.0f) + (mIsSlidingUp ? +mPanelHeight : -mPanelHeight);
@@ -1370,6 +1381,9 @@ public class SlidingUpPanelLayout extends ViewGroup {
                 if (mSlideOffset == 1) {
                     updateObscuredViewVisibility();
                     setPanelStateInternal(PanelState.EXPANDED);
+                } else if (mSlideOffset == 0.5) {
+                    updateObscuredViewVisibility();
+                    setPanelStateInternal(PanelState.HALF);
                 } else if (mSlideOffset == 0) {
                     setPanelStateInternal(PanelState.COLLAPSED);
                 } else if (mSlideOffset < 0) {
