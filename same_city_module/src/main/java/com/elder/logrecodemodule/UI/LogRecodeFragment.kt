@@ -120,6 +120,9 @@ class LogRecodeFragment : BaseFragment<FragmentLogrecodeBinding, LogRecodeViewMo
     }
 
 
+
+
+
     var lastColor = false
 
     var curOffset = 0
