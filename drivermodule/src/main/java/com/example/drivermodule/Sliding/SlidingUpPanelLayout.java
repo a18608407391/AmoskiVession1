@@ -194,6 +194,8 @@ public class SlidingUpPanelLayout extends ViewGroup {
      */
     private int mSlideRange;
 
+
+
     /**
      * An anchor point where the panel can stop during sliding
      */
