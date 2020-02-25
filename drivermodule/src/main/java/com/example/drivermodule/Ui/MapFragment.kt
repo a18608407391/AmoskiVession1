@@ -18,6 +18,7 @@ import com.amap.api.maps.model.BitmapDescriptorFactory
 import com.amap.api.maps.model.LatLng
 import com.amap.api.maps.model.Marker
 import com.amap.api.maps.model.MyLocationStyle
+import com.amap.api.navi.AMapNavi
 import com.elder.zcommonmodule.*
 import com.elder.zcommonmodule.DataBases.queryDriverStatus
 import com.elder.zcommonmodule.Entity.DriverDataStatus
@@ -243,6 +244,8 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
         fr_map_view.onCreate(savedInstanceState)
         Utils.setStatusTextColor(true, activity)
         mAmap = fr_map_view.map
+
+
         setUpMap()
         mAmap.moveCamera(CameraUpdateFactory.zoomTo(15F))
         mAmap.uiSettings.isZoomControlsEnabled = false

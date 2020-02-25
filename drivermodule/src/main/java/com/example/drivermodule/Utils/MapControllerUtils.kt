@@ -3,6 +3,7 @@ package com.example.drivermodule.Utils
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Environment
+import android.util.Log
 import android.view.animation.LinearInterpolator
 import android.widget.Toast
 import com.alibaba.android.arouter.launcher.ARouter
@@ -13,6 +14,9 @@ import com.amap.api.maps.model.animation.Animation
 import com.amap.api.maps.model.animation.AnimationSet
 import com.amap.api.maps.model.animation.ScaleAnimation
 import com.amap.api.navi.AMapNavi
+import com.amap.api.navi.AMapNaviListener
+import com.amap.api.navi.model.AMapCalcRouteResult
+import com.amap.api.navi.model.NaviLatLng
 import com.amap.api.services.core.LatLonPoint
 import com.amap.api.services.geocoder.GeocodeResult
 import com.amap.api.services.geocoder.GeocodeSearch
@@ -36,8 +40,10 @@ import com.elder.zcommonmodule.Utils.DialogUtils
 import com.elder.zcommonmodule.Utils.FileUtils
 import com.example.drivermodule.AMapUtil
 import com.example.drivermodule.Activity.MapActivity
+import com.example.drivermodule.CalculateRouteListener
 import com.example.drivermodule.Component.DriverItemController
 import com.example.drivermodule.Controller.DriverItemModel
+import com.example.drivermodule.CustomNaviCallback
 import com.example.drivermodule.Entity.BitMapWithPath
 import com.example.drivermodule.R
 import com.example.drivermodule.Ui.DriverFragment
@@ -68,13 +74,14 @@ import org.cs.tec.library.Utils.ToastUtils
 import org.cs.tec.library.WX_APP_ID
 import java.io.File
 import java.io.FileOutputStream
+import java.lang.Exception
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList
 
-class MapControllerUtils : GeocodeSearch.OnGeocodeSearchListener, DistanceSearch.OnDistanceSearchListener, TraceListener, AMap.OnMapScreenShotListener, AMap.OnCameraChangeListener {
+class MapControllerUtils : GeocodeSearch.OnGeocodeSearchListener, DistanceSearch.OnDistanceSearchListener, TraceListener, AMap.OnMapScreenShotListener, AMap.OnCameraChangeListener, CustomNaviCallback {
 
     var CurState = 0
 
@@ -285,6 +292,7 @@ class MapControllerUtils : GeocodeSearch.OnGeocodeSearchListener, DistanceSearch
     var disQuery: DistanceSearch.DistanceQuery
     var mTraceClient: LBSTraceClient
     var activity: MapFragment
+    var navi: AMapNavi
 
     constructor(activty: MapFragment) {
         this.activity = activty
@@ -296,6 +304,7 @@ class MapControllerUtils : GeocodeSearch.OnGeocodeSearchListener, DistanceSearch
         disQuery = DistanceSearch.DistanceQuery()
         mTraceClient = LBSTraceClient(context)
         fr = activty.viewModel?.items!![0] as DriverItemModel
+        navi = AMapNavi.getInstance(this.activity.activity)
     }
 
 
@@ -375,18 +384,39 @@ class MapControllerUtils : GeocodeSearch.OnGeocodeSearchListener, DistanceSearch
     }
 
     fun setDriverRoute(startPoint: LatLonPoint, endPoint: LatLonPoint, passPointDatas: ArrayList<Location>) {
-        AMapNavi.getInstance(activity._mActivity)
+
+        navi.addAMapNaviListener(this)
         CoroutineScope(uiContext).launch {
             activity._mActivity?.showProgressDialog("正在规划路径中......")
         }
-        var lat = ArrayList<LatLonPoint>()
+        Log.e("result", "开始导航路径规划")
+        var sList: MutableList<NaviLatLng> = ArrayList()
+        var eList: MutableList<NaviLatLng> = ArrayList()
+        var mStartLatlng = converNaviLatLngPoint(startPoint)
+        var mEndLatlng = converNaviLatLngPoint(endPoint)
+        sList.add(mStartLatlng!!)
+        eList.add(mEndLatlng!!)
+        var wayPoint = ArrayList<NaviLatLng>()
         passPointDatas.forEach {
-            lat.add(LatLonPoint(it.latitude, it.longitude))
+            wayPoint.add(NaviLatLng(it.latitude, it.longitude))
         }
-        var fromAndTo = RouteSearch.FromAndTo(startPoint, endPoint)
-        var query = RouteSearch.DriveRouteQuery(fromAndTo, DRIVING_MULTI_STRATEGY_FASTEST_SHORTEST_AVOID_CONGESTION,
-                lat, null, "")// 第一个参数表示路径规划的起点和终点，第二个参数表示驾车模式，第三个参数表示途经点，第四个参数表示避让区域，第五个参数表示避让道路
-        mRoutePath.calculateDriveRouteAsyn(query)// 异步路径规划驾车模式查询
+        var strategy = DRIVING_MULTI_STRATEGY_FASTEST_SHORTEST_AVOID_CONGESTION
+        try {
+            strategy = navi.strategyConvert(true, false, false, false, false)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        navi.calculateDriveRoute(sList, eList, wayPoint, strategy)
+    }
+
+
+    var caculateRouteListener: CalculateRouteListener? = null
+
+    override fun onCalculateRouteSuccess(p0: AMapCalcRouteResult?) {
+        super.onCalculateRouteSuccess(p0)
+        if (caculateRouteListener != null) {
+            caculateRouteListener?.CalculateCallBack(p0)
+        }
     }
 
 }
