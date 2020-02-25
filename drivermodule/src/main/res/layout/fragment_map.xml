@@ -14,134 +14,130 @@
     </data>
 
 
-    <com.example.drivermodule.Sliding.SlidingUpPanelLayout
-        android:id="@+id/panel"
+    <!--<com.example.drivermodule.Sliding.SlidingUpPanelLayout-->
+    <!--android:id="@+id/panel"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent"-->
+    <!--android:gravity="bottom"-->
+    <!--sothree:umanoDragView="@+id/driver_slideView"-->
+    <!--sothree:umanoPanelHeight="@dimen/d_68"-->
+    <!--sothree:umanoScrollableView="@+id/scrollView"-->
+    <!--sothree:umanoShadowHeight="4dp">-->
+
+    <LinearLayout
+        android:id="@+id/main_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="bottom"
-        sothree:umanoDragView="@+id/slideView"
-        sothree:umanoPanelHeight="@dimen/d_68"
+        android:layout_height="wrap_content"
         android:background="@color/white"
-        sothree:umanoScrollableView="@+id/scrollView"
-        sothree:umanoShadowHeight="4dp">
+        android:orientation="vertical">
 
-        <LinearLayout
-            android:id="@+id/main_view"
+        <include
+            layout="@layout/base_tab_driver_layout"
+            app:data="@{map_fr_Model.component}"></include>
+
+
+        <RelativeLayout
+            android:id="@+id/contentMap"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/white"
-            android:orientation="vertical">
+            android:layout_height="match_parent"
+            android:keepScreenOn="true">
 
-            <include
-                layout="@layout/base_tab_driver_layout"
-                app:data="@{map_fr_Model.component}"></include>
-
-
-            <RelativeLayout
-                android:id="@+id/contentMap"
+            <com.amap.api.maps.MapView
+                android:id="@+id/fr_map_view"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:keepScreenOn="true">
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"></com.amap.api.maps.MapView>
 
-                <com.amap.api.maps.MapView
-                    android:id="@+id/fr_map_view"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_alignParentStart="true"
-                    android:layout_alignParentTop="true"></com.amap.api.maps.MapView>
-
-                <com.zk.library.Weidge.NoScrollViewPager
-                    android:id="@+id/fr_main_rootlay"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:clickable="true"
-                    app:adapter="@{map_fr_Model.adapter}"
-                    app:itemBinding="@{map_fr_Model.itemBinding}"
-                    app:items="@{map_fr_Model.items}">
-
-                    <include
-                        layout="@layout/right_five_btn_layout"
-                        android:visibility="@{map_fr_Model.component.type == 1 ? View.VISIBLE : View.GONE}"
-                        app:data="@{map_fr_Model.component}"></include>
-                </com.zk.library.Weidge.NoScrollViewPager>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentBottom="true"
-                    android:layout_marginBottom="@dimen/d_10"
-                    android:background="@color/white"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:visibility="@{map_fr_Model.showBottomSheet?View.VISIBLE:View.GONE}">
-
-                    <TextView
-                        android:id="@+id/fr_share_btn"
-                        android:layout_width="@dimen/d_345"
-                        android:layout_height="@dimen/d_50"
-                        android:layout_marginBottom="@dimen/d_10"
-                        android:background="@drawable/birthday_dialog_bottom_ok"
-                        android:gravity="center"
-                        android:onClick="@{map_fr_Model::onClick}"
-                        android:text="@string/share_notes"
-                        android:textColor="@color/white"
-                        android:textSize="@dimen/s_15" />
-                </LinearLayout>
-            </RelativeLayout>
-        </LinearLayout>
-
-
-        <LinearLayout
-            android:id="@+id/slideView"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/d_500"
-            android:orientation="vertical">
-
-            <RelativeLayout
+            <com.zk.library.Weidge.NoScrollViewPager
+                android:id="@+id/fr_main_rootlay"
                 android:layout_width="match_parent"
-                android:layout_height="68dp">
+                android:layout_height="match_parent"
+                android:clickable="true"
+                app:adapter="@{map_fr_Model.adapter}"
+                app:itemBinding="@{map_fr_Model.itemBinding}"
+                app:items="@{map_fr_Model.items}"></com.zk.library.Weidge.NoScrollViewPager>
+
+            <include
+                layout="@layout/right_five_btn_layout"
+                android:visibility="@{map_fr_Model.component.type == 1 ? View.VISIBLE : View.GONE}"
+                app:data="@{map_fr_Model.component}"></include>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_marginBottom="@dimen/d_10"
+                android:background="@color/white"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:visibility="@{map_fr_Model.showBottomSheet?View.VISIBLE:View.GONE}">
 
                 <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="@dimen/d_10"
-                    android:background="@color/colorPrimary"
+                    android:id="@+id/fr_share_btn"
+                    android:layout_width="@dimen/d_345"
+                    android:layout_height="@dimen/d_50"
+                    android:layout_marginBottom="@dimen/d_10"
+                    android:background="@drawable/birthday_dialog_bottom_ok"
                     android:gravity="center"
-                    android:text="这是底部滑块的头部" />
-            </RelativeLayout>
+                    android:onClick="@{map_fr_Model::onClick}"
+                    android:text="@string/share_notes"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/s_15" />
+            </LinearLayout>
+        </RelativeLayout>
+    </LinearLayout>
 
-            <android.support.v4.widget.NestedScrollView
-                android:id="@+id/scrollView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
+    <!--<LinearLayout-->
+    <!--android:id="@+id/slideView"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent"-->
+    <!--android:orientation="vertical">-->
 
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="@dimen/d_10"
-                        android:background="@color/colorAccent"
-                        android:gravity="center"
-                        android:text="可滑动部分1" />
+    <!--<RelativeLayout-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="68dp">-->
 
-                    <ImageView
-                        android:layout_width="match_parent"
-                        android:layout_height="@dimen/d_40"
-                        android:src="@mipmap/ic_launcher" />
+    <!--<TextView-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="@dimen/d_10"-->
+    <!--android:background="@color/colorPrimary"-->
+    <!--android:gravity="center"-->
+    <!--android:text="这是底部滑块的头部" />-->
+    <!--</RelativeLayout>-->
 
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="@dimen/d_10"
-                        android:background="@color/colorAccent"
-                        android:gravity="center"
-                        android:text="可滑动部分2" />
-                </LinearLayout>
+    <!--<android.support.v4.widget.NestedScrollView-->
+    <!--android:id="@+id/scrollView"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content">-->
 
-            </android.support.v4.widget.NestedScrollView>
+    <!--<LinearLayout-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:orientation="vertical">-->
 
-        </LinearLayout>
-    </com.example.drivermodule.Sliding.SlidingUpPanelLayout>
+    <!--<TextView-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="@dimen/d_10"-->
+    <!--android:background="@color/colorAccent"-->
+    <!--android:gravity="center"-->
+    <!--android:text="可滑动部分1" />-->
+
+    <!--<ImageView-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="@dimen/d_40"-->
+    <!--android:src="@mipmap/ic_launcher" />-->
+
+    <!--<TextView-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="@dimen/d_10"-->
+    <!--android:background="@color/colorAccent"-->
+    <!--android:gravity="center"-->
+    <!--android:text="可滑动部分2" />-->
+    <!--</LinearLayout>-->
+    <!--</android.support.v4.widget.NestedScrollView>-->
+    <!--</LinearLayout>-->
+    <!--</com.example.drivermodule.Sliding.SlidingUpPanelLayout>-->
 </layout>
 

@@ -3,7 +3,6 @@ package com.example.drivermodule.ViewModel
 import android.content.Intent
 import android.databinding.ObservableArrayList
 import android.databinding.ObservableField
-import android.location.LocationListener
 import android.support.design.widget.BottomSheetBehavior
 import android.support.design.widget.TabLayout
 import android.support.v4.app.Fragment
@@ -29,7 +28,6 @@ import com.elder.zcommonmodule.Even.RxBusEven
 import com.elder.zcommonmodule.Inteface.Locationlistener
 import com.elder.zcommonmodule.REQUEST_LOAD_ROADBOOK
 import com.example.drivermodule.BR
-import com.example.drivermodule.Component.DriverController
 import com.example.drivermodule.Controller.DriverItemModel
 import com.example.drivermodule.Controller.MapPointItemModel
 import com.example.drivermodule.Controller.RoadBookItemModel
@@ -41,6 +39,7 @@ import com.zk.library.Bus.ServiceEven
 import com.zk.library.Utils.PreferenceUtils
 import com.zk.library.Utils.RouterUtils
 import io.reactivex.disposables.Disposable
+import kotlinx.android.synthetic.main.fragment_map.*
 import kotlinx.android.synthetic.main.fragment_road_book.*
 import me.tatarka.bindingcollectionadapter2.BindingViewPagerAdapter
 import me.tatarka.bindingcollectionadapter2.ItemBinding
@@ -57,9 +56,8 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
 
 
         Log.e("result", "点击事件点急急急急")
-
-        mapActivity.getDrverFragment().viewModel?.FiveBtnClick(view)
         if (currentPosition == 0) {
+            (items[0] as DriverItemModel).onFiveBtnClick(view)
         } else if (currentPosition == 2) {
 //            mapActivity.getMapPointFragment().viewModel?.FiveBtnClick(view)
         } else if (currentPosition == 3) {
@@ -251,7 +249,6 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
         RxSubscriptions.add(a)
         component.setCallBack(this)
         component.setOnFiveClickListener(this)
-        component.type.set(1)
         initTab()
 //        changerFragment(0)
     }
@@ -278,14 +275,14 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
 
     fun changerFragment(position: Int) {
         currentPosition = position
-        if (position == 3) {
+        if (position == 2) {
             component.Drivering.set(false)
             component.rightIcon.set(context.getDrawable(R.drawable.three_point))
         } else {
             component.Drivering.set(true)
             component.rightIcon.set(context.getDrawable(R.drawable.ic_sousuo))
         }
-        if (position == 2) {
+        if (position == 3) {
             component.titleVisible.set(true)
             tab.visibility = View.GONE
             component.rightVisibleType.set(true)
@@ -300,12 +297,7 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
             component.rightText.set("")
             component.type.set(1)
         }
-        var bt = mapActivity.childFragmentManager.beginTransaction()
-        mFragments!!.forEach {
-            bt.hide(it)
-        }
-        bt.show(mFragments!![position])
-        bt.commitAllowingStateLoss()
+        mapActivity.fr_main_rootlay.currentItem = currentPosition
     }
 
     fun onClick(view: View) {
@@ -341,8 +333,6 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
                 status.startDriver.set(Drivering)
                 (items[0] as DriverItemModel).driverStatus.set(Drivering)
             }
-
-
             ARouter.getInstance().build(RouterUtils.MapModuleConfig.NAVIGATION)
                     .withSerializable(RouterUtils.MapModuleConfig.NAVIGATION_DATA, list)
                     .withInt(RouterUtils.MapModuleConfig.NAVIGATION_TYPE, status.navigationType)

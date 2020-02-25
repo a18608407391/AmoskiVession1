@@ -17,28 +17,19 @@ import com.example.drivermodule.ViewModel.MapPointViewModel
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.district_item.view.*
 
-class AddPointAdapter : BaseItemDraggableAdapter<PointEntity, BaseViewHolder>, OnItemDragListener {
+class AddPointItemAdapter : BaseItemDraggableAdapter<PointEntity, BaseViewHolder>, OnItemDragListener {
     var start = 0
     override fun onItemDragEnd(viewHolder: RecyclerView.ViewHolder?, pos: Int) {
         if (start != pos) {
-            var s = driverViewModel?.mapPointController.pointList[start]
-            var m = driverViewModel?.mapPointController.pointList[pos]
-
-
-            Log.e("result","问题1"+ Gson().toJson(driverViewModel.mapPointController.pointList))
-
-            driverViewModel.mapPointController.pointList.set(start, m)
-            driverViewModel.mapPointController.pointList.set(pos, s)
-//            setDatas(driverViewModel.mapPointController.pointList)
-            Log.e("result","问题2" +  Gson().toJson(driverViewModel.mapPointController.pointList))
-            var q = driverViewModel.mapActivity.getDrverFragment().viewModel?.status!!.passPointDatas[start]
-
-            var w = driverViewModel.mapActivity.getDrverFragment().viewModel?.status!!.passPointDatas[pos]
-
-            driverViewModel.mapActivity.getDrverFragment().viewModel?.status!!.passPointDatas.set(start, w)
-            driverViewModel.mapActivity.getDrverFragment().viewModel?.status!!.passPointDatas.set(pos, q)
-            driverViewModel.mapActivity?.mapUtils?.setDriverRoute(converLatPoint(driverViewModel?.mapPointController.startMaker?.position!!), LatLonPoint(driverViewModel.driverModel?.status.navigationEndPoint?.latitude!!, driverViewModel.driverModel?.status.navigationEndPoint?.longitude!!), driverViewModel.mapActivity.getDrverFragment().viewModel?.status!!.passPointDatas)
-
+            var s = mapPointmodel?.pointList[start]
+            var m = mapPointmodel?.pointList[pos]
+            mapPointmodel.pointList.set(start, m)
+            mapPointmodel.pointList.set(pos, s)
+            var q = mapPointmodel.viewModel?.status!!.passPointDatas[start]
+            var w = mapPointmodel.viewModel?.status!!.passPointDatas[pos]
+            mapPointmodel.viewModel?.status!!.passPointDatas.set(start, w)
+            mapPointmodel.viewModel?.status!!.passPointDatas.set(pos, q)
+            mapPointmodel.mapFr?.mapUtils?.setDriverRoute(converLatPoint(mapPointmodel.startMaker?.position!!), LatLonPoint(mapPointmodel.viewModel?.status.navigationEndPoint?.latitude!!, mapPointmodel.viewModel?.status.navigationEndPoint?.longitude!!),mapPointmodel.viewModel?.status!!.passPointDatas)
         }
     }
 
@@ -73,12 +64,6 @@ class AddPointAdapter : BaseItemDraggableAdapter<PointEntity, BaseViewHolder>, O
         }
         helper!!.setText(R.id.point_address, item?.address)
     }
-
-    lateinit var driverViewModel: MapPointViewModel
-    fun setModel(driverViewModel: MapPointViewModel) {
-        this.driverViewModel = driverViewModel
-    }
-
 
     lateinit var mapPointmodel :MapPointItemModel
     fun setModel(mapPointmodel :MapPointItemModel){

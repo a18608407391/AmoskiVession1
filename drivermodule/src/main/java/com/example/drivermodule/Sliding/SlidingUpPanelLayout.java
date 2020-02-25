@@ -45,17 +45,17 @@ public class SlidingUpPanelLayout extends ViewGroup {
     /**
      * Default initial state for the component
      */
-    private static PanelState DEFAULT_SLIDE_STATE = PanelState.COLLAPSED;
+    private static PanelState DEFAULT_SLIDE_STATE = PanelState.HIDDEN;
 
     /**
      * Default height of the shadow above the peeking out panel
      */
-    private static final int DEFAULT_SHADOW_HEIGHT = 4; // dp;
+    private static final int DEFAULT_SHADOW_HEIGHT = 0; // dp;
 
     /**
      * If no fade color is given by default it will fade to 80% gray.
      */
-    private static final int DEFAULT_FADE_COLOR = 0x99000000;
+    private static final int DEFAULT_FADE_COLOR = 0x000000;
 
     /**
      * Default Minimum velocity that will be detected as a fling
@@ -193,7 +193,6 @@ public class SlidingUpPanelLayout extends ViewGroup {
      * How far in pixels the slideable panel may move.
      */
     private int mSlideRange;
-
 
 
     /**
@@ -1412,31 +1411,50 @@ public class SlidingUpPanelLayout extends ViewGroup {
         @Override
         public void onViewReleased(View releasedChild, float xvel, float yvel) {
             int target = 0;
-
             // direction is always positive if we are sliding in the expanded direction
             float direction = mIsSlidingUp ? -yvel : yvel;
-
             if (direction > 0 && mSlideOffset <= mAnchorPoint) {
                 // swipe up -> expand and stop at anchor point
-                target = computePanelTopPosition(mAnchorPoint);
+//                target = computePanelTopPosition(mAnchorPoint);
+                if (mSlideOffset <= 0.5f) {
+                    target = computePanelTopPosition(0.5f);
+                } else {
+                    target = computePanelTopPosition(1f);
+                }
             } else if (direction > 0 && mSlideOffset > mAnchorPoint) {
                 // swipe up past anchor -> expand
-                target = computePanelTopPosition(1.0f);
+                if (mSlideOffset < 0.75 && mSlideOffset > 0.5) {
+                    target = computePanelTopPosition(0.5f);
+                } else {
+                    target = computePanelTopPosition(1.0f);
+                }
             } else if (direction < 0 && mSlideOffset >= mAnchorPoint) {
                 // swipe down -> collapse and stop at anchor point
                 target = computePanelTopPosition(mAnchorPoint);
             } else if (direction < 0 && mSlideOffset < mAnchorPoint) {
                 // swipe down past anchor -> collapse
-                target = computePanelTopPosition(0.0f);
+                if (mSlideOffset < 1 && mSlideOffset >= 0.5) {
+                    target = computePanelTopPosition(0.5f);
+                } else {
+                    target = computePanelTopPosition(0.0f);
+                }
             } else if (mSlideOffset >= (1.f + mAnchorPoint) / 2) {
                 // zero velocity, and far enough from anchor point => expand to the top
-                target = computePanelTopPosition(1.0f);
+                if (mSlideOffset < 0.75 && mSlideOffset > 0.5) {
+                    target = computePanelTopPosition(0.5f);
+                } else {
+                    target = computePanelTopPosition(1.0f);
+                }
             } else if (mSlideOffset >= mAnchorPoint / 2) {
                 // zero velocity, and close enough to anchor point => go to anchor
                 target = computePanelTopPosition(mAnchorPoint);
             } else {
                 // settle at the bottom
-                target = computePanelTopPosition(0.0f);
+                if (mSlideOffset < 0.25 && mSlideOffset > 0.0) {
+                    target = computePanelTopPosition(0.0f);
+                } else {
+                    target = computePanelTopPosition(0.5f);
+                }
             }
 
             if (mDragHelper != null) {
@@ -1502,8 +1520,6 @@ public class SlidingUpPanelLayout extends ViewGroup {
                 this.weight = ta.getFloat(0, 0);
                 ta.recycle();
             }
-
-
         }
     }
 }

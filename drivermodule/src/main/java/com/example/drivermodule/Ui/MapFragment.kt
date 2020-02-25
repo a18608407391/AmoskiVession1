@@ -153,16 +153,6 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
         return null!!
     }
 
-    override fun onUserVisible() {
-        super.onUserVisible()
-
-    }
-
-    override fun onUserInvisible() {
-        super.onUserInvisible()
-    }
-
-
     private fun custionView(maker: Marker?, view: View?) {
         var title = maker?.title.toString()
         var ti = view?.findViewById<TextView>(R.id.window_title)
@@ -214,28 +204,6 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
             var model = viewModel?.items!![0] as MapPointItemModel
             model.onInfoWindowClick(it)
         }
-//        if (it!!.title == null || it!!.title == "null" || getTeamFragment().viewModel?.markerList?.containsValue(it)!!) {
-//
-//        } else {
-//            if (viewModel?.currentPosition == 0) {
-//                if (it.position != null && it.position.longitude != null && it.position.latitude != null && !it.title.isEmpty() && !it.title.contains("台湾省")) {
-//                    getDrverFragment().onInfoWindowClick(it)
-//                } else {
-//                    Toast.makeText(org.cs.tec.library.Base.Utils.context, getString(R.string.cannot_go_to_there), Toast.LENGTH_SHORT).show()
-//                }
-//            } else if (viewModel?.currentPosition == 1) {
-//
-//
-//            } else if (viewModel?.currentPosition == 2) {
-//                if (it.position != null && it.position.longitude != null && it.position.latitude != null && !it.title.isEmpty() && !it.title.contains("台湾省")) {
-//                    getMapPointFragment().onInfoWindowClick(it)
-//                } else {
-//                    Toast.makeText(context, getString(R.string.cannot_go_to_there), Toast.LENGTH_SHORT).show()
-//                }
-//            } else if (viewModel?.currentPosition == 3) {
-//
-//            }
-//        }
     }
 
 
@@ -369,103 +337,103 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
     }
 
 
-    fun initResume() {
-        var t: DriverDataStatus? = null
-        var list = queryDriverStatus(PreferenceUtils.getString(context, USERID))
-        if (list.size != 0) {
-            t = list[0]
-        }
-        var pos = ServiceEven()
-        pos.type = "HomeDriver"
-        RxBus.default?.post(pos)
-//        context!!.startService(Intent(context, LowLocationService::class.java).setAction("driver"))
-
-
-        if (resume == "nomal") {
-            if (t == null) {
-                viewModel?.status = DriverDataStatus()
-            } else {
-                viewModel?.status = t
-                if (viewModel?.status?.navigationType == Driver_Navigation) {
-                    var wayPoint = ArrayList<LatLng>()
-                    viewModel!!.status.passPointDatas.forEach {
-                        wayPoint.add(LatLng(it.latitude, it.longitude))
-                    }
-                    viewModel?.startNavi(viewModel?.status?.navigationStartPoint!!, viewModel?.status?.navigationEndPoint!!, wayPoint, 0)
-                } else {
-                    viewModel?.status?.passPointDatas?.clear()
-                }
-                resumeDriver()
-            }
-            viewModel?.status?.uid = PreferenceUtils.getString(context, USERID)
-//            viewModel?.startDrive(false)
-        } else if (resume == "myroad") {
-            if (t == null) {
-                viewModel?.status = DriverDataStatus()
-            } else {
-                viewModel?.status = t
-                if (viewModel?.status?.navigationType == Driver_Navigation) {
-                    var wayPoint = ArrayList<LatLng>()
-                    viewModel!!.status.passPointDatas.forEach {
-                        wayPoint.add(LatLng(it.latitude, it.longitude))
-                    }
-                    viewModel?.startNavi(viewModel?.status?.navigationStartPoint!!, viewModel?.status?.navigationEndPoint!!, wayPoint, 0)
-                } else {
-                    viewModel?.status?.passPointDatas?.clear()
-                }
-                resumeDriver()
-            }
-            viewModel?.status?.uid = PreferenceUtils.getString(context, USERID)
-            CoroutineScope(uiContext).async {
-                delay(200)
-                viewModel?.selectTab(2)
-                viewModel?.changerFragment(3)
-                if (PreferenceUtils.getString(activity, PreferenceUtils.getString(context, USERID) + "hot") == null && hotData == null) {
-                    getRoadBookFragment().viewModel?.doLoadDatas(hotData!!)
-                }
-            }
-        } else if (resume == "fastTeam") {
-            Log.e("result", "fastTeam")
-            if (t == null) {
-                viewModel?.status = DriverDataStatus()
-            } else {
-                viewModel?.status = t
-                if (viewModel?.status?.navigationType == Driver_Navigation) {
-                    var wayPoint = ArrayList<LatLng>()
-                    viewModel!!.status.passPointDatas.forEach {
-                        wayPoint.add(LatLng(it.latitude, it.longitude))
-                    }
-                    viewModel?.startNavi(viewModel?.status?.navigationStartPoint!!, viewModel?.status?.navigationEndPoint!!, wayPoint, 0)
-                } else {
-                    viewModel?.status?.passPointDatas?.clear()
-                }
-                resumeDriver()
-            }
-            viewModel?.status = DriverDataStatus()
-            viewModel?.status?.uid = PreferenceUtils.getString(context, USERID)
-            CoroutineScope(uiContext).launch {
-                delay(500)
-                viewModel?.selectTab(1)
-            }
-        } else {
-            viewModel?.status = queryDriverStatus(PreferenceUtils.getString(context, USERID))[0]
-            if (resume == "resume") {
-                if (viewModel?.status?.navigationType == Driver_Navigation) {
-                    var wayPoint = ArrayList<LatLng>()
-                    viewModel!!.status.passPointDatas.forEach {
-                        wayPoint.add(LatLng(it.latitude, it.longitude))
-                    }
-                    viewModel?.startNavi(viewModel?.status?.navigationStartPoint!!, viewModel?.status?.navigationEndPoint!!, wayPoint, 0)
-                } else {
-                    viewModel?.status?.passPointDatas?.clear()
-                }
-
-            } else if (resume == "continue" || resume == "cancle") {
-                viewModel?.status?.startDriver?.set(Drivering)
-            }
-            resumeDriver()
-        }
-    }
+//    fun initResume() {
+//        var t: DriverDataStatus? = null
+//        var list = queryDriverStatus(PreferenceUtils.getString(context, USERID))
+//        if (list.size != 0) {
+//            t = list[0]
+//        }
+//        var pos = ServiceEven()
+//        pos.type = "HomeDriver"
+//        RxBus.default?.post(pos)
+////        context!!.startService(Intent(context, LowLocationService::class.java).setAction("driver"))
+//
+//
+//        if (resume == "nomal") {
+//            if (t == null) {
+//                viewModel?.status = DriverDataStatus()
+//            } else {
+//                viewModel?.status = t
+//                if (viewModel?.status?.navigationType == Driver_Navigation) {
+//                    var wayPoint = ArrayList<LatLng>()
+//                    viewModel!!.status.passPointDatas.forEach {
+//                        wayPoint.add(LatLng(it.latitude, it.longitude))
+//                    }
+//                    viewModel?.startNavi(viewModel?.status?.navigationStartPoint!!, viewModel?.status?.navigationEndPoint!!, wayPoint, 0)
+//                } else {
+//                    viewModel?.status?.passPointDatas?.clear()
+//                }
+//                resumeDriver()
+//            }
+//            viewModel?.status?.uid = PreferenceUtils.getString(context, USERID)
+////            viewModel?.startDrive(false)
+//        } else if (resume == "myroad") {
+//            if (t == null) {
+//                viewModel?.status = DriverDataStatus()
+//            } else {
+//                viewModel?.status = t
+//                if (viewModel?.status?.navigationType == Driver_Navigation) {
+//                    var wayPoint = ArrayList<LatLng>()
+//                    viewModel!!.status.passPointDatas.forEach {
+//                        wayPoint.add(LatLng(it.latitude, it.longitude))
+//                    }
+//                    viewModel?.startNavi(viewModel?.status?.navigationStartPoint!!, viewModel?.status?.navigationEndPoint!!, wayPoint, 0)
+//                } else {
+//                    viewModel?.status?.passPointDatas?.clear()
+//                }
+//                resumeDriver()
+//            }
+//            viewModel?.status?.uid = PreferenceUtils.getString(context, USERID)
+//            CoroutineScope(uiContext).async {
+//                delay(200)
+//                viewModel?.selectTab(2)
+//                viewModel?.changerFragment(3)
+//                if (PreferenceUtils.getString(activity, PreferenceUtils.getString(context, USERID) + "hot") == null && hotData == null) {
+//                    getRoadBookFragment().viewModel?.doLoadDatas(hotData!!)
+//                }
+//            }
+//        } else if (resume == "fastTeam") {
+//            Log.e("result", "fastTeam")
+//            if (t == null) {
+//                viewModel?.status = DriverDataStatus()
+//            } else {
+//                viewModel?.status = t
+//                if (viewModel?.status?.navigationType == Driver_Navigation) {
+//                    var wayPoint = ArrayList<LatLng>()
+//                    viewModel!!.status.passPointDatas.forEach {
+//                        wayPoint.add(LatLng(it.latitude, it.longitude))
+//                    }
+//                    viewModel?.startNavi(viewModel?.status?.navigationStartPoint!!, viewModel?.status?.navigationEndPoint!!, wayPoint, 0)
+//                } else {
+//                    viewModel?.status?.passPointDatas?.clear()
+//                }
+//                resumeDriver()
+//            }
+//            viewModel?.status = DriverDataStatus()
+//            viewModel?.status?.uid = PreferenceUtils.getString(context, USERID)
+//            CoroutineScope(uiContext).launch {
+//                delay(500)
+//                viewModel?.selectTab(1)
+//            }
+//        } else {
+//            viewModel?.status = queryDriverStatus(PreferenceUtils.getString(context, USERID))[0]
+//            if (resume == "resume") {
+//                if (viewModel?.status?.navigationType == Driver_Navigation) {
+//                    var wayPoint = ArrayList<LatLng>()
+//                    viewModel!!.status.passPointDatas.forEach {
+//                        wayPoint.add(LatLng(it.latitude, it.longitude))
+//                    }
+//                    viewModel?.startNavi(viewModel?.status?.navigationStartPoint!!, viewModel?.status?.navigationEndPoint!!, wayPoint, 0)
+//                } else {
+//                    viewModel?.status?.passPointDatas?.clear()
+//                }
+//
+//            } else if (resume == "continue" || resume == "cancle") {
+//                viewModel?.status?.startDriver?.set(Drivering)
+//            }
+//            resumeDriver()
+//        }
+//    }
 
 
     fun getDrverFragment(): DriverFragment {
@@ -484,6 +452,21 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
         return viewModel?.mFragments!![3] as RoadBookFragment
     }
 
+    fun getDrverController(): DriverItemModel {
+        return viewModel?.items!![0] as DriverItemModel
+    }
+
+    fun getTeamController(): TeamItemModel {
+        return viewModel?.items!![1] as TeamItemModel
+    }
+
+    fun getMapPointController(): MapPointItemModel {
+        return viewModel?.items!![3] as MapPointItemModel
+    }
+
+    fun getRoadBookController(): RoadBookItemModel {
+        return viewModel?.mFragments!![2] as RoadBookItemModel
+    }
 
     private fun setUpMap() {
         mAmap.setLocationSource(this)// 设置定位监听

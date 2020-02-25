@@ -67,13 +67,7 @@ class DriverItemController : Serializable {
 
 
     fun cancleDriver() {
-//        if (movemaker != null) {
-//            movemaker?.remove()
-//            movemaker = null
-//        }
-
         model.viewModel?.mapActivity.mapUtils!!.clearMarker()
-
         if (startMarker != null) {
             startMarker?.remove()
             startMarker = null
@@ -82,16 +76,8 @@ class DriverItemController : Serializable {
             line?.remove()
             line = null
         }
-        model.viewModel.status.totalPoint.clear()
-        model.viewModel.status.passPointDatas.clear()
-        if (!model.viewModel.mapActivity.getMapPointFragment().viewModel?.mapPointController!!.SingleList.isNullOrEmpty()) {
-            var t = model.viewModel.mapActivity.getMapPointFragment().viewModel?.mapPointController!!.SingleList.get(0)
-            t.address = ""
-            model.viewModel.mapActivity.getMapPointFragment().viewModel?.mapPointController!!.SingleList[0] = t
-        }
         deleteDriverStatus(PreferenceUtils.getString(context, USERID))
         deleteLocation(PreferenceUtils.getString(context, USERID))
-//        model.status.deleteFile()
     }
 
     fun continueDriver() {

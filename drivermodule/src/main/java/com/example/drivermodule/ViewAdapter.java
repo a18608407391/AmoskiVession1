@@ -7,8 +7,10 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.TabLayout;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,6 +25,7 @@ import com.bumptech.glide.load.resource.bitmap.CircleCrop;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
+import com.chad.library.adapter.base.callback.ItemDragAndSwipeCallback;
 import com.elder.zcommonmodule.Entity.DriverDataStatus;
 import com.elder.zcommonmodule.Entity.HotData;
 import com.elder.zcommonmodule.Entity.Location;
@@ -31,10 +34,14 @@ import com.elder.zcommonmodule.Entity.WeatherEntity;
 import com.elder.zcommonmodule.Utils.URLImageParser;
 import com.elder.zcommonmodule.Widget.Chart.SuitLines;
 import com.elder.zcommonmodule.Widget.Chart.Unit;
+import com.elder.zcommonmodule.Widget.CustomRecycleView;
 import com.elder.zcommonmodule.Widget.LongPressToFinishButton;
+import com.example.drivermodule.Adapter.AddPointAdapter;
+import com.example.drivermodule.Adapter.AddPointItemAdapter;
 import com.example.drivermodule.Entity.RoadBook.HotBannerData;
 import com.example.drivermodule.ItemModel.HotRoadItemModle;
 import com.example.drivermodule.ItemModel.NearRoadItemModle;
+import com.example.drivermodule.Sliding.SlidingUpPanelLayout;
 import com.zk.library.Base.BaseApplication;
 import com.zk.library.binding.command.ViewAdapter.image.SimpleTarget;
 
@@ -72,6 +79,28 @@ public class ViewAdapter {
     public static void setBehavior(LinearLayout layout, int b) {
         BottomSheetBehavior<LinearLayout> s = BottomSheetBehavior.from(layout);
         s.setState(b);
+    }
+
+
+    @BindingAdapter("initPanel")
+    public static void initPanel(SlidingUpPanelLayout panel, SlidingUpPanelLayout.PanelState state) {
+        panel.setPanelState(state);
+    }
+
+    @BindingAdapter("initMapPointRecycle")
+    public static void initMapPointRecycle(CustomRecycleView view, AddPointItemAdapter adapter) {
+        if (adapter == null) {
+            return;
+        }
+        RecyclerView.LayoutManager manager = new LinearLayoutManager(view.getContext());
+        ItemDragAndSwipeCallback callback = new ItemDragAndSwipeCallback(adapter);
+        callback.setDragMoveFlags(ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT | ItemTouchHelper.UP | ItemTouchHelper.DOWN);
+        ItemTouchHelper helper = new ItemTouchHelper(callback);
+        helper.attachToRecyclerView(view);
+        adapter.setOnItemDragListener(adapter);
+        adapter.enableDragItem(helper,R.id.drag_layout, true);
+        view.setLayoutManager(manager);
+        view.setAdapter(adapter);
     }
 
     public static void addView(LinearLayout layout, final ArrayList<WeatherEntity> entity) {
@@ -130,36 +159,6 @@ public class ViewAdapter {
             }
         }
         chart.feed(lines);
-
-//        if (!list.isNotEmpty() && list.size < 6) {
-//            return
-//        }
-//        var k = 0
-//        var size = list.size
-//        if ((size - 1) % 15 != 0) {
-//            k = (size - 1) % 15
-//        }
-//        var n = (size - k) / 15
-//        if (n == 0) {
-//            return
-//        }
-//        var baseTime = time.toInt() / 15.0
-//        var count = 0
-//        var lines = ArrayList<Unit>()
-//        for (i in 0..(size - 1)) {
-//            if (i % n == 0) {
-//                count++
-//                var t = Unit(list[i].toFloat() + 1, (DecimalFormat("0.0").format(baseTime * count) + "s"))
-//                lines.add(t)
-//            } else if (i == size - 1) {
-//                var t = Unit(list[i].toFloat() + 1, "")
-//                lines.add(t)
-//            } else {
-//                lines.add(Unit(list[i].toFloat() + 1))
-//            }
-//        }
-//        chart?.feed(lines)
-
     }
 
 
@@ -382,6 +381,7 @@ public class ViewAdapter {
             }
         }
     }
+
     @BindingAdapter("MapBottoimItemChange")
     public static void setCurrentModelItemChange(ImageView img, int mode) {
         int i = img.getId();
@@ -410,6 +410,7 @@ public class ViewAdapter {
             }
         }
     }
+
     @BindingAdapter("setExTextContent")
     public static void setExTextContent(ExpandableTextView ex, String content) {
         ex.setText(content);

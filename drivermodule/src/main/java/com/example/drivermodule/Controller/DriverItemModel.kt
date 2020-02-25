@@ -3,12 +3,13 @@ package com.example.drivermodule.Controller
 import android.content.Intent
 import android.databinding.ObservableArrayList
 import android.databinding.ObservableField
+import android.net.Uri
 import android.support.design.widget.BottomSheetBehavior
-import android.util.Log
 import android.view.View
 import android.widget.Toast
 import com.alibaba.android.arouter.launcher.ARouter
 import com.amap.api.location.AMapLocation
+import com.amap.api.maps.AMap
 import com.amap.api.maps.AMapUtils
 import com.amap.api.maps.CameraUpdateFactory
 import com.amap.api.maps.model.*
@@ -24,12 +25,11 @@ import com.elder.zcommonmodule.Service.HttpInteface
 import com.elder.zcommonmodule.Service.HttpRequest
 import com.elder.zcommonmodule.Utils.Dialog.OnBtnClickL
 import com.elder.zcommonmodule.Utils.DialogUtils
-import com.elder.zcommonmodule.Utils.Utils
 import com.example.drivermodule.AMapUtil
 import com.example.drivermodule.Component.DriverItemController
 import com.example.drivermodule.R
+import com.example.drivermodule.Sliding.SlidingUpPanelLayout
 import com.example.drivermodule.Ui.MapFragment
-import com.example.drivermodule.Ui.TeamFragment
 import com.example.drivermodule.ViewModel.MapFrViewModel
 import com.google.gson.Gson
 import com.zk.library.Base.BaseApplication
@@ -64,6 +64,7 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), HttpInteface.startDrive
     var timer: Observable<Long>? = null
     var timerDispose: Disposable? = null
 
+    var panelState = ObservableField<SlidingUpPanelLayout.PanelState>(SlidingUpPanelLayout.PanelState.HIDDEN)
 
     override fun startDriverSuccess(it: String) {
         viewModel.mapActivity.dismissProgressDialog()
@@ -135,19 +136,17 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), HttpInteface.startDrive
         mapFr.showProgressDialog(getString(R.string.location_loading))
         RxSubscriptions.add(locationDispose)
         viewModel?.listeners = this
-
         driverStatus.set(viewModel?.status.startDriver.get())
         initView(viewModel)
+
         bottomLayoutVisible.set(true)
         return super.ItemViewModel(viewModel)
     }
-
 
     lateinit var curAmapLocation: AMapLocation
     var curPosition: Location? = null
     var isUp = false
     var curHeight = 0.0
-
     var last: Location? = null
 
     private fun location(amapLocation: AMapLocation?) {
@@ -171,7 +170,6 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), HttpInteface.startDrive
                     mapFr?.mapUtils?.breatheMarker_center!!.rotateAngle = amapLocation.bearing
                 }
                 if (viewModel.status.locationLat.size == 0) {
-
                     addStartPoint(curPosition!!)
                 } else {
                     if (amapLocation.locationType == 1) {
@@ -211,10 +209,15 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), HttpInteface.startDrive
                             viewModel?.mapActivity.mAmap.moveCamera(CameraUpdateFactory.changeLatLng(viewModel?.mapActivity?.mapUtils?.breatheMarker_center?.position))
                             viewModel.status.locationLat.add(curPosition!!)
                             driverController?.setLineDatas(viewModel?.status?.locationLat, getColor(R.color.line_color))
-
                         }
                     }
                 }
+            } else {
+                if (mapFr.mAmap != null) {
+                    mapFr?.myLocationStyle?.myLocationType(MyLocationStyle.LOCATION_TYPE_LOCATION_ROTATE_NO_CENTER)
+                    mapFr!!.mAmap.myLocationStyle = mapFr!!.myLocationStyle
+                }
+
             }
         }
     }
@@ -306,14 +309,14 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), HttpInteface.startDrive
                                 //队长
                                 if (model?.TeamInfo?.redisData?.dtoList?.size == 1) {
                                     //只有自己一人
-                                    dontHaveOneMetre(getString(R.string.EnoughOneKmByTeamerAndOne),getString(R.string.leave_team), getString(R.string.continue_driving), 3)
+                                    dontHaveOneMetre(getString(R.string.EnoughOneKmByTeamerAndOne), getString(R.string.leave_team), getString(R.string.continue_driving), 3)
                                 } else {
                                     //多人
-                                    dontHaveOneMetre(getString(R.string.EnoughOneKmByTeamerAndPass), getString(R.string.release_team),getString(R.string.pass_timer), 4)
+                                    dontHaveOneMetre(getString(R.string.EnoughOneKmByTeamerAndPass), getString(R.string.release_team), getString(R.string.pass_timer), 4)
                                 }
                             } else {
                                 //不是队长
-                                dontHaveOneMetre(getString(R.string.EnoughOneKmByTeam), getString(R.string.leave_team),getString(R.string.continue_driving), 5)
+                                dontHaveOneMetre(getString(R.string.EnoughOneKmByTeam), getString(R.string.leave_team), getString(R.string.continue_driving), 5)
                             }
                         }
                     }
@@ -331,7 +334,6 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), HttpInteface.startDrive
                         }
                     }
                 }
-
             }
             R.id.item_continue_drivering -> {
                 //继续骑行
@@ -441,6 +443,49 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), HttpInteface.startDrive
         driverDistance.set("00:00")
         RxBus.default?.post("DriverCancle")
         viewModel?.status.reset()
+    }
+
+    fun onFiveBtnClick(view: View) {
+        when (view.id) {
+            R.id.sos_btn -> {
+                var intent = Intent(Intent.ACTION_CALL)
+                var data = Uri.parse("tel:120")
+                intent.data = data
+                mapFr.startActivity(intent)
+            }
+            R.id.change_map_point -> {
+//                changeMap_Point_btn()
+                if (viewModel?.status.navigationType == 1) {
+                    //跳到导航
+
+                } else {
+                    if (driverStatus.get() == Drivering && viewModel?.status.locationLat.size == 0) {
+                        return
+                    }
+                    viewModel?.changerFragment(3)
+                    mapFr.getMapPointController().changeMap(curPosition!!)
+                }
+            }
+            R.id.team_btn -> {
+                //TODO
+            }
+            R.id.setting_btn -> {
+                if (curPosition != null) {
+                    mapFr.mAmap.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(curPosition!!.latitude, curPosition!!.longitude), 15F), 1000, object : AMap.CancelableCallback {
+                        override fun onFinish() {
+                        }
+
+                        override fun onCancel() {
+                        }
+                    })
+                }
+            }
+            R.id.road_book -> {
+                if (curPosition != null) {
+                    ARouter.getInstance().build(RouterUtils.MapModuleConfig.ROAD_BOOK_ACTIVITY).withSerializable(RouterUtils.MapModuleConfig.ROAD_CURRENT_POINT, curPosition).navigation(mapFr.activity, REQUEST_LOAD_ROADBOOK)
+                }
+            }
+        }
     }
 
 

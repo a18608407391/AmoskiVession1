@@ -10,7 +10,7 @@ import org.cs.tec.library.Base.Utils.getString
 import java.io.Serializable
 
 class DriverComponent : TitleComponent(), Serializable {
-    var type = ObservableField<Int>(1)
+    var type = ObservableField(1)
 
     var titleVisible = ObservableField<Boolean>(false)
 
