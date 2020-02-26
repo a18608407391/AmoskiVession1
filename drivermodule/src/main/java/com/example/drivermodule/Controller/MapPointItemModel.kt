@@ -3,13 +3,17 @@ package com.example.drivermodule.Controller
 import android.content.Intent
 import android.databinding.ObservableArrayList
 import android.databinding.ObservableField
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import com.amap.api.maps.model.BitmapDescriptorFactory
 import com.amap.api.maps.model.Marker
 import com.amap.api.maps.model.MarkerOptions
 import com.amap.api.navi.model.AMapCalcRouteResult
+import com.amap.api.navi.model.NaviLatLng
+import com.amap.api.navi.view.RouteOverLay
 import com.amap.api.services.core.LatLonPoint
+import com.amap.api.services.geocoder.RegeocodeResult
 import com.chad.library.adapter.base.BaseQuickAdapter
 import com.elder.zcommonmodule.DriverCancle
 import com.elder.zcommonmodule.Entity.Location
@@ -22,17 +26,23 @@ import com.example.drivermodule.CalculateRouteListener
 import com.example.drivermodule.Entity.PointEntity
 import com.example.drivermodule.Entity.RouteEntity
 import com.example.drivermodule.Overlay.DrivingRouteOverlay
+import com.example.drivermodule.Overlay.NaviDrivingRouteOverlay
 import com.example.drivermodule.R
+import com.example.drivermodule.Sliding.SlidingUpPanelLayout
 import com.example.drivermodule.Ui.MapFragment
 import com.example.drivermodule.ViewModel.MapFrViewModel
 import com.zk.library.Base.ItemViewModel
+import com.zk.library.Bus.event.RxBusEven
 import org.cs.tec.library.Base.Utils.context
 import org.cs.tec.library.Base.Utils.getString
 import org.cs.tec.library.Utils.ConvertUtils
+import org.cs.tec.library.binding.command.BindingCommand
+import org.cs.tec.library.binding.command.BindingConsumer
 import java.text.DecimalFormat
 
 
 class MapPointItemModel : ItemViewModel<MapFrViewModel>(), BaseQuickAdapter.OnItemClickListener, CalculateRouteListener {
+
     override fun onItemClick(adapter: BaseQuickAdapter<*, *>?, view: View?, position: Int) {
 
     }
@@ -42,9 +52,10 @@ class MapPointItemModel : ItemViewModel<MapFrViewModel>(), BaseQuickAdapter.OnIt
     var screenMaker: Marker? = null
     var dataEmpty = ObservableField<Boolean>(false)
     var finalyText = ObservableField<String>(getString(R.string.location_select))
-    var choiceVisible = ObservableField<Boolean>(false)
+    var choiceVisible = ObservableField<Boolean>(true)
     var pointList = ArrayList<PointEntity>()
     var finallyMarker: Marker? = null
+    var panelState = ObservableField<SlidingUpPanelLayout.PanelState>(SlidingUpPanelLayout.PanelState.COLLAPSED)
     lateinit var adapter: AddPointItemAdapter
     var SingleList = ArrayList<PointEntity>().apply {
         this.add(PointEntity("", LatLonPoint(0.0, 0.0)))
@@ -60,6 +71,37 @@ class MapPointItemModel : ItemViewModel<MapFrViewModel>(), BaseQuickAdapter.OnIt
 
     fun onInfoWindowClick(it: Marker?) {
         addPoint(it!!)
+    }
+
+
+    override fun doRxEven(it: RxBusEven?) {
+        super.doRxEven(it)
+        when (it?.type) {
+            RxBusEven.DriverMapPointRegeocodeSearched -> {
+                var regeocdeResult = it.value as RegeocodeResult
+                var addressName = ""
+                if (regeocdeResult.regeocodeAddress?.aois != null && regeocdeResult.regeocodeAddress?.aois?.size != 0) {
+                    if (regeocdeResult.regeocodeAddress.aois[0].aoiName != null) {
+                        addressName = regeocdeResult.regeocodeAddress?.district + regeocdeResult.regeocodeAddress.aois[0].aoiName
+                    } else {
+                        addressName = regeocdeResult.regeocodeAddress?.formatAddress!!
+                    }
+                } else {
+                    addressName = regeocdeResult.regeocodeAddress?.formatAddress!!
+                }
+
+                Log.e("result", "addressName" + addressName)
+                screenMaker?.title = addressName
+                if (screenMaker != null) {
+                    screenMaker?.showInfoWindow()
+                }
+            }
+            RxBusEven.MapCameraChangeFinish -> {
+                if (screenMaker != null) {
+                    mapFr.mapUtils?.queryGeocoder(LatLonPoint(screenMaker?.position?.latitude!!, screenMaker?.position?.longitude!!))
+                }
+            }
+        }
     }
 
     lateinit var mapFr: MapFragment
@@ -125,10 +167,13 @@ class MapPointItemModel : ItemViewModel<MapFrViewModel>(), BaseQuickAdapter.OnIt
     }
 
 
-    override fun CalculateCallBack(result: AMapCalcRouteResult?) {
+    override fun CalculateCallBack(result: AMapCalcRouteResult) {
         //处理
 //        var id = result?.routeid
 //        var path = mapFr.mapUtils?.navi?.naviPaths!![id]
+
+
+        Log.e("result", "result.errorCode" + result.errorCode)
         result?.routeid!!.forEachIndexed { index, it ->
             var path = mapFr.mapUtils?.navi?.naviPaths!![it]
             var entity = RouteEntity()
@@ -149,28 +194,58 @@ class MapPointItemModel : ItemViewModel<MapFrViewModel>(), BaseQuickAdapter.OnIt
             items.add(entity)
         }
         drawRouteLine(items[0])
-
     }
 
+    var routeDistance = 0
+    var routeTime = 0
     private fun drawRouteLine(routeEntity: RouteEntity?) {
-//        var path = mapFr.mapUtils?.navi?.naviPaths!![routeEntity!!.id.get()]
-//        var drivingRouteOverlay = DrivingRouteOverlay(context, mapFr.mAmap, p0?.paths!![index], p0?.startPos, if (mapPointController.finallyMarker == null) p0?.targetPos else LatLonPoint(driverModel.status.navigationEndPoint!!.latitude, driverModel.status.navigationEndPoint!!.longitude), p0?.driveQuery!!.passedByPoints)
-//        mapActivity.mAmap.isMyLocationEnabled = false
-//        drivingRouteOverlay.setNodeIconVisibility(true)//设置节点marker是否显示
-//        drivingRouteOverlay.setThroughPointIconVisibility(true)
-//        drivingRouteOverlay.setIsColorfulline(true)//是否用颜色展示交通拥堵情况，默认true
-//        drivingRouteOverlay.removeFromMap()
-//        drivingRouteOverlay.addToMap()
-//        routeDistance = p0?.paths!![index].distance
-//        routeTime = p0?.paths!![index].duration
-//        if (!p0!!.driveQuery.hasPassPoint()) {
-//            mapPointController.screenMaker = drivingRouteOverlay.addRemoveMarker(AMapUtil.convertToLatLng(LatLonPoint(driverModel.status.navigationStartPoint!!.latitude, driverModel.status.navigationStartPoint!!.longitude)))
-//            mapPointController.finallyMarker = drivingRouteOverlay?.endMarker
-//            drivingRouteOverlay.zoomSpanAll()
-//        } else {
-//            mapPointController.screenMaker = drivingRouteOverlay.addRemoveMarker(AMapUtil.convertToLatLng(p0?.driveQuery!!.passedByPoints[p0?.driveQuery!!.passedByPoints.size - 1]))
-//        }
+        var path = mapFr.mapUtils?.navi?.naviPaths!![routeEntity!!.id.get()]
+
+        var drivingRouteOverlay = NaviDrivingRouteOverlay(context, mapFr.mAmap, path, path?.coordList!!.get(0), if (finallyMarker == null) path.endPoint else NaviLatLng(viewModel.status.navigationEndPoint!!.latitude, viewModel.status.navigationEndPoint!!.longitude), path!!.wayPoint)
+        mapFr.mAmap.isMyLocationEnabled = false
+        drivingRouteOverlay.setNodeIconVisibility(true)//设置节点marker是否显示
+        drivingRouteOverlay.setThroughPointIconVisibility(true)
+        drivingRouteOverlay.setIsColorfulline(true)//是否用颜色展示交通拥堵情况，默认true
+        drivingRouteOverlay.removeFromMap()
+        drivingRouteOverlay.addToMap()
+        routeDistance = path.allLength
+        routeTime = path.allTime
+        if (path.wayPoint.size == 0) {
+            Log.e("result", "无途经点")
+            screenMaker = drivingRouteOverlay.addRemoveMarker(AMapUtil.convertToLatLng(LatLonPoint(viewModel.status.navigationStartPoint!!.latitude, viewModel.status.navigationStartPoint!!.longitude)))
+            finallyMarker!!.remove()
+            finallyMarker = null
+            startMaker?.remove()
+            startMaker = null
+            startMaker = drivingRouteOverlay?.startMarker
+            finallyMarker = drivingRouteOverlay?.endMarker
+            drivingRouteOverlay.zoomSpanAll()
+        } else {
+            Log.e("result", "有途经点")
+            screenMaker = drivingRouteOverlay.addRemoveMarker(drivingRouteOverlay.convertToLatLng(path!!.wayPoint[path.wayPoint.size - 1]))
+        }
+    }
+
+    fun onComponentClick() {
+
     }
 
     var items = ObservableArrayList<RouteEntity>()
+
+    var bindingCommand = BindingCommand(object : BindingConsumer<RouteEntity> {
+        override fun call(t: RouteEntity) {
+            if (!t.select.get()!!) {
+                var list = ArrayList<RouteEntity>()
+                items.forEach {
+                    it.select.set(false)
+                    list.add(it)
+                }
+                var index = list.indexOf(t)
+                t.select.set(true)
+                list.set(index, t)
+                items.clear()
+                items.addAll(list)
+            }
+        }
+    })
 }

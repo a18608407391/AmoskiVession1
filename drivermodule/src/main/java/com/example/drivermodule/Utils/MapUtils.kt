@@ -20,22 +20,19 @@ import com.amap.api.services.geocoder.RegeocodeQuery
 import com.amap.api.services.geocoder.RegeocodeResult
 import com.amap.api.services.route.DistanceResult
 import com.amap.api.services.route.DistanceSearch
-import com.amap.api.services.route.DriveRouteResult
 import com.amap.api.services.route.RouteSearch
 import com.amap.api.services.route.RouteSearch.*
 import com.amap.api.trace.LBSTraceClient
 import com.amap.api.trace.TraceListener
-import com.amap.api.trace.TraceLocation
 import com.elder.zcommonmodule.*
 import com.elder.zcommonmodule.DataBases.queryUserInfo
 import com.elder.zcommonmodule.Entity.HttpResponseEntitiy.BaseResponse
 import com.elder.zcommonmodule.Entity.Location
-import com.elder.zcommonmodule.Entity.UserInfo
+import com.zk.library.Bus.event.RxBusEven
+import com.zk.library.Bus.event.RxBusEven.Companion.DriverMapPointRegeocodeSearched
 import com.elder.zcommonmodule.Utils.Dialog.OnBtnClickL
 import com.elder.zcommonmodule.Utils.DialogUtils
 import com.elder.zcommonmodule.Utils.FileUtils
-import com.example.drivermodule.AMapUtil
-import com.example.drivermodule.Activity.MapActivity
 import com.example.drivermodule.Entity.BitMapWithPath
 import com.example.drivermodule.R
 import com.example.drivermodule.Ui.DriverFragment
@@ -52,18 +49,13 @@ import io.reactivex.functions.BiFunction
 import io.reactivex.functions.Function
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_map.*
-import kotlinx.android.synthetic.main.fragment_driver.*
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.channels.consumesAll
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import okhttp3.*
 import org.cs.tec.library.Base.Utils.*
 import org.cs.tec.library.Bus.RxBus
 import org.cs.tec.library.USERID
 import org.cs.tec.library.Utils.ConvertUtils
-import org.cs.tec.library.Utils.ToastUtils
-import org.cs.tec.library.WX_APP_ID
 import java.io.File
 import java.io.FileOutputStream
 import java.text.DecimalFormat
@@ -269,7 +261,12 @@ class MapUtils : GeocodeSearch.OnGeocodeSearchListener, DistanceSearch.OnDistanc
 
     override fun onRegeocodeSearched(p0: RegeocodeResult?, p1: Int) {
         if (p1 == 1000) {
-            RxBus.default?.post(p0!!)
+
+            var even = RxBusEven()
+            even.type = DriverMapPointRegeocodeSearched
+            even.value = p0
+            RxBus.default?.post(even)
+
         }
     }
 

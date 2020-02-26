@@ -21,6 +21,7 @@
         sothree:umanoDragView="@+id/slideView"
         sothree:umanoFadeColor="#00FFFFFF"
         sothree:umanoPanelHeight="0dp"
+        sothree:umanoScrollInterpolator="@+id/main_view"
         sothree:umanoShadowHeight="0dp">
 
         <RelativeLayout
@@ -41,56 +42,6 @@
                 android:visibility="@{driver_item.bottomLayoutVisible ? View.VISIBLE : View.GONE}"
                 app:data="@{driver_item}"></include>
         </RelativeLayout>
-
-        <!--<LinearLayout-->
-        <!--android:id="@+id/slideView"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="match_parent"-->
-        <!--android:orientation="vertical">-->
-
-        <!--<RelativeLayout-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="68dp">-->
-
-        <!--<TextView-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="@dimen/d_10"-->
-        <!--android:background="@color/colorPrimary"-->
-        <!--android:gravity="center"-->
-        <!--android:text="这是底部滑块的头部" />-->
-        <!--</RelativeLayout>-->
-
-        <!--<android.support.v4.widget.NestedScrollView-->
-        <!--android:id="@+id/scrollView"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="wrap_content">-->
-
-        <!--<LinearLayout-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:orientation="vertical">-->
-
-        <!--<TextView-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="@dimen/d_10"-->
-        <!--android:background="@color/colorAccent"-->
-        <!--android:gravity="center"-->
-        <!--android:text="可滑动部分1" />-->
-
-        <!--<ImageView-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="@dimen/d_40"-->
-        <!--android:src="@mipmap/ic_launcher" />-->
-
-        <!--<TextView-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="@dimen/d_10"-->
-        <!--android:background="@color/colorAccent"-->
-        <!--android:gravity="center"-->
-        <!--android:text="可滑动部分2" />-->
-        <!--</LinearLayout>-->
-        <!--</android.support.v4.widget.NestedScrollView>-->
-        <!--</LinearLayout>-->
 
         <include
             layout="@layout/driver_sliding_up"

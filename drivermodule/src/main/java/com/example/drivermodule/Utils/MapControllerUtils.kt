@@ -51,6 +51,7 @@ import com.example.drivermodule.Ui.MapFragment
 import com.google.gson.Gson
 import com.tencent.mm.opensdk.modelmsg.SendAuth
 import com.zk.library.Base.BaseApplication
+import com.zk.library.Bus.event.RxBusEven
 import com.zk.library.Utils.PreferenceUtils
 import com.zk.library.Utils.RouterUtils
 import io.reactivex.Observable
@@ -277,8 +278,12 @@ class MapControllerUtils : GeocodeSearch.OnGeocodeSearchListener, DistanceSearch
     }
 
     override fun onRegeocodeSearched(p0: RegeocodeResult?, p1: Int) {
+
         if (p1 == 1000) {
-            RxBus.default?.post(p0!!)
+            var even = RxBusEven()
+            even.type = RxBusEven.DriverMapPointRegeocodeSearched
+            even.value = p0
+            RxBus.default?.post(even)
         }
     }
 
@@ -305,6 +310,7 @@ class MapControllerUtils : GeocodeSearch.OnGeocodeSearchListener, DistanceSearch
         mTraceClient = LBSTraceClient(context)
         fr = activty.viewModel?.items!![0] as DriverItemModel
         navi = AMapNavi.getInstance(this.activity.activity)
+        navi.addAMapNaviListener(this)
     }
 
 
@@ -384,8 +390,6 @@ class MapControllerUtils : GeocodeSearch.OnGeocodeSearchListener, DistanceSearch
     }
 
     fun setDriverRoute(startPoint: LatLonPoint, endPoint: LatLonPoint, passPointDatas: ArrayList<Location>) {
-
-        navi.addAMapNaviListener(this)
         CoroutineScope(uiContext).launch {
             activity._mActivity?.showProgressDialog("正在规划路径中......")
         }
@@ -414,9 +418,17 @@ class MapControllerUtils : GeocodeSearch.OnGeocodeSearchListener, DistanceSearch
 
     override fun onCalculateRouteSuccess(p0: AMapCalcRouteResult?) {
         super.onCalculateRouteSuccess(p0)
+        Log.e("result","onCalculateRouteSuccess")
+        activity?._mActivity!!.dismissProgressDialog()
         if (caculateRouteListener != null) {
-            caculateRouteListener?.CalculateCallBack(p0)
+            caculateRouteListener?.CalculateCallBack(p0!!)
         }
+    }
+
+    override fun onCalculateRouteFailure(p0: AMapCalcRouteResult?) {
+        super.onCalculateRouteFailure(p0)
+        Log.e("result","onCalculateRouteFailure")
+        activity?._mActivity!!.dismissProgressDialog()
     }
 
 }

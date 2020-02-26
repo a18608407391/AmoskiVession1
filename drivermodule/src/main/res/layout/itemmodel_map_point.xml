@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:app="http://schemas.android.com/apk/res-auto">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:sothree="http://schemas.android.com/tools">
 
     <data>
 
@@ -10,81 +12,100 @@
             type="com.example.drivermodule.Controller.MapPointItemModel"></variable>
     </data>
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+    <com.example.drivermodule.Sliding.SlidingUpPanelLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:gravity="bottom"
+        app:initPanel="@{map_point_item.panelState}"
+        sothree:umanoDragView="@+id/map_point_slideView"
+        sothree:umanoFadeColor="#00FFFFFF"
+        sothree:umanoPanelHeight="20dp"
+        sothree:umanoScrollableView="@+id/scroll_view"
+        sothree:umanoShadowHeight="0dp">
 
-        <LinearLayout
+        <RelativeLayout
             android:id="@+id/top_main_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:orientation="vertical"
-            app:layout_constraintBottom_toTopOf="@+id/linearLayout"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            android:orientation="vertical">
 
             <include
                 layout="@layout/item_float_district_layout"
                 android:background="#00FFFFFF"
                 app:data="@{map_point_item}"></include>
-        </LinearLayout>
+        </RelativeLayout>
+
 
         <LinearLayout
-            android:id="@+id/linearLayout"
+            android:id="@+id/map_point_slideView"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
+            android:layout_height="wrap_content"
             android:background="@color/trans"
-            android:gravity="bottom|center_horizontal"
-            android:orientation="vertical"
-            android:visibility="@{map_point_item.choiceVisible?View.VISIBLE:View.GONE}"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/top_main_layout">
-
-            <HorizontalScrollView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="horizontal"
-                android:scrollbars="none">
-
-                <LinearLayout
-                    android:id="@+id/bottom_route_choice"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="#FFFFFF"
-                    android:gravity="center"
-                    android:orientation="horizontal"></LinearLayout>
-            </HorizontalScrollView>
+            android:orientation="vertical">
 
             <LinearLayout
+                android:id="@+id/linearLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/white"
-                android:gravity="right"
-                android:orientation="horizontal"
-                android:paddingBottom="@dimen/d_10"
-                android:paddingTop="@dimen/d_10">
+                android:background="@drawable/corner_dialog_18dp"
+                android:gravity="bottom|center_horizontal"
+                android:orientation="vertical"
+                android:visibility="@{map_point_item.choiceVisible?View.VISIBLE:View.GONE}">
 
-                <TextView
-                    android:id="@+id/navi_btn"
-                    android:layout_width="@dimen/d_115"
-                    android:layout_height="@dimen/d_36"
-                    android:layout_gravity="right"
-                    android:layout_marginRight="@dimen/d_15"
-                    android:background="@drawable/login_btn_shape_nomal"
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/d_15"
+                    android:src="@drawable/corner_line_circle" />
+
+                <HorizontalScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
                     android:gravity="center"
-                    android:onClick="@{map_point_item::onClick}"
-                    android:text="开始导航"
-                    android:textColor="@color/white"
-                    android:textSize="@dimen/s_15" />
+                    android:orientation="horizontal"
+                    android:scrollbars="none">
 
+                    <LinearLayout
+                        android:id="@+id/bottom_route_choice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="#FFFFFF"
+                        android:gravity="center"
+                        android:orientation="horizontal"
+                        app:initMapPointLinear="@{map_point_item.items}"
+                        app:mapPointLinearCommand="@{map_point_item.bindingCommand}"></LinearLayout>
+                </HorizontalScrollView>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/white"
+                    android:gravity="right"
+                    android:orientation="horizontal"
+                    android:paddingBottom="@dimen/d_10"
+                    android:paddingTop="@dimen/d_10">
+
+                    <TextView
+                        android:id="@+id/navi_btn"
+                        android:layout_width="@dimen/d_115"
+                        android:layout_height="@dimen/d_36"
+                        android:layout_gravity="right"
+                        android:layout_marginRight="@dimen/d_15"
+                        android:background="@drawable/login_btn_shape_nomal"
+                        android:gravity="center"
+                        android:onClick="@{map_point_item::onClick}"
+                        android:text="开始导航"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/s_15" />
+                </LinearLayout>
+
+
+                <android.support.v4.widget.NestedScrollView
+                    android:id="@+id/scroll_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"></android.support.v4.widget.NestedScrollView>
             </LinearLayout>
         </LinearLayout>
-    </LinearLayout>
+    </com.example.drivermodule.Sliding.SlidingUpPanelLayout>
 </layout>

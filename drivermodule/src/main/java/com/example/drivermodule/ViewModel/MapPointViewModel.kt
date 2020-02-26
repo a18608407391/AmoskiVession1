@@ -8,6 +8,7 @@ import android.databinding.ObservableField
 import android.databinding.ViewDataBinding
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.helper.ItemTouchHelper
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.Toast
@@ -131,7 +132,9 @@ class MapPointViewModel : BaseViewModel, RouteSearch.OnRouteSearchListener, Base
             items.sortBy {
                 it.title.get()!!.length
             }
+
             initLinear()
+
             drawRouteLine(0)
 //            mapUtils?.CurState = MapUtils.OnShareState
 //            fr.map_view.map.setOnCameraChangeListener(mapUtils)
@@ -227,6 +230,8 @@ class MapPointViewModel : BaseViewModel, RouteSearch.OnRouteSearchListener, Base
             } else {
                 addressName = it.regeocodeAddress?.formatAddress!!
             }
+
+
             mapPointController?.screenMaker?.title = addressName
             if (mapPointController.screenMaker != null) {
                 mapPointController.screenMaker?.showInfoWindow()
@@ -357,7 +362,6 @@ class MapPointViewModel : BaseViewModel, RouteSearch.OnRouteSearchListener, Base
 //                            mapActivity.getDrverFragment().viewModel!!.driverController?.movemaker?.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.finaly_point))
 
 
-
                             mapPointController?.finallyMarker = mapActivity?.mAmap!!.addMarker(MarkerOptions().position(AMapUtil.convertToLatLng(tip.latLonPoint)).anchor(0.5f, 0.5f)
                                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.select_point)))
                             mapActivity?.mapUtils?.setDriverRoute(converLatPoint(mapPointController?.startMaker?.position!!), LatLonPoint(driverModel.status.navigationEndPoint!!.latitude, driverModel.status.navigationEndPoint!!.longitude), mapActivity.getDrverFragment().viewModel!!.status?.passPointDatas!!)
@@ -407,9 +411,6 @@ class MapPointViewModel : BaseViewModel, RouteSearch.OnRouteSearchListener, Base
             }
         }
     }
-
-
-
     fun onClick(view: View) {
         when (view.id) {
             R.id.navi_btn -> {

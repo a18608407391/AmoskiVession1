@@ -27,7 +27,7 @@ import com.example.drivermodule.R;
 public class RouteOverlay {
     protected List<Marker> stationMarkers = new ArrayList<Marker>();
     protected List<Polyline> allPolyLines = new ArrayList<Polyline>();
-    protected Marker startMarker;
+    public Marker startMarker;
     public Marker endMarker;
     protected LatLng startPoint;
     protected LatLng endPoint;

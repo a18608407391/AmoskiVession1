@@ -17,6 +17,7 @@
         android:layout_marginTop="@dimen/d_10"
         android:layout_marginLeft="@dimen/d_15"
         android:layout_marginRight="@dimen/d_15"
+        android:layout_centerHorizontal="true"
         android:background="@drawable/float_layout_bg"
         android:orientation="vertical">
 

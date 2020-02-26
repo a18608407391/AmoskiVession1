@@ -24,7 +24,7 @@ import com.elder.zcommonmodule.Drivering
 import com.elder.zcommonmodule.Entity.DriverDataStatus
 import com.elder.zcommonmodule.Entity.HotData
 import com.elder.zcommonmodule.Entity.Location
-import com.elder.zcommonmodule.Even.RxBusEven
+import com.zk.library.Bus.event.RxBusEven
 import com.elder.zcommonmodule.Inteface.Locationlistener
 import com.elder.zcommonmodule.REQUEST_LOAD_ROADBOOK
 import com.example.drivermodule.BR
@@ -139,23 +139,13 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
     override fun onComponentClick(view: View) {
 
         if (currentPosition == 3) {
-
+            (items[3] as MapPointItemModel).onComponentClick()
         } else {
             var even = RxBusEven()
             even.type = RxBusEven.DriverReturnRequest
             RxBus.default?.post(even)
         }
         return
-
-        if (currentPosition == 0) {
-            mapActivity.getDrverFragment().viewModel?.onComponentClick(view)
-        } else if (currentPosition == 1) {
-            mapActivity.getTeamFragment().viewModel?.onComponentClick(view)
-        } else if (currentPosition == 2) {
-            mapActivity.getMapPointFragment().viewModel?.onComponentClick(view)
-        } else if (currentPosition == 3) {
-            mapActivity.getRoadBookFragment().viewModel?.onComponentClick(view)
-        }
     }
 
 
@@ -196,7 +186,9 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
 
 
     override fun onCameraChangeFinish(p0: CameraPosition?) {
-        RxBus.default?.post("onCameraChangeFinish")
+        var even = RxBusEven()
+        even.type = RxBusEven.MapCameraChangeFinish
+        RxBus.default?.post(even)
     }
 
     override fun onCameraChange(p0: CameraPosition?) {

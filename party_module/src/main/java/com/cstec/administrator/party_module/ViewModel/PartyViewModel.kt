@@ -13,7 +13,7 @@ import com.cstec.administrator.party_module.Fragment.PartyFragment
 import com.cstec.administrator.party_module.R
 import com.cstec.administrator.party_module.WebJavaScriptInterface
 import com.elder.zcommonmodule.Base_URL
-import com.elder.zcommonmodule.Even.RxBusEven
+import com.zk.library.Bus.event.RxBusEven
 import com.elder.zcommonmodule.USER_TOKEN
 import com.elder.zcommonmodule.Utils.DialogUtils
 import com.tencent.mm.opensdk.modelmsg.SendMessageToWX

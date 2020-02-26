@@ -102,6 +102,7 @@ class SplashActivity : Activity(), RouteSearch.OnRouteSearchListener {
         setContentView(R.layout.activity_splash)
 //        OSUtil.jumpStartInterface(context)
 
+
         if (!NetworkUtil.isNetworkAvailable(this)) {
 //            ARouter.getInstance().build(RouterUtils.MapModuleConfig.SMOOTH_ACTIVITY).navigation()
             Toast.makeText(context, getString(R.string.network_notAvailable), Toast.LENGTH_SHORT).show()

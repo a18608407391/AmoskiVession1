@@ -2,7 +2,9 @@ package com.example.drivermodule;
 
 import android.content.Context;
 import android.databinding.BindingAdapter;
+import android.databinding.DataBindingUtil;
 import android.databinding.ObservableArrayList;
+import android.databinding.ViewDataBinding;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.support.design.widget.BottomSheetBehavior;
@@ -39,6 +41,7 @@ import com.elder.zcommonmodule.Widget.LongPressToFinishButton;
 import com.example.drivermodule.Adapter.AddPointAdapter;
 import com.example.drivermodule.Adapter.AddPointItemAdapter;
 import com.example.drivermodule.Entity.RoadBook.HotBannerData;
+import com.example.drivermodule.Entity.RouteEntity;
 import com.example.drivermodule.ItemModel.HotRoadItemModle;
 import com.example.drivermodule.ItemModel.NearRoadItemModle;
 import com.example.drivermodule.Sliding.SlidingUpPanelLayout;
@@ -47,6 +50,7 @@ import com.zk.library.binding.command.ViewAdapter.image.SimpleTarget;
 
 import org.cs.tec.library.Base.Utils.UtilsKt;
 import org.cs.tec.library.Utils.ConvertUtils;
+import org.cs.tec.library.binding.command.BindingCommand;
 
 import java.net.URL;
 import java.text.DecimalFormat;
@@ -98,7 +102,7 @@ public class ViewAdapter {
         ItemTouchHelper helper = new ItemTouchHelper(callback);
         helper.attachToRecyclerView(view);
         adapter.setOnItemDragListener(adapter);
-        adapter.enableDragItem(helper,R.id.drag_layout, true);
+        adapter.enableDragItem(helper, R.id.drag_layout, true);
         view.setLayoutManager(manager);
         view.setAdapter(adapter);
     }
@@ -119,6 +123,27 @@ public class ViewAdapter {
         }
     }
 
+
+    @BindingAdapter({"initMapPointLinear", "mapPointLinearCommand"})
+    public static void initMapPointLinear(LinearLayout linear, ArrayList<RouteEntity> entities, BindingCommand<RouteEntity> command) {
+        linear.removeAllViews();
+        for (int i = 0; i < entities.size(); i++) {
+            LayoutInflater inflater = (LayoutInflater) linear.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            ViewDataBinding binding = DataBindingUtil.inflate(inflater, R.layout.item_route_choice_layout, linear, false);
+            int finalI = i;
+            binding.getRoot().findViewById(R.id.hori_linear_click).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (command != null) {
+                        command.execute(entities.get(finalI));
+                    }
+                }
+            });
+            binding.setVariable(BR.routeEntitiy, entities.get(i));
+            linear.addView(binding.getRoot());
+        }
+        linear.invalidate();
+    }
 
     @BindingAdapter("SuitLines")
     public static void initSuitLines(SuitLines chart, DriverDataStatus status) {

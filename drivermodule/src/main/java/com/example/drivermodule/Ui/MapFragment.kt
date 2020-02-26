@@ -90,6 +90,7 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
 
     override fun getInfoContents(maker: Marker?): View {
         if (viewModel?.currentPosition == 0 || viewModel?.currentPosition == 3) {
+            Log.e("result","getInfoContents" + maker!!.title)
             if (maker?.title == null || maker?.title.isEmpty() || maker?.title == "null") {
                 return null!!
             } else {
@@ -123,6 +124,7 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
 
     override fun getInfoWindow(maker: Marker?): View {
         if (viewModel?.currentPosition == 0 || viewModel?.currentPosition == 3) {
+            Log.e("result","getInfoWindow" + maker!!.title)
             if (maker?.title == null || maker?.title.isEmpty() || maker?.title == "null") {
                 return null!!
             } else {
@@ -196,13 +198,13 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
             var model = viewModel?.items!![0] as DriverItemModel
             model.onInfoWindowClick(it)
         } else if (viewModel?.currentPosition == 1) {
-            var model = viewModel?.items!![0] as TeamItemModel
+            var model = viewModel?.items!![1] as TeamItemModel
             model.onInfoWindowClick(it)
         } else if (viewModel?.currentPosition == 2) {
-            var model = viewModel?.items!![0] as RoadBookItemModel
+            var model = viewModel?.items!![2] as RoadBookItemModel
             model.onInfoWindowClick(it)
         } else if (viewModel?.currentPosition == 3) {
-            var model = viewModel?.items!![0] as MapPointItemModel
+            var model = viewModel?.items!![3] as MapPointItemModel
             model.onInfoWindowClick(it)
         }
     }
