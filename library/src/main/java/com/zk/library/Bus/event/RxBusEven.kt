@@ -10,6 +10,8 @@ class RxBusEven {
     }
 
 
+
+
     var type = 0
 
     var value: Any? = null
