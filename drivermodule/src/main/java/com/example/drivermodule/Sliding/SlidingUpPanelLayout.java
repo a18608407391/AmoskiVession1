@@ -888,7 +888,7 @@ public class SlidingUpPanelLayout extends ViewGroup {
             return false;
         }
 
-        Log.e("result","onInterceptTouchEvent"+"进入这里");
+        Log.e("result", "onInterceptTouchEvent" + "进入这里");
 
         final int action = MotionEventCompat.getActionMasked(ev);
         final float x = ev.getX();
@@ -948,25 +948,43 @@ public class SlidingUpPanelLayout extends ViewGroup {
         if (!isEnabled() || !isTouchEnabled()) {
             return super.onTouchEvent(ev);
         }
-        Log.e("result","onTouchEvent"+"进入这里");
-        try {
-            mDragHelper.processTouchEvent(ev);
-            return true;
-        } catch (Exception ex) {
-            // Ignore the pointer out of range exception
+        Log.e("result", "onTouchEvent" + "进入这里");
+        Rect frame = new Rect();
+        mDragView.getHitRect(frame);
+        float eventX = ev.getX();
+        float eventY = ev.getY();
+        if (frame.contains((int) eventX, (int) eventY)) {
+            try {
+                mDragHelper.processTouchEvent(ev);
+                return true;
+            } catch (Exception ex) {
+                // Ignore the pointer out of range exception
+                return false;
+            }
+
+        } else {
             return false;
         }
+
+
+//        if (mIsScrollableViewHandlingTouch || !isTouchEnabled()) {
+//
+//        }else{
+//            return false;
+//        }
+
     }
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
+        //分发
         final int action = MotionEventCompat.getActionMasked(ev);
 
         if (!isEnabled() || !isTouchEnabled() || (mIsUnableToDrag && action != MotionEvent.ACTION_DOWN)) {
             mDragHelper.abort();
             return super.dispatchTouchEvent(ev);
         }
-        Log.e("result","dispatchTouchEvent"+"进入这里");
+        Log.e("result", "dispatchTouchEvent" + "进入这里");
         final float x = ev.getX();
         final float y = ev.getY();
 
@@ -1103,7 +1121,7 @@ public class SlidingUpPanelLayout extends ViewGroup {
     public void setPanelState(PanelState state) {
 
         // Abort any running animation, to allow state change
-        if(mDragHelper.getViewDragState() == ViewDragHelper.STATE_SETTLING){
+        if (mDragHelper.getViewDragState() == ViewDragHelper.STATE_SETTLING) {
             Log.d(TAG, "View is settling. Aborting animation.");
             mDragHelper.abort();
         }
