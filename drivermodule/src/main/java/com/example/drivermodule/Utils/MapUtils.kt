@@ -65,7 +65,9 @@ import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList
 
 class MapUtils : GeocodeSearch.OnGeocodeSearchListener, DistanceSearch.OnDistanceSearchListener, TraceListener, AMap.OnMapScreenShotListener, AMap.OnCameraChangeListener {
+    var array = arrayOf("直行车道", "左转车道", "左转或直行车道", "右转车道", "右转或直行车道", "左掉头车道", "左转或者右转车道", " 左转或右转或直行车道", "右转掉头车道", "直行或左转掉头车道", "直行或右转掉头车道", "左转或左掉头车道", "右转或右掉头车道", "直行并且车道扩展", "左转+左掉头+扩展", "不可以选择该车道", "直行+左转+左掉头车道", "右转+左掉头", "左转+右转+左掉头", "直行+右转+左掉头", "左转+右掉头", "公交车道", "空车道", "可变车道")
 
+    var actions = arrayOf("直行", "左转", "左转或直行", "右转", "右转或这行", "左掉头", "左转或者右转", " 左转或右转或直行", "右转掉头", "直行或左转掉头", "直行或右转掉头", "左转或左掉头", "右转或右掉头", "直行并且车道扩展", "左转+左掉头+扩展", "不可以选择", "直行+左转+左掉头", "右转+左掉头", "左转+右转+左掉头", "直行+右转+左掉头", "左转+右掉头", "公交车道", "空车道", "可变车道")
     var CurState = 0
 
     companion object {

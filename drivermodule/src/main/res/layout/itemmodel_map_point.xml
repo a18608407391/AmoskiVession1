@@ -17,10 +17,11 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="bottom"
-        app:initPanel="@{map_point_item.panelState}"
+        app:initPanelMapPoint="@{map_point_item.panelState}"
         sothree:umanoDragView="@+id/map_point_slideView"
         sothree:umanoFadeColor="#00FFFFFF"
         sothree:umanoPanelHeight="20dp"
+        sothree:umanoOverlay="true"
         sothree:umanoScrollableView="@+id/scroll_view"
         sothree:umanoShadowHeight="0dp">
 
@@ -43,6 +44,7 @@
             android:layout_height="wrap_content"
             android:background="@color/trans"
             android:orientation="vertical">
+
 
             <LinearLayout
                 android:id="@+id/linearLayout"
@@ -77,6 +79,15 @@
                         app:mapPointLinearCommand="@{map_point_item.bindingCommand}"></LinearLayout>
                 </HorizontalScrollView>
 
+                    <android.support.v7.widget.RecyclerView
+                        android:id="@+id/scroll_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:adapter="@{map_point_item.roadDetailAdapter}"
+                        app:itemBinding="@{map_point_item.roadDetailItemsBinding}"
+                        app:items="@{map_point_item.roadDetailItems}"
+                        app:layoutManager="android.support.v7.widget.LinearLayoutManager"></android.support.v7.widget.RecyclerView>
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -85,6 +96,16 @@
                     android:orientation="horizontal"
                     android:paddingBottom="@dimen/d_10"
                     android:paddingTop="@dimen/d_10">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="@dimen/d_36"
+                        android:layout_weight="1"
+                        android:drawableLeft="@drawable/three_point_icon"
+                        android:gravity="left|center_vertical"
+                        android:text="路线详情"
+                        android:textColor="@color/black_12"
+                        android:textSize="@dimen/s_15" />
 
                     <TextView
                         android:id="@+id/navi_btn"
@@ -99,12 +120,6 @@
                         android:textColor="@color/white"
                         android:textSize="@dimen/s_15" />
                 </LinearLayout>
-
-
-                <android.support.v4.widget.NestedScrollView
-                    android:id="@+id/scroll_view"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"></android.support.v4.widget.NestedScrollView>
             </LinearLayout>
         </LinearLayout>
     </com.example.drivermodule.Sliding.SlidingUpPanelLayout>

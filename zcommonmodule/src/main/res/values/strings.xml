@@ -61,7 +61,6 @@
     <string name="set_new_password">设置新密码</string>
 
 
-
     <string name="driver">骑行</string>
     <string name="drivering">骑行中</string>
     <string name="log_fr_bottom_title">2019锡林郭勒草原重机骑行节</string>
@@ -190,6 +189,7 @@
     <string name="notaddcarType">您还未设置车型呢！</string>
     <string name="not_car_photo">请上传车辆照片！</string>
     <string name="delete">删除</string>
+
     <string name="set_default">设为默认</string>
     <string name="isDefaultSelected">当前车辆已是默认车辆！</string>
     <string name="delete_success">删除成功！</string>

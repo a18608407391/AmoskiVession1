@@ -4,7 +4,8 @@
     <string name="TeamnotEnoughOneKm">骑行距离不足一公里，且队长离开队伍后，将会解散队伍！</string>
     <string name="TeamernotEnoughOneKmAndOther">您有一只队伍正在运行，且骑行距离不足一公里,退出骑行将会解散队伍，是否转让队伍管理权限？</string>
     <string name="TeamnotEnoughOneKmBymember">组队骑行距离不足一公里，数据将不会保留，结束骑行后，将会离开队伍！</string>
-
+    <string name="cong">从 </string>
+    <string name="arrive_end">到达终点 </string>
     <string name="cancle_riding">取消骑行</string>
     <string name="setting_permisstion">设置权限</string>
     <string name="continue_driving">继续骑行</string>

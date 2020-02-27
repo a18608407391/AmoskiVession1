@@ -22,17 +22,22 @@ import com.elder.zcommonmodule.converLatPoint
 import com.example.drivermodule.AMapUtil
 import com.example.drivermodule.Adapter.AddPointAdapter
 import com.example.drivermodule.Adapter.AddPointItemAdapter
+import com.example.drivermodule.BR
 import com.example.drivermodule.CalculateRouteListener
 import com.example.drivermodule.Entity.PointEntity
+import com.example.drivermodule.Entity.RouteDetailEntity
 import com.example.drivermodule.Entity.RouteEntity
 import com.example.drivermodule.Overlay.DrivingRouteOverlay
 import com.example.drivermodule.Overlay.NaviDrivingRouteOverlay
 import com.example.drivermodule.R
 import com.example.drivermodule.Sliding.SlidingUpPanelLayout
 import com.example.drivermodule.Ui.MapFragment
+import com.example.drivermodule.Utils.MapUtils
 import com.example.drivermodule.ViewModel.MapFrViewModel
 import com.zk.library.Base.ItemViewModel
 import com.zk.library.Bus.event.RxBusEven
+import me.tatarka.bindingcollectionadapter2.BindingRecyclerViewAdapter
+import me.tatarka.bindingcollectionadapter2.ItemBinding
 import org.cs.tec.library.Base.Utils.context
 import org.cs.tec.library.Base.Utils.getString
 import org.cs.tec.library.Utils.ConvertUtils
@@ -55,7 +60,7 @@ class MapPointItemModel : ItemViewModel<MapFrViewModel>(), BaseQuickAdapter.OnIt
     var choiceVisible = ObservableField<Boolean>(true)
     var pointList = ArrayList<PointEntity>()
     var finallyMarker: Marker? = null
-    var panelState = ObservableField<SlidingUpPanelLayout.PanelState>(SlidingUpPanelLayout.PanelState.COLLAPSED)
+    var panelState = ObservableField<SlidingUpPanelLayout.PanelState>(SlidingUpPanelLayout.PanelState.HIDDEN)
     lateinit var adapter: AddPointItemAdapter
     var SingleList = ArrayList<PointEntity>().apply {
         this.add(PointEntity("", LatLonPoint(0.0, 0.0)))
@@ -200,7 +205,28 @@ class MapPointItemModel : ItemViewModel<MapFrViewModel>(), BaseQuickAdapter.OnIt
     var routeTime = 0
     private fun drawRouteLine(routeEntity: RouteEntity?) {
         var path = mapFr.mapUtils?.navi?.naviPaths!![routeEntity!!.id.get()]
-
+        RoadDetailItems?.clear()
+        var entity = RouteDetailEntity()
+        entity.position = 0
+        RoadDetailItems.add(entity)
+        path?.steps?.forEachIndexed { index, it ->
+            var item = RouteDetailEntity()
+            item.position = index + 1
+            item.iconType = it.iconType
+            item.roadName = it.links.get(0).roadName
+            if (it.length < 1000) {
+                item.distance = it.length.toString() + "米"
+            } else {
+                item.distance = DecimalFormat("0.0").format(it.length / 1000) + "公里"
+            }
+            if (it.trafficLightCount > 0) {
+                item.distance = item.distance + "红绿灯" + it.trafficLightCount + "个"
+            }
+            RoadDetailItems.add(item)
+        }
+        RoadDetailItems.sortBy {
+            it.position
+        }
         var drivingRouteOverlay = NaviDrivingRouteOverlay(context, mapFr.mAmap, path, path?.coordList!!.get(0), if (finallyMarker == null) path.endPoint else NaviLatLng(viewModel.status.navigationEndPoint!!.latitude, viewModel.status.navigationEndPoint!!.longitude), path!!.wayPoint)
         mapFr.mAmap.isMyLocationEnabled = false
         drivingRouteOverlay.setNodeIconVisibility(true)//设置节点marker是否显示
@@ -211,7 +237,6 @@ class MapPointItemModel : ItemViewModel<MapFrViewModel>(), BaseQuickAdapter.OnIt
         routeDistance = path.allLength
         routeTime = path.allTime
         if (path.wayPoint.size == 0) {
-            Log.e("result", "无途经点")
             screenMaker = drivingRouteOverlay.addRemoveMarker(AMapUtil.convertToLatLng(LatLonPoint(viewModel.status.navigationStartPoint!!.latitude, viewModel.status.navigationStartPoint!!.longitude)))
             finallyMarker!!.remove()
             finallyMarker = null
@@ -221,8 +246,10 @@ class MapPointItemModel : ItemViewModel<MapFrViewModel>(), BaseQuickAdapter.OnIt
             finallyMarker = drivingRouteOverlay?.endMarker
             drivingRouteOverlay.zoomSpanAll()
         } else {
-            Log.e("result", "有途经点")
             screenMaker = drivingRouteOverlay.addRemoveMarker(drivingRouteOverlay.convertToLatLng(path!!.wayPoint[path.wayPoint.size - 1]))
+        }
+        if (panelState.get() == SlidingUpPanelLayout.PanelState.HIDDEN) {
+            panelState.set(SlidingUpPanelLayout.PanelState.COLLAPSED)
         }
     }
 
@@ -248,4 +275,19 @@ class MapPointItemModel : ItemViewModel<MapFrViewModel>(), BaseQuickAdapter.OnIt
             }
         }
     })
+
+    var RoadDetailItems = ObservableArrayList<RouteDetailEntity>()
+
+    var RoadDetailItemsBinding = ItemBinding.of<RouteDetailEntity> { itemBinding, position, item ->
+        if (item.position == 0) {
+            itemBinding.set(BR.route_deteal_list, R.layout.roate_detail_first_layout)
+        } else if (item.position == 999) {
+            itemBinding.set(BR.route_deteal_list, R.layout.roate_detail_first_layout)
+        } else {
+            itemBinding.set(BR.route_deteal_list, R.layout.roate_detail_layout)
+        }
+    }
+
+    var RoadDetailAdapter = BindingRecyclerViewAdapter<RouteDetailEntity>()
+
 }

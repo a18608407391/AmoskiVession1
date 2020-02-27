@@ -44,6 +44,7 @@ import com.example.drivermodule.Entity.RoadBook.HotBannerData;
 import com.example.drivermodule.Entity.RouteEntity;
 import com.example.drivermodule.ItemModel.HotRoadItemModle;
 import com.example.drivermodule.ItemModel.NearRoadItemModle;
+import com.example.drivermodule.Overlay.NextTurnTipView;
 import com.example.drivermodule.Sliding.SlidingUpPanelLayout;
 import com.zk.library.Base.BaseApplication;
 import com.zk.library.binding.command.ViewAdapter.image.SimpleTarget;
@@ -78,6 +79,10 @@ public class ViewAdapter {
         }
     }
 
+    @BindingAdapter("setNextTureImage")
+    public static void setNextTurnImage(NextTurnTipView view, int status) {
+        view.setIconType(status);
+    }
 
     @BindingAdapter("initBehavior")
     public static void setBehavior(LinearLayout layout, int b) {
@@ -89,6 +94,13 @@ public class ViewAdapter {
     @BindingAdapter("initPanel")
     public static void initPanel(SlidingUpPanelLayout panel, SlidingUpPanelLayout.PanelState state) {
         panel.setPanelState(state);
+    }
+
+    @BindingAdapter("initPanelMapPoint")
+    public static void initPanelMapPoint(SlidingUpPanelLayout panel, SlidingUpPanelLayout.PanelState state) {
+        panel.setPanelState(state);
+        panel.setScrollableView(panel.findViewById(R.id.scroll_view));
+        panel.setPanelHeight(ConvertUtils.Companion.dp2px(160));
     }
 
     @BindingAdapter("initMapPointRecycle")

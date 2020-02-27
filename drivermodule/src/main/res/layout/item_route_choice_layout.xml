@@ -31,6 +31,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="@dimen/d_10"
                 android:layout_marginTop="@dimen/d_10"
+                android:singleLine="true"
                 android:text="@{routeEntitiy.title}"
                 android:textColor="@{routeEntitiy.select?@color/line_color:@color/nomalTextColor}"
                 android:textSize="@dimen/s_12"
