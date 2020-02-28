@@ -96,8 +96,18 @@ class ReleaseDynamicsViewModel : BaseViewModel(), DialogUtils.Companion.IconUriC
 
     override fun postPhotoSuccess(it: String) {
 //       var resp =  Gson().fromJson<BaseResponse>(it,BaseResponse::class.java)
-        Log.e("result", it)
         var list = Gson().fromJson<ArrayList<SocialPhotoEntity>>(it, object : TypeToken<ArrayList<SocialPhotoEntity>>() {}.type)
+        items.forEachIndexed { index, s ->
+            if (!s.isNullOrEmpty()) {
+                list.forEachIndexed { dex, t ->
+                    if (s.endsWith(t.fileNameUrl!!)) {
+                        var f = BitmapFactory.decodeFile(s)
+                        list[dex].singleHeight = f.height
+                        list[dex].singleWidth = f.width
+                    }
+                }
+            }
+        }
         sendNoPhoto(list)
     }
 
@@ -161,7 +171,6 @@ class ReleaseDynamicsViewModel : BaseViewModel(), DialogUtils.Companion.IconUriC
             })
             dialog.show()
         }
-
     }
 
 

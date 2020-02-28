@@ -11,6 +11,7 @@ import com.example.drivermodule.ViewModel.RoadDetailViewModel
 import com.example.drivermodule.databinding.ActivityRoadDetailBinding
 import com.zk.library.Base.BaseActivity
 import com.zk.library.Utils.RouterUtils
+import com.zk.library.Utils.StatusbarUtils
 
 
 @Route(path = RouterUtils.MapModuleConfig.ROAD_DETAIL)
@@ -32,6 +33,9 @@ class RoadDetailActivity : BaseActivity<ActivityRoadDetailBinding, RoadDetailVie
     }
 
     override fun initContentView(savedInstanceState: Bundle?): Int {
+        StatusbarUtils.setRootViewFitsSystemWindows(this, false)
+        StatusbarUtils.setTranslucentStatus(this)
+        StatusbarUtils.setStatusBarMode(this, true, 0x000000)
         return R.layout.activity_road_detail
     }
 

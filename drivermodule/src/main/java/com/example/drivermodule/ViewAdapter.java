@@ -40,6 +40,7 @@ import com.elder.zcommonmodule.Widget.CustomRecycleView;
 import com.elder.zcommonmodule.Widget.LongPressToFinishButton;
 import com.example.drivermodule.Adapter.AddPointAdapter;
 import com.example.drivermodule.Adapter.AddPointItemAdapter;
+import com.example.drivermodule.Controller.MapPointItemModel;
 import com.example.drivermodule.Entity.RoadBook.HotBannerData;
 import com.example.drivermodule.Entity.RouteEntity;
 import com.example.drivermodule.ItemModel.HotRoadItemModle;
@@ -96,11 +97,13 @@ public class ViewAdapter {
         panel.setPanelState(state);
     }
 
-    @BindingAdapter("initPanelMapPoint")
-    public static void initPanelMapPoint(SlidingUpPanelLayout panel, SlidingUpPanelLayout.PanelState state) {
+    @BindingAdapter({"initPanelMapPoint","initPanelMapListener"})
+    public static void initPanelMapPoint(SlidingUpPanelLayout panel, SlidingUpPanelLayout.PanelState state, MapPointItemModel model) {
         panel.setPanelState(state);
         panel.setScrollableView(panel.findViewById(R.id.scroll_view));
-        panel.setPanelHeight(ConvertUtils.Companion.dp2px(160));
+        panel.setScrollableViewHelper(new NestedScrollableViewHelper());
+        panel.setPanelHeight(ConvertUtils.Companion.dp2px(185));
+        panel.addPanelSlideListener(model);
     }
 
     @BindingAdapter("initMapPointRecycle")

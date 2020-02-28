@@ -60,7 +60,6 @@ class MapPointViewModel : BaseViewModel, RouteSearch.OnRouteSearchListener, Base
     fun onComponentFinish(view: View) {
         SearchPoint()
     }
-
     var routeDistance = 0F
     var routeTime = 0L
     var p0: DriveRouteResult? = null

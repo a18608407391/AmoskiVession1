@@ -19,8 +19,8 @@
             android:orientation="horizontal">
 
             <com.example.drivermodule.Overlay.NextTurnTipView
-                android:layout_width="@dimen/d_45"
-                android:layout_height="@dimen/d_45"
+                android:layout_width="@dimen/d_40"
+                android:layout_height="@dimen/d_40"
                 android:padding="@dimen/d_10"
                 app:setNextTureImage="@{route_deteal_list.iconType}" />
 

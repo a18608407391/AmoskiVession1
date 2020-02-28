@@ -14,13 +14,9 @@ import com.amap.api.maps.model.MarkerOptions;
 import com.amap.api.maps.model.PolylineOptions;
 import com.amap.api.navi.model.AMapNaviPath;
 import com.amap.api.navi.model.AMapNaviStep;
-import com.amap.api.navi.model.AMapTrafficStatus;
 import com.amap.api.navi.model.NaviLatLng;
 import com.amap.api.services.core.LatLonPoint;
-import com.amap.api.services.route.DrivePath;
 import com.amap.api.services.route.DriveStep;
-import com.amap.api.services.route.TMC;
-import com.example.drivermodule.AMapUtil;
 import com.example.drivermodule.R;
 
 import org.cs.tec.library.Base.Utils.UtilsKt;
@@ -229,28 +225,26 @@ public class NaviDrivingRouteOverlay extends RouteOverlay {
         AMapNaviStep segmentTrafficStatus;
         mPolylineOptionscolor = null;
         mPolylineOptionscolor = new PolylineOptions();
-        mPolylineOptionscolor.width(getRouteWidth());
-        List<Integer> colorList = new ArrayList<Integer>();
+        mPolylineOptionscolor.width(30);
+        List<BitmapDescriptor> colorList = new ArrayList<BitmapDescriptor>();
         mPolylineOptionscolor.add(convertToLatLng(tmcSection.get(0).getLinks().get(0).getCoords().get(0)));
-        colorList.add(getDriveColor());
+        colorList.add(getDes());
         for (int i = 0; i < tmcSection.size(); i++) {
             segmentTrafficStatus = tmcSection.get(i);
             for (int i1 = 0; i1 < segmentTrafficStatus.getLinks().size(); i1++) {
-                int color = getcolor(segmentTrafficStatus.getLinks().get(i1).getTrafficStatus());
+                BitmapDescriptor color = getTextture(segmentTrafficStatus.getLinks().get(i1).getTrafficStatus());
                 List<NaviLatLng> mployline = segmentTrafficStatus.getLinks().get(i1).getCoords();
                 for (int j = 1; j < mployline.size(); j++) {
                     mPolylineOptionscolor.add(convertToLatLng(mployline.get(j)));
                     colorList.add(color);
                 }
             }
-
         }
-        colorList.add(getDriveColor());
-        mPolylineOptionscolor.colorValues(colorList);
+        colorList.add(getDes());
+        mPolylineOptionscolor.setCustomTextureList(colorList);
     }
 
     private int getcolor(int status) {
-
         if (status == 1) {
             return Color.parseColor("#62B297");
         } else if (status == 2) {
@@ -263,6 +257,21 @@ public class NaviDrivingRouteOverlay extends RouteOverlay {
             return Color.parseColor("#62B297");
         }
     }
+
+    private BitmapDescriptor getTextture(int status) {
+        if (status == 1) {
+            return BitmapDescriptorFactory.fromResource(R.drawable.custtexture_green);
+        } else if (status == 2) {
+            return BitmapDescriptorFactory.fromResource(R.drawable.custtexture_slow);
+        } else if (status == 3) {
+            return BitmapDescriptorFactory.fromResource(R.drawable.custtexture_bad);
+        } else if (status == 4) {
+            return BitmapDescriptorFactory.fromResource(R.drawable.custtexture_grayred);
+        } else {
+            return BitmapDescriptorFactory.fromResource(R.drawable.custtexture_no);
+        }
+    }
+
 
     public LatLng convertToLatLng(LatLonPoint point) {
         return new LatLng(point.getLatitude(), point.getLongitude());

@@ -74,6 +74,7 @@
                     android:id="@+id/district_item_recycleView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    app:initMapPointRecycle="@{data.adapter}"
                     app:maxHeight="@dimen/d_108"></com.elder.zcommonmodule.Widget.CustomRecycleView>
             </LinearLayout>
 

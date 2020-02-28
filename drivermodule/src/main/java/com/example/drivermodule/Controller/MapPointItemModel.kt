@@ -6,19 +6,21 @@ import android.databinding.ObservableField
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import com.alibaba.android.arouter.launcher.ARouter
+import com.amap.api.maps.CameraUpdateFactory
 import com.amap.api.maps.model.BitmapDescriptorFactory
 import com.amap.api.maps.model.Marker
 import com.amap.api.maps.model.MarkerOptions
+import com.amap.api.maps.model.MyLocationStyle
 import com.amap.api.navi.model.AMapCalcRouteResult
 import com.amap.api.navi.model.NaviLatLng
 import com.amap.api.navi.view.RouteOverLay
 import com.amap.api.services.core.LatLonPoint
+import com.amap.api.services.core.PoiItem
 import com.amap.api.services.geocoder.RegeocodeResult
 import com.chad.library.adapter.base.BaseQuickAdapter
-import com.elder.zcommonmodule.DriverCancle
+import com.elder.zcommonmodule.*
 import com.elder.zcommonmodule.Entity.Location
-import com.elder.zcommonmodule.Prepare_Navigation
-import com.elder.zcommonmodule.converLatPoint
 import com.example.drivermodule.AMapUtil
 import com.example.drivermodule.Adapter.AddPointAdapter
 import com.example.drivermodule.Adapter.AddPointItemAdapter
@@ -32,27 +34,50 @@ import com.example.drivermodule.Overlay.NaviDrivingRouteOverlay
 import com.example.drivermodule.R
 import com.example.drivermodule.Sliding.SlidingUpPanelLayout
 import com.example.drivermodule.Ui.MapFragment
+import com.example.drivermodule.Utils.ErrorInfo
 import com.example.drivermodule.Utils.MapUtils
 import com.example.drivermodule.ViewModel.MapFrViewModel
 import com.zk.library.Base.ItemViewModel
 import com.zk.library.Bus.event.RxBusEven
+import com.zk.library.Utils.RouterUtils
+import kotlinx.android.synthetic.main.fragment_map_point.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import me.tatarka.bindingcollectionadapter2.BindingRecyclerViewAdapter
 import me.tatarka.bindingcollectionadapter2.ItemBinding
 import org.cs.tec.library.Base.Utils.context
 import org.cs.tec.library.Base.Utils.getString
+import org.cs.tec.library.Base.Utils.uiContext
 import org.cs.tec.library.Utils.ConvertUtils
 import org.cs.tec.library.binding.command.BindingCommand
 import org.cs.tec.library.binding.command.BindingConsumer
 import java.text.DecimalFormat
 
 
-class MapPointItemModel : ItemViewModel<MapFrViewModel>(), BaseQuickAdapter.OnItemClickListener, CalculateRouteListener {
+class MapPointItemModel : ItemViewModel<MapFrViewModel>(), BaseQuickAdapter.OnItemClickListener, CalculateRouteListener, SlidingUpPanelLayout.PanelSlideListener {
+    override fun onPanelSlide(panel: View?, slideOffset: Float) {
+
+    }
+
+    override fun onPanelStateChanged(panel: View?, previousState: SlidingUpPanelLayout.PanelState?, newState: SlidingUpPanelLayout.PanelState?) {
+        when (newState) {
+            SlidingUpPanelLayout.PanelState.COLLAPSED -> {
+                RoadDetailItems.clear()
+                listvisible.set(false)
+            }
+            SlidingUpPanelLayout.PanelState.EXPANDED -> {
+
+            }
+        }
+    }
 
     override fun onItemClick(adapter: BaseQuickAdapter<*, *>?, view: View?, position: Int) {
 
     }
 
     //地图选点逻辑处理
+    var listvisible = ObservableField<Boolean>(false)
     var startMaker: Marker? = null
     var screenMaker: Marker? = null
     var dataEmpty = ObservableField<Boolean>(false)
@@ -62,15 +87,67 @@ class MapPointItemModel : ItemViewModel<MapFrViewModel>(), BaseQuickAdapter.OnIt
     var finallyMarker: Marker? = null
     var panelState = ObservableField<SlidingUpPanelLayout.PanelState>(SlidingUpPanelLayout.PanelState.HIDDEN)
     lateinit var adapter: AddPointItemAdapter
+    var CurState = 0  //列表状态，收缩状态为0  展示状态为1
     var SingleList = ArrayList<PointEntity>().apply {
         this.add(PointEntity("", LatLonPoint(0.0, 0.0)))
     }
 
     fun SearchResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (data?.extras != null) {
+            var tip = data?.extras!!["tip"] as PoiItem
+            if (data?.extras!!["tip"] != null) {
+                if (requestCode == RESULT_STR) {
+                    if (finallyMarker == null) {
+                        viewModel.status.navigationEndPoint = Location(tip.latLonPoint.latitude, tip.latLonPoint.longitude, System.currentTimeMillis().toString(), 0F, 0.0, 0F, tip.title)
 
+                        finalyText?.set(tip.title)
+
+                        mapFr.mapUtils?.setDriverRoute(converLatPoint(startMaker?.position!!), LatLonPoint(viewModel.status.navigationEndPoint!!.latitude, viewModel.status.navigationEndPoint!!.longitude), viewModel?.status?.passPointDatas!!)
+                        //                        finallyMarker = mapFr?.mAmap!!.addMarker(MarkerOptions().position(it.position).anchor(0.5f, 0.5f)
+//                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.select_point)))
+//
+//     viewModel.status.navigationEndPoint = Location(it.position.latitude, it.position.longitude, System.currentTimeMillis().toString(), 0F, 0.0, 0F, it.title)
+//                        finalyText?.set(it.title)
+//                        it.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.finaly_point))
+
+//                        mapFr?.mapUtils?.setDriverRoute(converLatPoint(startMaker?.position!!), LatLonPoint(viewModel.status.navigationEndPoint!!.latitude, viewModel.status.navigationEndPoint!!.longitude), viewModel?.status?.passPointDatas!!)
+
+                    } else {
+                        viewModel?.status?.passPointDatas?.add(Location(tip.latLonPoint.latitude, tip.latLonPoint.longitude, System.currentTimeMillis().toString(), 0F, 0.0, 0F, tip.title))
+                        pointList?.add(PointEntity(tip.title, tip.latLonPoint))
+                        var PointEntity = SingleList?.get(0)
+                        PointEntity?.address = getString(R.string.way_point) + pointList?.size + "个"
+                        SingleList?.set(0, PointEntity!!)
+                        adapter?.notifyDataSetChanged()
+                        mapFr?.mapUtils?.setDriverRoute(converLatPoint(startMaker?.position!!), LatLonPoint(viewModel.status.navigationEndPoint!!.latitude, viewModel.status.navigationEndPoint!!.longitude), viewModel?.status?.passPointDatas!!)
+                    }
+                } else if (requestCode == EDIT_FINAL_POINT) {
+                    if (tip.latLonPoint?.latitude != null && tip.latLonPoint?.longitude != null) {
+                        if (finallyMarker != null) {
+                            finallyMarker?.position = AMapUtil.convertToLatLng(tip.latLonPoint)
+                            finalyText?.set(tip.title)
+                            viewModel.status.navigationEndPoint = Location(tip.latLonPoint.latitude, tip.latLonPoint.longitude, System.currentTimeMillis().toString(), 0F, 0.0, 0F, tip.title)
+                            mapFr?.mapUtils?.setDriverRoute(converLatPoint(startMaker?.position!!), LatLonPoint(viewModel.status.navigationEndPoint!!.latitude, viewModel.status.navigationEndPoint!!.longitude), mapFr.viewModel?.status?.passPointDatas!!)
+                        } else {
+                            viewModel.status.navigationEndPoint = Location(tip.latLonPoint.latitude, tip.latLonPoint.longitude, System.currentTimeMillis().toString(), 0F, 0.0, 0F, tip.title)
+                            finalyText?.set(tip.snippet)
+                            finallyMarker = mapFr?.mAmap!!.addMarker(MarkerOptions().position(AMapUtil.convertToLatLng(tip.latLonPoint)).anchor(0.5f, 0.5f)
+                                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.select_point)))
+                            mapFr?.mapUtils?.setDriverRoute(converLatPoint(startMaker?.position!!), LatLonPoint(viewModel.status.navigationEndPoint!!.latitude, viewModel.status.navigationEndPoint!!.longitude), viewModel!!.status?.passPointDatas!!)
+                            if (viewModel?.status?.startDriver?.get() == DriverCancle) {
+                                viewModel?.status?.startDriver?.set(DriverCancle)
+                            } else {
+                                viewModel?.status!!.startDriver?.set(Prepare_Navigation)
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     fun onComponentFinish() {
+        SearchPoint()
     }
 
 
@@ -94,8 +171,6 @@ class MapPointItemModel : ItemViewModel<MapFrViewModel>(), BaseQuickAdapter.OnIt
                 } else {
                     addressName = regeocdeResult.regeocodeAddress?.formatAddress!!
                 }
-
-                Log.e("result", "addressName" + addressName)
                 screenMaker?.title = addressName
                 if (screenMaker != null) {
                     screenMaker?.showInfoWindow()
@@ -133,6 +208,54 @@ class MapPointItemModel : ItemViewModel<MapFrViewModel>(), BaseQuickAdapter.OnIt
     }
 
     fun onClick(view: View) {
+        when (view?.id) {
+            R.id.detail_click -> {
+                if (!listvisible.get()!!) {
+                    listvisible.set(true)
+                    itemRestore.forEach {
+                        RoadDetailItems.add(it)
+                    }
+                    CoroutineScope(uiContext).launch {
+                        delay(500)
+                        panelState.set(SlidingUpPanelLayout.PanelState.EXPANDED)
+                    }
+                } else {
+                    listvisible.set(false)
+                    RoadDetailItems.clear()
+                    panelState.set(SlidingUpPanelLayout.PanelState.COLLAPSED)
+                }
+            }
+            R.id.navi_btn -> {
+                startNavigation()
+            }
+            R.id.add_point -> {
+                if (pointList.size < 16) {
+                    ARouter.getInstance().build(RouterUtils.MapModuleConfig.SEARCH_ACTIVITY).withInt(RouterUtils.MapModuleConfig.SEARCH_MODEL, 1).navigation(mapFr.activity, RESULT_STR)
+                } else {
+                    Toast.makeText(context, getString(R.string.max_passPoint), Toast.LENGTH_SHORT).show()
+                }
+            }
+            R.id.edit_point -> {
+                if (CurState == 0) {
+                    Log.e("result", "pointList" + pointList.size)
+                    adapter.setNewData(pointList)
+                    CurState = 1
+                    //展开列表
+                    dataEmpty.set(true)
+                } else {
+                    //收缩列表
+                    dataEmpty.set(false)
+                    adapter.setNewData(SingleList)
+                    CurState = 0
+                }
+            }
+            R.id.edit_finally -> {
+                ARouter.getInstance().build(RouterUtils.MapModuleConfig.SEARCH_ACTIVITY).withInt(RouterUtils.MapModuleConfig.SEARCH_MODEL, 3).navigation(mapFr.activity, EDIT_FINAL_POINT)
+            }
+        }
+    }
+
+    private fun startNavigation() {
 
     }
 
@@ -145,12 +268,6 @@ class MapPointItemModel : ItemViewModel<MapFrViewModel>(), BaseQuickAdapter.OnIt
             finallyMarker = mapFr?.mAmap!!.addMarker(MarkerOptions().position(it.position).anchor(0.5f, 0.5f)
                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.select_point)))
             mapFr?.mapUtils?.setDriverRoute(converLatPoint(startMaker?.position!!), LatLonPoint(viewModel.status.navigationEndPoint!!.latitude, viewModel.status.navigationEndPoint!!.longitude), viewModel?.status?.passPointDatas!!)
-//            if (mapActivity.getDrverFragment().viewModel?.status?.startDriver?.get() == DriverCancle) {
-//                mapActivity.getDrverFragment().viewModel?.isCanclePrepare = true
-//                mapActivity.getDrverFragment().viewModel?.status?.startDriver?.set(Prepare_Navigation)
-//            } else {
-//                mapActivity.getDrverFragment().viewModel?.status?.startDriver?.set(Prepare_Navigation)
-//            }
         } else {
             if (viewModel?.status?.passPointDatas?.size!! < 16) {
                 viewModel?.status?.passPointDatas?.add(Location(it.position.latitude, it.position.longitude, System.currentTimeMillis().toString(), 0F, 0.0, 0F, it.title))
@@ -173,47 +290,50 @@ class MapPointItemModel : ItemViewModel<MapFrViewModel>(), BaseQuickAdapter.OnIt
 
 
     override fun CalculateCallBack(result: AMapCalcRouteResult) {
-        //处理
-//        var id = result?.routeid
-//        var path = mapFr.mapUtils?.navi?.naviPaths!![id]
+        if (result.errorCode == 0) {
+            items.clear()
+            result?.routeid!!.forEachIndexed { index, it ->
+                var path = mapFr.mapUtils?.navi?.naviPaths!![it]
+                var entity = RouteEntity()
+                if (index == 0) {
+                    entity.select.set(true)
+                } else {
+                    entity.select.set(false)
+                }
+                entity.id.set(it)
 
-
-        Log.e("result", "result.errorCode" + result.errorCode)
-        result?.routeid!!.forEachIndexed { index, it ->
-            var path = mapFr.mapUtils?.navi?.naviPaths!![it]
-            var entity = RouteEntity()
-            if (index == 0) {
-                entity.select.set(true)
-            } else {
-                entity.select.set(false)
+                entity.title.set(path?.labels)
+                if (path?.tollCost!! < 1) {
+                    entity.distance.set(DecimalFormat("0.0").format(path?.allLength!! / 1000) + "KM")
+                } else {
+                    entity.distance.set(DecimalFormat("0.0").format(path?.allLength!! / 1000) + "KM" + " " + path?.tollCost + "￥")
+                }
+                entity.time.set(ConvertUtils.millis2FitTimeSpan(path?.allTime!! * 1000.toLong(), 3))
+                items.add(entity)
             }
-            entity.id.set(it)
-
-            entity.title.set(path?.labels)
-            if (path?.tollCost!! < 1) {
-                entity.distance.set(DecimalFormat("0.0").format(path?.allLength!! / 1000) + "KM")
-            } else {
-                entity.distance.set(DecimalFormat("0.0").format(path?.allLength!! / 1000) + "KM" + " " + path?.tollCost + "￥")
-            }
-            entity.time.set(ConvertUtils.millis2FitTimeSpan(path?.allTime!! * 1000.toLong(), 3))
-            items.add(entity)
+            drawRouteLine(items[0])
+        } else {
+            Toast.makeText(mapFr.activity, ErrorInfo.getError(result.errorCode), Toast.LENGTH_SHORT).show()
         }
-        drawRouteLine(items[0])
     }
 
     var routeDistance = 0
     var routeTime = 0
+
     private fun drawRouteLine(routeEntity: RouteEntity?) {
         var path = mapFr.mapUtils?.navi?.naviPaths!![routeEntity!!.id.get()]
-        RoadDetailItems?.clear()
+        itemRestore?.clear()
         var entity = RouteDetailEntity()
         entity.position = 0
-        RoadDetailItems.add(entity)
+        itemRestore.add(entity)
         path?.steps?.forEachIndexed { index, it ->
             var item = RouteDetailEntity()
             item.position = index + 1
             item.iconType = it.iconType
             item.roadName = it.links.get(0).roadName
+            if (it.isArriveWayPoint) {
+                item.roadName = item.roadName + "(经过途径点)"
+            }
             if (it.length < 1000) {
                 item.distance = it.length.toString() + "米"
             } else {
@@ -222,10 +342,16 @@ class MapPointItemModel : ItemViewModel<MapFrViewModel>(), BaseQuickAdapter.OnIt
             if (it.trafficLightCount > 0) {
                 item.distance = item.distance + "红绿灯" + it.trafficLightCount + "个"
             }
-            RoadDetailItems.add(item)
+            itemRestore.add(item)
         }
-        RoadDetailItems.sortBy {
+        itemRestore.sortBy {
             it.position
+        }
+        if (listvisible.get()!!) {
+            RoadDetailItems.clear()
+            itemRestore.forEach {
+                RoadDetailItems.add(it)
+            }
         }
         var drivingRouteOverlay = NaviDrivingRouteOverlay(context, mapFr.mAmap, path, path?.coordList!!.get(0), if (finallyMarker == null) path.endPoint else NaviLatLng(viewModel.status.navigationEndPoint!!.latitude, viewModel.status.navigationEndPoint!!.longitude), path!!.wayPoint)
         mapFr.mAmap.isMyLocationEnabled = false
@@ -237,11 +363,19 @@ class MapPointItemModel : ItemViewModel<MapFrViewModel>(), BaseQuickAdapter.OnIt
         routeDistance = path.allLength
         routeTime = path.allTime
         if (path.wayPoint.size == 0) {
+            if (screenMaker != null) {
+                screenMaker!!.remove()
+                screenMaker = null
+            }
+            if (finallyMarker != null) {
+                finallyMarker!!.remove()
+                finallyMarker = null
+            }
+            if (startMaker != null) {
+                startMaker?.remove()
+                startMaker = null
+            }
             screenMaker = drivingRouteOverlay.addRemoveMarker(AMapUtil.convertToLatLng(LatLonPoint(viewModel.status.navigationStartPoint!!.latitude, viewModel.status.navigationStartPoint!!.longitude)))
-            finallyMarker!!.remove()
-            finallyMarker = null
-            startMaker?.remove()
-            startMaker = null
             startMaker = drivingRouteOverlay?.startMarker
             finallyMarker = drivingRouteOverlay?.endMarker
             drivingRouteOverlay.zoomSpanAll()
@@ -254,7 +388,89 @@ class MapPointItemModel : ItemViewModel<MapFrViewModel>(), BaseQuickAdapter.OnIt
     }
 
     fun onComponentClick() {
+        returnDriverFr()
+    }
 
+    fun returnDriverFr() {
+        //关闭地图选点
+        choiceVisible.set(false)
+        RoadDetailItems.clear()
+        itemRestore.clear()
+        items.clear()
+        viewModel?.changerFragment(0)
+        mapFr.mAmap.clear()
+        mapFr.mAmap.moveCamera(CameraUpdateFactory.zoomTo(15F))
+        if (viewModel?.status!!.startDriver.get() == Prepare_Navigation || viewModel?.status!!.startDriver.get() == DriverPause || viewModel?.status!!.startDriver.get() == Drivering) {
+            if (viewModel?.status!!.startDriver.get() == Prepare_Navigation) {
+                reset()
+                mapFr.mAmap.isMyLocationEnabled = true
+                viewModel?.status!!.startDriver.set(DriverCancle)
+            } else {
+                reset()
+                mapFr.mAmap.isMyLocationEnabled = true
+                mapFr.myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_LOCATION_ROTATE)
+                mapFr.myLocationStyle.showMyLocation(false)
+                mapFr.mAmap.myLocationStyle = mapFr.myLocationStyle
+                mapFr.getDrverController()!!.driverController.continueDriver()
+            }
+        } else {
+            //Cancle 了
+            reset()
+            mapFr.mAmap.isMyLocationEnabled = true
+            viewModel?.status!!.locationLat.clear()
+        }
+        if (viewModel?.status?.navigationType == 0) {
+            viewModel?.status!!.passPointDatas.clear()
+            viewModel?.status!!.navigationStartPoint = null
+            viewModel?.status!!.navigationEndPoint = null
+        }
+//        component.setHomeStyle()
+        finalyText.set(getString(R.string.location_select))
+        var t = SingleList.get(0)
+        t.address = ""
+        SingleList[0] = t
+        adapter.notifyDataSetChanged()
+
+//        if (mapActivity.getDrverFragment().viewModel?.backStatus!!) {
+//            mapActivity.getDrverFragment().viewModel?.GoTeam()
+//        }
+    }
+
+    fun reset() {
+        if (screenMaker != null) {
+            screenMaker?.remove()
+        }
+        screenMaker = null
+        if (finallyMarker != null) {
+            finallyMarker?.remove()
+        }
+
+        finallyMarker = null
+//        startPoint = null
+        pointList.clear()
+        if (startMaker != null) {
+            startMaker?.remove()
+        }
+        startMaker = null
+    }
+
+    fun SearchPoint() {
+        //搜索点
+        if (viewModel.status.navigationEndPoint == null) {
+            Toast.makeText(context, getString(R.string.no_passPoint), Toast.LENGTH_SHORT).show()
+            return
+        }
+        var datas = ArrayList<LatLonPoint>()
+        datas.add(0, LatLonPoint(viewModel.status.navigationStartPoint!!.latitude, viewModel.status.navigationStartPoint!!.longitude))
+        viewModel?.status!!.passPointDatas.forEach {
+            datas.add(LatLonPoint(it.latitude, it.longitude))
+        }
+        datas.add(LatLonPoint(viewModel.status.navigationEndPoint!!.latitude, viewModel.status.navigationEndPoint!!.longitude))
+        ARouter.getInstance().build(RouterUtils.MapModuleConfig.ROAD_DETAIL)
+                .withFloat(RouterUtils.MapModuleConfig.ROAD_DISTANCE, routeDistance * 1F)
+                .withLong(RouterUtils.MapModuleConfig.ROAD_TIME, routeTime.toLong())
+                .withSerializable(RouterUtils.MapModuleConfig.ROAD_DATA, datas)
+                .navigation()
     }
 
     var items = ObservableArrayList<RouteEntity>()
@@ -270,12 +486,16 @@ class MapPointItemModel : ItemViewModel<MapFrViewModel>(), BaseQuickAdapter.OnIt
                 var index = list.indexOf(t)
                 t.select.set(true)
                 list.set(index, t)
+                mapFr.mAmap.clear()
                 items.clear()
                 items.addAll(list)
+                drawRouteLine(t)
             }
         }
     })
 
+
+    var itemRestore = ArrayList<RouteDetailEntity>()
     var RoadDetailItems = ObservableArrayList<RouteDetailEntity>()
 
     var RoadDetailItemsBinding = ItemBinding.of<RouteDetailEntity> { itemBinding, position, item ->

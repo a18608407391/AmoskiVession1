@@ -62,6 +62,7 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
 //            mapActivity.getMapPointFragment().viewModel?.FiveBtnClick(view)
         } else if (currentPosition == 3) {
 //            mapActivity.getRoadBookFragment().viewModel?.FiveBtnClick(view)
+
         }
     }
 
@@ -153,11 +154,11 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
         if (currentPosition == 0) {
             (items[0] as DriverItemModel).onComponentFinish()
         } else if (currentPosition == 1) {
-            (items[0] as TeamItemModel).onComponentFinish()
+            (items[1] as TeamItemModel).onComponentFinish()
         } else if (currentPosition == 3) {
-            (items[0] as MapPointItemModel).onComponentFinish()
+            (items[3] as MapPointItemModel).onComponentFinish()
         } else if (currentPosition == 2) {
-            (items[0] as RoadBookItemModel).onComponentFinish()
+            (items[2] as RoadBookItemModel).onComponentFinish()
         }
     }
 
