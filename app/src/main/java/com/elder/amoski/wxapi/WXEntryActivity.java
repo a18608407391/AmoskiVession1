@@ -36,6 +36,7 @@ import com.tencent.mm.opensdk.modelmsg.SendAuth;
 import com.tencent.mm.opensdk.openapi.IWXAPIEventHandler;
 import com.zk.library.Base.AppManager;
 import com.zk.library.Base.BaseApplication;
+import com.zk.library.Bus.event.RxBusEven;
 import com.zk.library.Utils.PreferenceUtils;
 import com.zk.library.Utils.RouterUtils;
 
@@ -103,12 +104,14 @@ public class WXEntryActivity extends Activity implements IWXAPIEventHandler {
     // 微信发送请求到第三方应用时，会回调到该方法
     @Override
     public void onReq(BaseReq baseReq) {
-            Log.e("result",baseReq.getType() + "的v方式能否科技大厦南方科技");
+        Log.e("result", baseReq.getType() + "的v方式能否科技大厦南方科技");
 
         if (baseReq.transaction == "login") {
             type = 0;
         } else if (baseReq.transaction == "inValidate") {
             type = 1;
+        } else if (baseReq.transaction == "relogin") {
+            type = 2;
         }
     }
 
@@ -136,7 +139,7 @@ public class WXEntryActivity extends Activity implements IWXAPIEventHandler {
 //                ToastUtils.showToast(mContext, "拒绝授权微信登录");
             case BaseResp.ErrCode.ERR_USER_CANCEL:
                 //用户取消
-                Log.e("result","用户取消");
+                Log.e("result", "用户取消");
                 String message = "";
                 if (type == RETURN_MSG_TYPE_LOGIN) {
                     message = "取消了微信登录";
@@ -178,7 +181,7 @@ public class WXEntryActivity extends Activity implements IWXAPIEventHandler {
                         @Override
                         public void onNext(String s) {
                             final BaseResponse res = new Gson().fromJson(s, BaseResponse.class);
-                            Log.e("result", "登录返回数据"+s);
+                            Log.e("result", "登录返回数据" + s);
                             if (res.getCode() == 0) {
                                 PreferenceUtils.putString(WXEntryActivity.this, USERID, res.getMsg());
                                 dialog.dismiss();
@@ -239,6 +242,11 @@ public class WXEntryActivity extends Activity implements IWXAPIEventHandler {
                                             }
                                         });
                                     }
+                                } else if (type == 2) {
+                                    RxBusEven even = new RxBusEven();
+                                    even.setType(RxBusEven.Companion.getWxLoginReLogin());
+                                    RxBus.Companion.getDefault().post(even);
+                                    finish();
                                 }
                             } else {
                                 finish();

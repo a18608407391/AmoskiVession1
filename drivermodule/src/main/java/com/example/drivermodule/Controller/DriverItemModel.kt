@@ -20,11 +20,17 @@ import com.elder.zcommonmodule.DataBases.UpdateDriverStatus
 import com.elder.zcommonmodule.DataBases.deleteDriverStatus
 import com.elder.zcommonmodule.DataBases.insertDriverStatus
 import com.elder.zcommonmodule.Entity.*
+import com.elder.zcommonmodule.Entity.HttpResponseEntitiy.BaseResponse
+import com.elder.zcommonmodule.Entity.SoketBody.CreateTeamInfoDto
+import com.elder.zcommonmodule.Entity.SoketBody.SoketTeamStatus
 import com.elder.zcommonmodule.Inteface.Locationlistener
 import com.elder.zcommonmodule.Service.HttpInteface
 import com.elder.zcommonmodule.Service.HttpRequest
 import com.elder.zcommonmodule.Utils.Dialog.OnBtnClickL
 import com.elder.zcommonmodule.Utils.DialogUtils
+import com.elder.zcommonmodule.Widget.LoginUtils.BaseDialogFragment
+import com.elder.zcommonmodule.Widget.LoginUtils.LoginController
+import com.elder.zcommonmodule.Widget.LoginUtils.LoginDialogFragment
 import com.example.drivermodule.AMapUtil
 import com.example.drivermodule.Component.DriverItemController
 import com.example.drivermodule.R
@@ -34,6 +40,8 @@ import com.example.drivermodule.ViewModel.MapFrViewModel
 import com.google.gson.Gson
 import com.zk.library.Base.BaseApplication
 import com.zk.library.Base.ItemViewModel
+import com.zk.library.Bus.ServiceEven
+import com.zk.library.Bus.event.RxBusEven
 import com.zk.library.Utils.PreferenceUtils
 import com.zk.library.Utils.RouterUtils
 import io.reactivex.Observable
@@ -56,14 +64,52 @@ import java.text.DecimalFormat
 import java.util.concurrent.TimeUnit
 
 
-class DriverItemModel : ItemViewModel<MapFrViewModel>(), HttpInteface.startDriverResult, Locationlistener {
+class DriverItemModel : ItemViewModel<MapFrViewModel>(), HttpInteface.startDriverResult, Locationlistener, HttpInteface.CheckTeamStatus, BaseDialogFragment.DismissListener {
+
+
+    override fun onDismiss(fr: BaseDialogFragment) {
+        if (fr is LoginDialogFragment) {
+            mapFr.showProgressDialog(getString(R.string.http_loading))
+            HttpRequest.instance.setCheckStatusResult(this)
+            var map = HashMap<String, String>()
+            HttpRequest.instance.checkTeamStatus(map)
+        }
+
+    }
+
+
+    var dialogFragment: LoginDialogFragment? = null
+    override fun CheckTeamStatusSucccess(it: BaseResponse) {
+        var info = Gson().fromJson<CreateTeamInfoDto>(Gson().toJson(it.data), CreateTeamInfoDto::class.java)
+        if (it.code == 0) {
+            TeamStatus = SoketTeamStatus()
+            mapFr.getTeamController().create = info
+            viewModel?.changerFragment(1)
+            startService()
+        } else {
+            if (it.code == 20001) {
+                //队伍不存在
+                TeamStatus = SoketTeamStatus()
+                ARouter.getInstance().build(RouterUtils.TeamModule.TEAM_CREATE).navigation(mapFr.activity, REQUEST_CREATE_JOIN)
+            } else if (it.code == 10009) {
+                dialogFragment = LoginController(mapFr).show(LoginDialogFragment()) as LoginDialogFragment
+                dialogFragment!!.functionDismiss = this
+            }
+        }
+        mapFr.dismissProgressDialog()
+    }
+
+    override fun CheckTeamStatusError(ex: Throwable) {
+        mapFr.dismissProgressDialog()
+    }
+
     override fun onLocation(location: AMapLocation) {
         location(location)
     }
 
     var timer: Observable<Long>? = null
     var timerDispose: Disposable? = null
-
+    var TeamStatus: SoketTeamStatus? = null
     var panelState = ObservableField<SlidingUpPanelLayout.PanelState>(SlidingUpPanelLayout.PanelState.HIDDEN)
 
     override fun startDriverSuccess(it: String) {
@@ -138,7 +184,6 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), HttpInteface.startDrive
         viewModel?.listeners = this
         driverStatus.set(viewModel?.status.startDriver.get())
         initView(viewModel)
-
         bottomLayoutVisible.set(true)
         return super.ItemViewModel(viewModel)
     }
@@ -289,7 +334,7 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), HttpInteface.startDrive
                         if (viewModel?.status.distance < 1000) {
                             //小于一公里
                             //是否是队长  //成员人数
-                            if (model?.user?.data?.memberId == model?.teamer.toString()) {
+                            if (mapFr?.user?.data?.memberId == model?.teamer.toString()) {
                                 //是队长
                                 if (model?.TeamInfo?.redisData?.dtoList?.size == 1) {
                                     //只有自己一人
@@ -305,7 +350,7 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), HttpInteface.startDrive
                             }
                         } else {
                             //超过一公里
-                            if (model?.user?.data?.memberId == model?.teamer.toString()) {
+                            if (mapFr?.user?.data?.memberId == model?.teamer.toString()) {
                                 //队长
                                 if (model?.TeamInfo?.redisData?.dtoList?.size == 1) {
                                     //只有自己一人
@@ -467,7 +512,7 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), HttpInteface.startDrive
                 }
             }
             R.id.team_btn -> {
-                //TODO
+
             }
             R.id.setting_btn -> {
                 if (curPosition != null) {
@@ -486,6 +531,39 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), HttpInteface.startDrive
                 }
             }
         }
+    }
+
+    fun GoTeam() {
+        //检查当前组队信息
+        //检查当前进入方式
+        if (BaseApplication.MinaConnected) {
+            //如果当前在组队
+
+        } else if (!BaseApplication.MinaConnected) {
+            //如果当前未组队 检查当前个人信息
+            mapFr.showProgressDialog(getString(R.string.http_loading))
+            HttpRequest.instance.setCheckStatusResult(this)
+            var map = HashMap<String, String>()
+            HttpRequest.instance.checkTeamStatus(map)
+        }
+    }
+
+
+    override fun doRxEven(it: RxBusEven?) {
+        super.doRxEven(it)
+        when (it!!.type) {
+            RxBusEven.WxLoginReLogin -> {
+                if (dialogFragment != null && dialogFragment?.isVisible!!) {
+                    dialogFragment?.dismiss()
+                }
+            }
+        }
+    }
+
+    fun startService() {
+        var pos = ServiceEven()
+        pos.type = "splashContinue"
+        RxBus.default?.post(pos)
     }
 
 

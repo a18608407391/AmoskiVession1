@@ -5,6 +5,7 @@ import android.content.Intent
 import android.databinding.ObservableArrayList
 import android.databinding.ObservableField
 import android.graphics.drawable.Drawable
+import android.os.Build
 import android.support.design.widget.BottomSheetBehavior
 import android.support.design.widget.TabLayout
 import android.support.v7.widget.LinearLayoutManager
@@ -346,7 +347,7 @@ class RoadBookFirstViewModel : BaseViewModel(), HttpInteface.RoadBookDetail, Rou
 
         if (activity.first_road_tab.selectedTabPosition == 0) {
             //HOME
-            Log.e("result",p0?.snippet + "当前值")
+            Log.e("result", p0?.snippet + "当前值")
 
             var index = Integer.valueOf(p0?.snippet)
             selectTab(index + 1)
@@ -472,25 +473,28 @@ class RoadBookFirstViewModel : BaseViewModel(), HttpInteface.RoadBookDetail, Rou
             tv1.text = roadDetailItem.pointList!!.size.toString()
             var corner = RoundedCorners(ConvertUtils.dp2px(5F))
             var opition = RequestOptions().transform(corner).error(R.drawable.road_windown_img).override(ConvertUtils.dp2px(32F), ConvertUtils.dp2px(32F))
-            Glide.with(img).load(getRoadImgUrl(roadDetailItem.pointList!![0].imgUrl)).apply(opition).into(object : SimpleTarget<Drawable>() {
-                override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
-                    super.onResourceReady(resource, transition)
-                    img.setImageDrawable(resource)
-                    var maker = activity.mAmap.addMarker(MarkerOptions().icon(BitmapDescriptorFactory.fromView(view)).position(LatLng(roadDetailItem.lat, roadDetailItem.lng)))
-                    maker.isClickable = true
-                    maker.snippet = index.toString()
-                    makerList.add(maker)
-                }
+            if (activity == null || activity.isFinishing() || (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && activity.isDestroyed())) {
+                Glide.with(img.context).load(getRoadImgUrl(roadDetailItem.pointList!![0].imgUrl)).apply(opition).into(object : SimpleTarget<Drawable>() {
+                    override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
+                        super.onResourceReady(resource, transition)
+                        img.setImageDrawable(resource)
+                        var maker = activity.mAmap.addMarker(MarkerOptions().icon(BitmapDescriptorFactory.fromView(view)).position(LatLng(roadDetailItem.lat, roadDetailItem.lng)))
+                        maker.isClickable = true
+                        maker.snippet = index.toString()
+                        makerList.add(maker)
+                    }
 
-                override fun onLoadFailed(errorDrawable: Drawable?) {
-                    img.setImageDrawable(errorDrawable)
-                    var maker = activity.mAmap.addMarker(MarkerOptions().icon(BitmapDescriptorFactory.fromView(view)).position(LatLng(roadDetailItem.lat, roadDetailItem.lng)))
-                    maker.isClickable = true
-                    maker.snippet = index.toString()
-                    makerList.add(maker)
-                    super.onLoadFailed(errorDrawable)
-                }
-            })
+                    override fun onLoadFailed(errorDrawable: Drawable?) {
+                        img.setImageDrawable(errorDrawable)
+                        var maker = activity.mAmap.addMarker(MarkerOptions().icon(BitmapDescriptorFactory.fromView(view)).position(LatLng(roadDetailItem.lat, roadDetailItem.lng)))
+                        maker.isClickable = true
+                        maker.snippet = index.toString()
+                        makerList.add(maker)
+                        super.onLoadFailed(errorDrawable)
+                    }
+                })
+            }
+
             list.add(LatLng(roadDetailItem.lat, roadDetailItem.lng))
             b.include(LatLng(roadDetailItem.lat, roadDetailItem.lng))
         }

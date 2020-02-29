@@ -21,8 +21,10 @@ import com.amap.api.maps.model.MyLocationStyle
 import com.amap.api.navi.AMapNavi
 import com.elder.zcommonmodule.*
 import com.elder.zcommonmodule.DataBases.queryDriverStatus
+import com.elder.zcommonmodule.DataBases.queryUserInfo
 import com.elder.zcommonmodule.Entity.DriverDataStatus
 import com.elder.zcommonmodule.Entity.HotData
+import com.elder.zcommonmodule.Entity.UserInfo
 import com.elder.zcommonmodule.Utils.Utils
 import com.example.drivermodule.BR
 import com.example.drivermodule.Controller.DriverItemModel
@@ -53,6 +55,7 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
     var onStart = false
     var mLocationOption: AMapLocationClientOption? = null
     var mListener: LocationSource.OnLocationChangedListener? = null
+    lateinit var user: UserInfo
     override fun deactivate() {
         mListener = null
         if (mlocationClient != null) {
@@ -90,7 +93,7 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
 
     override fun getInfoContents(maker: Marker?): View {
         if (viewModel?.currentPosition == 0 || viewModel?.currentPosition == 3) {
-            Log.e("result","getInfoContents" + maker!!.title)
+            Log.e("result", "getInfoContents" + maker!!.title)
             if (maker?.title == null || maker?.title.isEmpty() || maker?.title == "null") {
                 return null!!
             } else {
@@ -124,7 +127,7 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
 
     override fun getInfoWindow(maker: Marker?): View {
         if (viewModel?.currentPosition == 0 || viewModel?.currentPosition == 3) {
-            Log.e("result","getInfoWindow" + maker!!.title)
+            Log.e("result", "getInfoWindow" + maker!!.title)
             if (maker?.title == null || maker?.title.isEmpty() || maker?.title == "null") {
                 return null!!
             } else {
@@ -229,10 +232,11 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
     }
 
     private fun initStatus() {
-        var statusList = queryDriverStatus(PreferenceUtils.getString(context, USERID))
+        user = queryUserInfo(PreferenceUtils.getString(context, USERID))[0]
+        var statusList = queryDriverStatus(user.data?.memberId!!)
         if (statusList.isNullOrEmpty()) {
             viewModel?.status = DriverDataStatus()
-            viewModel?.status?.uid = PreferenceUtils.getString(context, USERID)
+            viewModel?.status?.uid = user.data?.memberId!!
         } else {
             var status = queryDriverStatus(PreferenceUtils.getString(context, USERID))[0]
             viewModel?.status = status
@@ -533,8 +537,9 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
             } else {
                 if (requestCode == REQUEST_LOAD_ROADBOOK) {
                     if (data != null) {
+                        var its = data.getSerializableExtra("hotdata") as HotData
                         viewModel?.changerFragment(2)
-                        viewModel?.items!![2].doLoadDatas(data!!)
+                        (viewModel?.items!![2] as RoadBookItemModel).doLoadDatas(its!!)
                     } else {
                         Log.e("result", "data为Null")
                         if (viewModel?.currentPosition != 2) {

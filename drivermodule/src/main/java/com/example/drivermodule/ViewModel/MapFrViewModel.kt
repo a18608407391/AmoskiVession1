@@ -82,51 +82,51 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
         when (p0?.position) {
             0 -> {
                 if (currentPosition == 1) {
-                    mapActivity.getTeamFragment().viewModel?.backToDriver()
+                    mapActivity.getTeamController()?.backToDriver()
 
                 } else if (currentPosition == 3) {
-                    mapActivity.getRoadBookFragment().viewModel?.backToDriver()
+                    mapActivity.getRoadBookController()?.backToDriver()
                     changerFragment(0)
                 }
             }
             1 -> {
                 if (currentPosition == 0) {
                     //跳转到组队
-                    mapActivity.getDrverFragment().viewModel?.GoTeam()
+                    mapActivity.getDrverController()?.GoTeam()
                 } else if (currentPosition == 3) {
-                    mapActivity.getRoadBookFragment().viewModel?.backToDriver()
-                    mapActivity.getDrverFragment().viewModel?.GoTeam()
+                    mapActivity.getRoadBookController()?.backToDriver()
+                    mapActivity.getDrverController()?.GoTeam()
                 }
             }
             2 -> {
                 if (currentPosition == 0 || currentPosition == 1) {
                     //跳转到路书
                     if (currentPosition == 1) {
-                        mapActivity.getTeamFragment().viewModel?.backToRoad()
+                        mapActivity.getTeamController()?.backToRoad()
                     }
-                    if (mapActivity.getRoadBookFragment().viewModel?.netWorkData == null) {
+                    if (mapActivity.getRoadBookController()?.netWorkData == null) {
                         var date = PreferenceUtils.getString(mapActivity.activity, PreferenceUtils.getString(context, USERID) + "hot")
                         if (date == null && mapActivity.hotData == null) {
-                            if (mapActivity.getDrverFragment().curPosition != null) {
+                            if (mapActivity.getDrverController().curPosition != null) {
                                 ARouter.getInstance().build(RouterUtils.MapModuleConfig.ROAD_BOOK_ACTIVITY).withInt(RouterUtils.MapModuleConfig.ROAD_CURRENT_TYPE, 1).withSerializable(RouterUtils.MapModuleConfig.ROAD_CURRENT_POINT, mapActivity.getDrverFragment().curPosition).navigation(mapActivity.activity, REQUEST_LOAD_ROADBOOK)
                             }
                         } else {
                             if (date == null) {
-                                mapActivity.getRoadBookFragment().viewModel?.data = mapActivity.hotData
+                                mapActivity.getRoadBookController()?.data = mapActivity.hotData
                             } else {
-                                mapActivity.getRoadBookFragment().viewModel?.data = Gson().fromJson<HotData>(date, HotData::class.java)
+                                mapActivity.getRoadBookController()?.data = Gson().fromJson<HotData>(date, HotData::class.java)
                             }
                             changerFragment(3)
-                            mapActivity.getRoadBookFragment().viewModel?.doLoadDatas(mapActivity.getRoadBookFragment().viewModel?.data!!)
+                            mapActivity.getRoadBookController()?.doLoadDatas(mapActivity.getRoadBookController()?.data!!)
 
                         }
                     } else {
                         changerFragment(3)
-                        if (mapActivity.getRoadBookFragment().road_tab.selectedTabPosition != 0) {
-                            mapActivity.getRoadBookFragment().viewModel!!.selectTab(0)
-                        } else {
-                            mapActivity.getDrverFragment()?.viewModel?.recycleComponent?.initDatas(mapActivity.getRoadBookFragment().viewModel?.netWorkData!!, mapActivity.getRoadBookFragment().viewModel?.data, 0)
-                        }
+//                        if (mapActivity.getRoadBookController().road_tab.selectedTabPosition != 0) {
+//                            mapActivity.getRoadBookController().viewModel!!.selectTab(0)
+//                        } else {
+//                            mapActivity.getDrverController()?.recycleComponent?.initDatas(mapActivity.getRoadBookFragment().viewModel?.netWorkData!!, mapActivity.getRoadBookFragment().viewModel?.data, 0)
+//                        }
                     }
                 }
             }

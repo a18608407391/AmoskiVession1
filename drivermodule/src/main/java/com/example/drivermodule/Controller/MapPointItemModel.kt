@@ -288,7 +288,6 @@ class MapPointItemModel : ItemViewModel<MapFrViewModel>(), BaseQuickAdapter.OnIt
         }
     }
 
-
     override fun CalculateCallBack(result: AMapCalcRouteResult) {
         if (result.errorCode == 0) {
             items.clear()

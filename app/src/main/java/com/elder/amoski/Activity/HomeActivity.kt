@@ -73,9 +73,13 @@ class HomeActivity : BaseActivity<ActivityHomeBinding, HomeViewModel>() {
                 dialog.show()
                 dialog.setOnBtnClickL(OnBtnClickL {
                     key.clearPrimaryClip()
-                    dialog.dismiss()
+                    if(dialog!=null){
+                        dialog.dismiss()
+                    }
                 }, OnBtnClickL {
-                    dialog.dismiss()
+                    if(dialog!=null){
+                        dialog.dismiss()
+                    }
                     clip = ClipData.newPlainText("label", "")
                     key.primaryClip = clip
                     ARouter.getInstance().build(RouterUtils.PrivateModuleConfig.MY_ACTIVE_WEB_AC).withInt(RouterUtils.PrivateModuleConfig.MY_ACTIVE_WEB_TYPE, 4).withString(RouterUtils.PrivateModuleConfig.MY_ACTIVE_WEB_ID, number).navigation()

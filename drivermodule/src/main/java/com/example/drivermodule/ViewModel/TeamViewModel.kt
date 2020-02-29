@@ -1050,11 +1050,9 @@ class TeamViewModel : BaseViewModel() {
 
 
     fun shareWx(type: Int) {
-
         if (TeamInfo == null) {
             return
         }
-
         CoroutineScope(ioContext).async {
             var file = Glide.with(mapActivity)
                     .load(getImageUrl(TeamInfo?.redisData?.dtoList!![0].memberHeaderUrl))

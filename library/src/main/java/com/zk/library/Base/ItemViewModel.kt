@@ -32,9 +32,7 @@ open class ItemViewModel<VM : BaseViewModel>() {
     open fun initDatas(t: Int) {
     }
 
-    fun doLoadDatas(data: Intent) {
 
-    }
 
     fun destroy() {
         RxSubscriptions.remove(disposable)
