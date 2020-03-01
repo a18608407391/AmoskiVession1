@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.TabLayout;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
@@ -16,6 +17,7 @@ import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -28,9 +30,11 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
 import com.chad.library.adapter.base.callback.ItemDragAndSwipeCallback;
+import com.elder.zcommonmodule.ConfigKt;
 import com.elder.zcommonmodule.Entity.DriverDataStatus;
 import com.elder.zcommonmodule.Entity.HotData;
 import com.elder.zcommonmodule.Entity.Location;
+import com.elder.zcommonmodule.Entity.SoketBody.TeamPersonnelInfoDto;
 import com.elder.zcommonmodule.LocalUtilsKt;
 import com.elder.zcommonmodule.Entity.WeatherEntity;
 import com.elder.zcommonmodule.Utils.URLImageParser;
@@ -48,9 +52,11 @@ import com.example.drivermodule.ItemModel.NearRoadItemModle;
 import com.example.drivermodule.Overlay.NextTurnTipView;
 import com.example.drivermodule.Sliding.SlidingUpPanelLayout;
 import com.zk.library.Base.BaseApplication;
+import com.zk.library.Utils.PreferenceUtils;
 import com.zk.library.binding.command.ViewAdapter.image.SimpleTarget;
 
 import org.cs.tec.library.Base.Utils.UtilsKt;
+import org.cs.tec.library.ConstantKt;
 import org.cs.tec.library.Utils.ConvertUtils;
 import org.cs.tec.library.binding.command.BindingCommand;
 
@@ -94,13 +100,14 @@ public class ViewAdapter {
 
     @BindingAdapter("initPanel")
     public static void initPanel(SlidingUpPanelLayout panel, SlidingUpPanelLayout.PanelState state) {
+        panel.setDragView(R.id.slideView);
         panel.setPanelState(state);
     }
 
-    @BindingAdapter({"initPanelMapPoint","initPanelMapListener"})
+    @BindingAdapter({"initPanelMapPoint", "initPanelMapListener"})
     public static void initPanelMapPoint(SlidingUpPanelLayout panel, SlidingUpPanelLayout.PanelState state, MapPointItemModel model) {
         panel.setPanelState(state);
-        panel.setScrollableView(panel.findViewById(R.id.scroll_view));
+        panel.setScrollableView((ViewGroup) panel.findViewById(R.id.scroll_view));
         panel.setScrollableViewHelper(new NestedScrollableViewHelper());
         panel.setPanelHeight(ConvertUtils.Companion.dp2px(185));
         panel.addPanelSlideListener(model);
@@ -140,12 +147,12 @@ public class ViewAdapter {
 
 
     @BindingAdapter({"initMapPointLinear", "mapPointLinearCommand"})
-    public static void initMapPointLinear(LinearLayout linear, ArrayList<RouteEntity> entities, BindingCommand<RouteEntity> command) {
+    public static void initMapPointLinear(LinearLayout linear, final ArrayList<RouteEntity> entities, final BindingCommand<RouteEntity> command) {
         linear.removeAllViews();
         for (int i = 0; i < entities.size(); i++) {
             LayoutInflater inflater = (LayoutInflater) linear.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             ViewDataBinding binding = DataBindingUtil.inflate(inflater, R.layout.item_route_choice_layout, linear, false);
-            int finalI = i;
+            final int finalI = i;
             binding.getRoot().findViewById(R.id.hori_linear_click).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -524,5 +531,65 @@ public class ViewAdapter {
         }
         StaggeredGridLayoutManager layoutManager = (StaggeredGridLayoutManager) recy.getLayoutManager();
         layoutManager.setGapStrategy(StaggeredGridLayoutManager.GAP_HANDLING_NONE);
+    }
+
+
+    @BindingAdapter({"LoadTeamBottomHoriData","LoadTeamBottomClick"})
+    public static void LoadTeamBottomHoriData(LinearLayout layout, ArrayList<TeamPersonnelInfoDto> daoList, final BindingCommand<Integer> command) {
+        layout.removeAllViews();
+        for (int i = 0; i < daoList.size(); i++) {
+            final TeamPersonnelInfoDto entity = daoList.get(i);
+            LayoutInflater inflater = (LayoutInflater) layout.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            View view = inflater.inflate(R.layout.horizontal_team_person_child, layout, false);
+            final int finalI = i;
+            view.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (command != null) {
+                        command.execute(finalI);
+                    }
+                }
+            });
+            CardView card = view.findViewById(R.id.cardview);
+            ImageView img = view.findViewById(R.id.img_load);
+            TextView teamName = view.findViewById(R.id.team_name);
+            TextView userName = view.findViewById(R.id.user_name);
+            ImageView percen = view.findViewById(R.id.img_load_sevenPerson);
+            if (entity.getStatus() == "0") {
+                percen.setVisibility(View.VISIBLE);
+            } else {
+                percen.setVisibility(View.GONE);
+            }
+            if (entity.getTeamRoleId() == 0 || entity.getTeamRoleId() == 4) {
+                teamName.setBackgroundColor(Color.TRANSPARENT);
+            } else if (entity.getTeamRoleId() == 1) {
+                teamName.setBackgroundResource(R.drawable.little_tv_color_corner);
+            } else if (entity.getTeamRoleId() > 1) {
+                teamName.setBackgroundResource(R.drawable.little_tv_color_corner_yellow);
+            }
+            if (i == 0) {
+                userName.setText(UtilsKt.getString(R.string.invite));
+                img.setImageResource(R.drawable.team_first);
+            } else {
+                CircleCrop corners = new CircleCrop();
+
+                RequestOptions options = new RequestOptions().transform(corners).error(R.drawable.default_avatar).timeout(3000).diskCacheStrategy(DiskCacheStrategy.ALL).skipMemoryCache(true).override(ConvertUtils.Companion.dp2px(55F), ConvertUtils.Companion.dp2px(55F));
+                Glide.with(img.getContext()).asBitmap().load(LocalUtilsKt.getImageUrl(entity.getMemberHeaderUrl())).
+                        apply(options).into(img);
+                if (PreferenceUtils.getString(img.getContext(), ConstantKt.USERID).equalsIgnoreCase(entity.getMemberId().toString())) {
+                    card.setCardBackgroundColor(UtilsKt.getColor(R.color.line_color));
+                } else {
+                    card.setCardBackgroundColor(UtilsKt.getColor(R.color.TenpercentBlackColor));
+                }
+                teamName.setText(entity.getTeamRoleName());
+                if (entity.getMemberName() == null || entity.getMemberName().trim().isEmpty()) {
+                    userName.setText(UtilsKt.getString(R.string.secret_name));
+                } else {
+                    userName.setText(entity.getMemberName());
+                }
+            }
+            layout.addView(view);
+        }
+        layout.invalidate();
     }
 }

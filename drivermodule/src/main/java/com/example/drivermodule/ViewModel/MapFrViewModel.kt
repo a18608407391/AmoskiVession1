@@ -24,7 +24,6 @@ import com.elder.zcommonmodule.Drivering
 import com.elder.zcommonmodule.Entity.DriverDataStatus
 import com.elder.zcommonmodule.Entity.HotData
 import com.elder.zcommonmodule.Entity.Location
-import com.zk.library.Bus.event.RxBusEven
 import com.elder.zcommonmodule.Inteface.Locationlistener
 import com.elder.zcommonmodule.REQUEST_LOAD_ROADBOOK
 import com.example.drivermodule.BR
@@ -34,21 +33,22 @@ import com.example.drivermodule.Controller.RoadBookItemModel
 import com.example.drivermodule.Controller.TeamItemModel
 import com.example.drivermodule.Ui.*
 import com.google.gson.Gson
-import com.zk.library.Base.ItemViewModel
+import com.elder.zcommonmodule.Component.ItemViewModel
+import com.elder.zcommonmodule.Entity.SoketBody.SoketTeamStatus
 import com.zk.library.Bus.ServiceEven
+import com.zk.library.Bus.event.RxBusEven
 import com.zk.library.Utils.PreferenceUtils
 import com.zk.library.Utils.RouterUtils
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.fragment_map.*
-import kotlinx.android.synthetic.main.fragment_road_book.*
 import me.tatarka.bindingcollectionadapter2.BindingViewPagerAdapter
 import me.tatarka.bindingcollectionadapter2.ItemBinding
 import org.cs.tec.library.Base.Utils.context
 import org.cs.tec.library.Base.Utils.getString
-import java.util.*
 import org.cs.tec.library.Bus.RxBus
 import org.cs.tec.library.Bus.RxSubscriptions
 import org.cs.tec.library.USERID
+import kotlin.collections.ArrayList
 
 
 class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarkerDragListener, AMap.OnCameraChangeListener, TitleComponent.titleComponentCallBack, TabLayout.BaseOnTabSelectedListener<TabLayout.Tab>, DriverComponent.onFiveClickListener {
@@ -134,6 +134,7 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
     }
 
     lateinit var status: DriverDataStatus
+    var TeamStatus: SoketTeamStatus? = null
     //    var driverController = DriverController(this)
     var cur = 0L
 
@@ -236,9 +237,12 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
         }
         a = RxBus.default?.toObservable(AMapLocation::class.java)?.subscribe {
             if (listeners != null) {
-                listeners?.onLocation(it)
+                listeners.forEachIndexed { index, locationlistener ->
+                    locationlistener?.onLocation(it)
+                }
             }
         }
+
         RxSubscriptions.add(a)
         component.setCallBack(this)
         component.setOnFiveClickListener(this)
@@ -247,7 +251,7 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
     }
 
 
-    var listeners: Locationlistener? = null
+    var listeners: ArrayList<Locationlistener> = ArrayList()
 
     lateinit var tab: TabLayout
     private fun initTab() {

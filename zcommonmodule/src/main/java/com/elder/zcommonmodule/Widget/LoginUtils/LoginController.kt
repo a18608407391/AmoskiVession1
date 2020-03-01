@@ -73,6 +73,7 @@ class LoginController {
             ft?.remove(prev)!!.commit()
             ft = mFragmentManager!!.get()!!.beginTransaction()
         }
+        dialog.isCancelable = false
         ft?.addToBackStack(null)
         dialog.setAnimationStyle(mAnimStyle)
         dialog.show(ft, TAG)

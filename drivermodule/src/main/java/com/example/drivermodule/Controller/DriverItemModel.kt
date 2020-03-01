@@ -5,6 +5,7 @@ import android.databinding.ObservableArrayList
 import android.databinding.ObservableField
 import android.net.Uri
 import android.support.design.widget.BottomSheetBehavior
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import com.alibaba.android.arouter.launcher.ARouter
@@ -39,7 +40,7 @@ import com.example.drivermodule.Ui.MapFragment
 import com.example.drivermodule.ViewModel.MapFrViewModel
 import com.google.gson.Gson
 import com.zk.library.Base.BaseApplication
-import com.zk.library.Base.ItemViewModel
+import com.elder.zcommonmodule.Component.ItemViewModel
 import com.zk.library.Bus.ServiceEven
 import com.zk.library.Bus.event.RxBusEven
 import com.zk.library.Utils.PreferenceUtils
@@ -56,7 +57,6 @@ import org.cs.tec.library.Base.Utils.getColor
 import org.cs.tec.library.Base.Utils.getString
 import org.cs.tec.library.Base.Utils.uiContext
 import org.cs.tec.library.Bus.RxBus
-import org.cs.tec.library.Bus.RxSubscriptions
 import org.cs.tec.library.USERID
 import org.cs.tec.library.Utils.ConvertUtils
 import org.cs.tec.library.http.NetworkUtil
@@ -64,7 +64,7 @@ import java.text.DecimalFormat
 import java.util.concurrent.TimeUnit
 
 
-class DriverItemModel : ItemViewModel<MapFrViewModel>(), HttpInteface.startDriverResult, Locationlistener, HttpInteface.CheckTeamStatus, BaseDialogFragment.DismissListener {
+class DriverItemModel : ItemViewModel<MapFrViewModel>(), HttpInteface.startDriverResult, Locationlistener, HttpInteface.CheckTeamStatus {
 
 
     override fun onDismiss(fr: BaseDialogFragment) {
@@ -73,27 +73,26 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), HttpInteface.startDrive
             HttpRequest.instance.setCheckStatusResult(this)
             var map = HashMap<String, String>()
             HttpRequest.instance.checkTeamStatus(map)
+
         }
+        super.onDismiss(fr)
 
     }
 
-
-    var dialogFragment: LoginDialogFragment? = null
     override fun CheckTeamStatusSucccess(it: BaseResponse) {
         var info = Gson().fromJson<CreateTeamInfoDto>(Gson().toJson(it.data), CreateTeamInfoDto::class.java)
         if (it.code == 0) {
-            TeamStatus = SoketTeamStatus()
+            viewModel.TeamStatus = SoketTeamStatus()
             mapFr.getTeamController().create = info
             viewModel?.changerFragment(1)
-            startService()
+            startMinaService()
         } else {
             if (it.code == 20001) {
                 //队伍不存在
-                TeamStatus = SoketTeamStatus()
+                viewModel.TeamStatus = SoketTeamStatus()
                 ARouter.getInstance().build(RouterUtils.TeamModule.TEAM_CREATE).navigation(mapFr.activity, REQUEST_CREATE_JOIN)
             } else if (it.code == 10009) {
-                dialogFragment = LoginController(mapFr).show(LoginDialogFragment()) as LoginDialogFragment
-                dialogFragment!!.functionDismiss = this
+                showLoginDialogFragment(mapFr)
             }
         }
         mapFr.dismissProgressDialog()
@@ -109,7 +108,7 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), HttpInteface.startDrive
 
     var timer: Observable<Long>? = null
     var timerDispose: Disposable? = null
-    var TeamStatus: SoketTeamStatus? = null
+
     var panelState = ObservableField<SlidingUpPanelLayout.PanelState>(SlidingUpPanelLayout.PanelState.HIDDEN)
 
     override fun startDriverSuccess(it: String) {
@@ -170,7 +169,6 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), HttpInteface.startDrive
 
     var driverStatus = ObservableField(DriverCancle)
 
-    var locationDispose: Disposable? = null
 
     lateinit var mapFr: MapFragment
 
@@ -180,8 +178,7 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), HttpInteface.startDrive
     override fun ItemViewModel(viewModel: MapFrViewModel): ItemViewModel<MapFrViewModel> {
         mapFr = viewModel?.mapActivity
         mapFr.showProgressDialog(getString(R.string.location_loading))
-        RxSubscriptions.add(locationDispose)
-        viewModel?.listeners = this
+        viewModel?.listeners.add(this)
         driverStatus.set(viewModel?.status.startDriver.get())
         initView(viewModel)
         bottomLayoutVisible.set(true)
@@ -266,6 +263,7 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), HttpInteface.startDrive
             }
         }
     }
+
 
     var weatherDatas = ObservableArrayList<WeatherEntity>().apply {
         for (i in 0..24) {
@@ -490,6 +488,7 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), HttpInteface.startDrive
         viewModel?.status.reset()
     }
 
+
     fun onFiveBtnClick(view: View) {
         when (view.id) {
             R.id.sos_btn -> {
@@ -538,6 +537,9 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), HttpInteface.startDrive
         //检查当前进入方式
         if (BaseApplication.MinaConnected) {
             //如果当前在组队
+            if(viewModel?.TeamStatus?.teamStatus == TeamStarting){
+
+            }
 
         } else if (!BaseApplication.MinaConnected) {
             //如果当前未组队 检查当前个人信息
@@ -558,12 +560,6 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), HttpInteface.startDrive
                 }
             }
         }
-    }
-
-    fun startService() {
-        var pos = ServiceEven()
-        pos.type = "splashContinue"
-        RxBus.default?.post(pos)
     }
 
 

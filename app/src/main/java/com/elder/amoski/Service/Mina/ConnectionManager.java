@@ -6,6 +6,7 @@ import android.util.Log;
 import com.alibaba.fastjson.JSON;
 import com.elder.zcommonmodule.Entity.SoketBody.BasePacketReceive;
 import com.google.gson.Gson;
+import com.zk.library.Bus.event.RxBusEven;
 
 import org.apache.mina.core.future.ConnectFuture;
 import org.apache.mina.core.service.IoHandlerAdapter;
@@ -143,6 +144,10 @@ public class ConnectionManager {
                 return;
             }
 
+            RxBusEven even = new RxBusEven();
+            even.setType(RxBusEven.Companion.getMinaDataReceive());
+
+
             if (message.toString().split("body").length > 2 && message.toString().split("type").length > 2) {
                 BasePacketReceive receive = null;
                 if (message.toString().contains("redisData")) {
@@ -155,7 +160,8 @@ public class ConnectionManager {
                     receive = JSON.parseObject(sp[0] + "}" + sp[1] + "}", BasePacketReceive.class);
                 }
                 if (receive != null) {
-                    RxBus.Companion.getDefault().post(receive);
+                    even.setValue(receive);
+                    RxBus.Companion.getDefault().post(even);
                 }
                 if (receive.getCode() == 0) {
                     if (receive != null) {
@@ -171,7 +177,8 @@ public class ConnectionManager {
             } else {
                 BasePacketReceive receive = JSON.parseObject(message.toString(), BasePacketReceive.class);
                 if (receive != null) {
-                    RxBus.Companion.getDefault().post(receive);
+                    even.setValue(receive);
+                    RxBus.Companion.getDefault().post(even);
                 }
                 if (receive.getCode() == 0) {
                     if (receive != null) {

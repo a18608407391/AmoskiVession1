@@ -1,6 +1,5 @@
 package com.cstec.administrator.social.ItemViewModel
 
-import android.app.Dialog
 import android.databinding.ObservableArrayList
 import android.util.Log
 import android.widget.Toast
@@ -14,15 +13,12 @@ import com.elder.zcommonmodule.DataBases.queryUserInfo
 import com.elder.zcommonmodule.Entity.DynamicsSimple
 import com.elder.zcommonmodule.Entity.Location
 import com.elder.zcommonmodule.Entity.SocialHoriEntity
-import com.elder.zcommonmodule.SOCIAL_DETAIL_RETURN
 import com.elder.zcommonmodule.Service.HttpRequest
 import com.elder.zcommonmodule.Utils.Dialog.OnBtnClickL
 import com.elder.zcommonmodule.Utils.DialogUtils
-import com.google.gson.Gson
-import com.zk.library.Base.ItemViewModel
+import com.elder.zcommonmodule.Component.ItemViewModel
 import com.zk.library.Utils.PreferenceUtils
 import com.zk.library.Utils.RouterUtils
-import com.zk.library.Utils.RouterUtils.PrivateModuleConfig.Companion.USER_INFO
 import com.zk.library.Utils.RouterUtils.SocialConfig.Companion.SOCIAL_DETAIL_ENTITY
 import com.zk.library.Utils.RouterUtils.SocialConfig.Companion.SOCIAL_LOCATION
 import kotlinx.android.synthetic.main.fragment_social.*
@@ -32,7 +28,6 @@ import org.cs.tec.library.Bus.RxBus
 import org.cs.tec.library.USERID
 import org.cs.tec.library.binding.command.BindingCommand
 import org.cs.tec.library.binding.command.BindingConsumer
-import java.util.*
 import kotlin.collections.HashMap
 
 

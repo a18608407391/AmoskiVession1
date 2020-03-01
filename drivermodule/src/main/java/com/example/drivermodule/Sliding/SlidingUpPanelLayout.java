@@ -366,7 +366,7 @@ public class SlidingUpPanelLayout extends ViewGroup {
             setDragView(findViewById(mDragViewResId));
         }
         if (mScrollableViewResId != -1) {
-            setScrollableView(findViewById(mScrollableViewResId));
+            setScrollableView((ViewGroup) findViewById(mScrollableViewResId));
         }
     }
 

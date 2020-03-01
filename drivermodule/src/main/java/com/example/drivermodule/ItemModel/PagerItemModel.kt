@@ -3,7 +3,7 @@ package com.example.drivermodule.ItemModel
 import android.databinding.ObservableField
 import com.example.drivermodule.Entity.RoadBook.BottomHoriDatas
 import com.example.drivermodule.ViewModel.RoadBookViewModel
-import com.zk.library.Base.ItemViewModel
+import com.elder.zcommonmodule.Component.ItemViewModel
 
 
 class PagerItemModel : ItemViewModel<RoadBookViewModel>() {

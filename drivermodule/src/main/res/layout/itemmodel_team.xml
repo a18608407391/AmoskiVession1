@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout>
+<layout xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
 
@@ -159,7 +159,9 @@
                         android:id="@+id/teamhorizontalLinear"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"></LinearLayout>
+                        android:orientation="horizontal"
+                        app:LoadTeamBottomHoriData="@{team_item.personDatas}"
+                        app:LoadTeamBottomClick="@{team_item.bottomChildClick}"></LinearLayout>
                 </HorizontalScrollView>
             </LinearLayout>
         </LinearLayout>

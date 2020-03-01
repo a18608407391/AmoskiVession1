@@ -1,12 +1,11 @@
 package com.example.drivermodule.Controller
 
-import android.content.Intent
 import android.view.View
 import com.amap.api.maps.model.Marker
 import com.elder.zcommonmodule.Entity.HotData
 import com.example.drivermodule.Entity.RoadBook.RoadDetailEntity
 import com.example.drivermodule.ViewModel.MapFrViewModel
-import com.zk.library.Base.ItemViewModel
+import com.elder.zcommonmodule.Component.ItemViewModel
 
 
 class RoadBookItemModel : ItemViewModel<MapFrViewModel>() {

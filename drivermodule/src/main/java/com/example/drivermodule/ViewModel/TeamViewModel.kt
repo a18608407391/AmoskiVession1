@@ -139,6 +139,7 @@ class TeamViewModel : BaseViewModel() {
         mapActivity.viewModel?.component!!.isTeam.set(false)
     }
 
+
     fun onComponentFinish(view: View) {
         if (System.currentTimeMillis() - CurrentClickTime < 500) {
             return
@@ -196,6 +197,7 @@ class TeamViewModel : BaseViewModel() {
                 so.body = Soket.SocketRequest()
                 so.body?.token = token
                 so.sendTime = System.currentTimeMillis()
+
                 if (teamFragment.create != null) {
                     driverModel.TeamStatus?.teamCreate = teamFragment.create
                     so.teamCode = teamFragment.create?.teamCode
@@ -492,7 +494,6 @@ class TeamViewModel : BaseViewModel() {
                     markerListNumber.remove(it.userId.toString())
                     markerList.remove(it.userId.toString())
                 }
-
                 var so = Soket()
                 so.type = 1003
                 sendOrder(so)
@@ -896,6 +897,7 @@ class TeamViewModel : BaseViewModel() {
                 markerList.clear()
             }
 
+
             dtoList.forEach {
                 //                createImageMarker(LatLng(driverModel?.status.driverStartPoint?.latitude!!, driverModel?.status.driverStartPoint?.longitude!!), getImageUrl(it.memberHeaderUrl))
 
@@ -946,6 +948,7 @@ class TeamViewModel : BaseViewModel() {
         if (layout != null) {
             layout.removeAllViews()
         }
+
         personDatas.forEachIndexed { i, entity ->
             var inflater = mapActivity.activity!!.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
             var view = inflater.inflate(R.layout.horizontal_team_person_child, layout, false)

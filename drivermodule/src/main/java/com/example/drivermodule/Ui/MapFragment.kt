@@ -56,6 +56,7 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
     var mLocationOption: AMapLocationClientOption? = null
     var mListener: LocationSource.OnLocationChangedListener? = null
     lateinit var user: UserInfo
+    lateinit var token: String
     override fun deactivate() {
         mListener = null
         if (mlocationClient != null) {
@@ -233,6 +234,7 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
 
     private fun initStatus() {
         user = queryUserInfo(PreferenceUtils.getString(context, USERID))[0]
+        token = PreferenceUtils.getString(context, USER_TOKEN)
         var statusList = queryDriverStatus(user.data?.memberId!!)
         if (statusList.isNullOrEmpty()) {
             viewModel?.status = DriverDataStatus()

@@ -26,8 +26,7 @@ import java.util.concurrent.TimeUnit
 import android.content.Intent
 import cn.jpush.im.android.api.model.Message
 import cn.jpush.im.android.api.model.Conversation
-
-
+import com.zk.library.Bus.event.RxBusEven
 
 
 open class BaseApplication : Application() {
@@ -120,7 +119,7 @@ open class BaseApplication : Application() {
         val DELETE_MODE = "deleteMode"
         val RESULT_CODE_ME_INFO = 20
         var forwardMsg: List<Message> = ArrayList()
-//        val CONV_TYPE = "conversationType" //value使用 ConversationType
+        //        val CONV_TYPE = "conversationType" //value使用 ConversationType
         val ROOM_ID = "roomId"
         val POSITION = "position"
 
@@ -164,8 +163,11 @@ open class BaseApplication : Application() {
         RxBus.default?.toObservable(String::class.java)?.subscribe {
             if (it == "MINA_FORCE_CLOSE") {
                 MinaConnected = false
-                RxBus.default!!.post("AppMINA_FORCE_CLOSE")
+                var even = RxBusEven()
+                even.type = RxBusEven.TeamSocketDisConnect
+                RxBus.default!!.post(even)
                 if (!isClose) {
+                    //非主动关闭Mina 開啟重連機制
                     var flag = NetworkUtil.isNetworkAvailable(context)
                     if (flag) {
                         if (!MinaConnected) {
@@ -192,10 +194,13 @@ open class BaseApplication : Application() {
             } else if (it == "MinaConnected") {
                 MinaConnected = true
                 isClose = false
-                RxBus.default!!.post("AppMinaConnected")
+                var even = RxBusEven()
+                even.type = RxBusEven.TeamSocketConnectSuccess
+                RxBus.default!!.post(even)
             }
         }
     }
+
     lateinit var mWxApi: IWXAPI
     private fun registerWx() {
         mWxApi = WXAPIFactory.createWXAPI(this, WX_APP_ID, false)

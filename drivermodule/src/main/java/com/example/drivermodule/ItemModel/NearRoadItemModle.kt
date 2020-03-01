@@ -2,7 +2,6 @@ package com.example.drivermodule.ItemModel
 
 import android.databinding.ObservableArrayList
 import android.util.Log
-import android.widget.Toast
 import com.alibaba.android.arouter.launcher.ARouter
 import com.amap.api.maps.AMapUtils
 import com.amap.api.maps.model.LatLng
@@ -17,13 +16,10 @@ import com.example.drivermodule.R
 import com.example.drivermodule.ViewModel.RoadBook.AcRoadBookViewModel
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.zk.library.Base.BaseViewModel
-import com.zk.library.Base.ItemViewModel
+import com.elder.zcommonmodule.Component.ItemViewModel
 import com.zk.library.Utils.RouterUtils
 import kotlinx.android.synthetic.main.activity_roadbook.*
-import me.tatarka.bindingcollectionadapter2.BindingRecyclerViewAdapter
 import me.tatarka.bindingcollectionadapter2.ItemBinding
-import org.cs.tec.library.Base.Utils.context
 import org.cs.tec.library.Base.Utils.getString
 import org.cs.tec.library.binding.command.BindingCommand
 import org.cs.tec.library.binding.command.BindingConsumer

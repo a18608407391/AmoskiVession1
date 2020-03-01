@@ -12,8 +12,7 @@ class RxBusEven {
         //组队相关
         var TeamSocketConnectSuccess = 0x1005
         var TeamSocketDisConnect = 0x1006
-
-
+        var MinaDataReceive = 0x1007
     }
 
 

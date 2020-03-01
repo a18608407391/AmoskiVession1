@@ -21,7 +21,6 @@
         sothree:umanoDragView="@+id/slideView"
         sothree:umanoFadeColor="#00FFFFFF"
         sothree:umanoPanelHeight="0dp"
-        sothree:umanoScrollInterpolator="@+id/main_view"
         sothree:umanoShadowHeight="0dp">
 
         <RelativeLayout
