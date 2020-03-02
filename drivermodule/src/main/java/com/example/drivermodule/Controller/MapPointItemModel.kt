@@ -425,9 +425,10 @@ class MapPointItemModel : ItemViewModel<MapFrViewModel>(), BaseQuickAdapter.OnIt
         SingleList[0] = t
         adapter.notifyDataSetChanged()
 
-//        if (mapActivity.getDrverFragment().viewModel?.backStatus!!) {
-//            mapActivity.getDrverFragment().viewModel?.GoTeam()
-//        }
+        if (viewModel?.backStatus!!) {
+            (viewModel.items[0] as DriverItemModel).GoTeam()
+            viewModel?.backStatus = false
+        }
     }
 
     fun reset() {

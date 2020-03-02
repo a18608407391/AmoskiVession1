@@ -35,6 +35,11 @@ class DeleteActivity : BaseActivity<ActivityTeamDeleteMemberBinding, TeamDeleteV
         return ViewModelProviders.of(this)[TeamDeleteViewModel::class.java]
     }
 
+    override fun doPressBack() {
+        super.doPressBack()
+        finish()
+    }
+
     override fun initData() {
         super.initData()
         mViewModel?.inject(this)

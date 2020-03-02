@@ -37,7 +37,10 @@ class TeamChangeNameActivity : BaseActivity<ActivityTeamChangenameBinding, Chang
     override fun initViewModel(): ChangeTeamNameViewModel? {
         return ViewModelProviders.of(this)[ChangeTeamNameViewModel::class.java]
     }
-
+    override fun doPressBack() {
+        super.doPressBack()
+        finish()
+    }
     override fun initData() {
         super.initData()
         mViewModel?.inject(this)

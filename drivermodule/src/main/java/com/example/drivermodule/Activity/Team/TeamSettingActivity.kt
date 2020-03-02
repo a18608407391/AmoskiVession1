@@ -41,6 +41,11 @@ class TeamSettingActivity : BaseActivity<ActivityTeamManagerBinding, TeamSetting
         return BR.team_setting
     }
 
+    override fun doPressBack() {
+        super.doPressBack()
+        mViewModel?.back()
+    }
+
     override fun initContentView(savedInstanceState: Bundle?): Int {
         StatusbarUtils.setRootViewFitsSystemWindows(this, true)
         StatusbarUtils.setTranslucentStatus(this)
@@ -77,7 +82,7 @@ class TeamSettingActivity : BaseActivity<ActivityTeamManagerBinding, TeamSetting
                     RxBus.default?.post("showProgress")
                     var pos = ServiceEven()
                     pos.type = "sendData"
-                    pos.gson  = Gson().toJson(so) + "\\r\\n"
+                    pos.gson = Gson().toJson(so) + "\\r\\n"
                     RxBus.default?.post(pos)
                 }
                 REQUEST_TEAM_MANAGER -> {
@@ -95,7 +100,7 @@ class TeamSettingActivity : BaseActivity<ActivityTeamManagerBinding, TeamSetting
                     RxBus.default?.post("showProgress")
                     var pos = ServiceEven()
                     pos.type = "sendData"
-                    pos.gson  = Gson().toJson(so) + "\\r\\n"
+                    pos.gson = Gson().toJson(so) + "\\r\\n"
                     RxBus.default?.post(pos)
                     mViewModel?.validate()
                 }
@@ -120,7 +125,6 @@ class TeamSettingActivity : BaseActivity<ActivityTeamManagerBinding, TeamSetting
 //                    update?.forEach {
 //                        info?.redisData?.dtoList?.add(it)
 //                    }
-
 
 
 //                    var inde = info?.redisData?.dtoList?.listIterator()
@@ -152,7 +156,7 @@ class TeamSettingActivity : BaseActivity<ActivityTeamManagerBinding, TeamSetting
                     RxBus.default?.post("showProgress")
                     var pos = ServiceEven()
                     pos.type = "sendData"
-                    pos.gson  = Gson().toJson(so) + "\\r\\n"
+                    pos.gson = Gson().toJson(so) + "\\r\\n"
                     RxBus.default?.post(pos)
                 }
                 REQUEST_TEAM_PASS -> {

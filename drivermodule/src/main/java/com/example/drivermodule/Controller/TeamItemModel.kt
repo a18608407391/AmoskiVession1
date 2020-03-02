@@ -1,15 +1,12 @@
 package com.example.drivermodule.Controller
 
-import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.databinding.ObservableArrayList
 import android.databinding.ObservableField
 import android.graphics.BitmapFactory
-import android.graphics.Color
 import android.graphics.drawable.Drawable
-import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,7 +14,7 @@ import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.TextView
 import android.widget.Toast
-import androidx.annotation.RequiresApi
+import com.alibaba.android.arouter.launcher.ARouter
 import com.amap.api.location.AMapLocation
 import com.amap.api.maps.AMap
 import com.amap.api.maps.AMapUtils
@@ -31,30 +28,34 @@ import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
 import com.bumptech.glide.request.transition.Transition
+import com.elder.zcommonmodule.*
 import com.elder.zcommonmodule.Entity.SoketBody.*
 import com.elder.zcommonmodule.Inteface.Locationlistener
 import com.elder.zcommonmodule.Widget.LoginUtils.BaseDialogFragment
-import com.elder.zcommonmodule.Widget.LoginUtils.LoginDialogFragment
 import com.example.drivermodule.R
 import com.example.drivermodule.Ui.MapFragment
 import com.example.drivermodule.ViewModel.MapFrViewModel
 import com.google.gson.Gson
 import com.zk.library.Base.BaseApplication
 import com.elder.zcommonmodule.Component.ItemViewModel
-import com.elder.zcommonmodule.TeamStarting
+import com.elder.zcommonmodule.Entity.LatLonLocal
+import com.elder.zcommonmodule.Entity.RemoveBody
+import com.elder.zcommonmodule.Utils.Dialog.NormalDialog
+import com.elder.zcommonmodule.Utils.Dialog.OnBtnClickL
 import com.elder.zcommonmodule.Utils.DialogUtils
-import com.elder.zcommonmodule.getImageUrl
+import com.example.drivermodule.AMapUtil
+import com.example.drivermodule.Activity.Team.TeamSettingActivity
 import com.tencent.mm.opensdk.modelmsg.SendMessageToWX
 import com.tencent.mm.opensdk.modelmsg.WXMediaMessage
 import com.tencent.mm.opensdk.modelmsg.WXWebpageObject
+import com.zk.library.Base.AppManager
 import com.zk.library.Bus.ServiceEven
 import com.zk.library.Bus.event.RxBusEven
 import com.zk.library.Bus.event.RxBusEven.Companion.MinaDataReceive
 import com.zk.library.Bus.event.RxBusEven.Companion.TeamSocketConnectSuccess
 import com.zk.library.Bus.event.RxBusEven.Companion.TeamSocketDisConnect
-import com.zk.library.Utils.PreferenceUtils
+import com.zk.library.Utils.RouterUtils
 import com.zk.library.binding.command.ViewAdapter.image.SimpleTarget
-import kotlinx.android.synthetic.main.fragment_team.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
@@ -63,10 +64,10 @@ import org.cs.tec.library.Base.Utils.getString
 import org.cs.tec.library.Base.Utils.ioContext
 import org.cs.tec.library.Base.Utils.uiContext
 import org.cs.tec.library.Bus.RxBus
-import org.cs.tec.library.USERID
 import org.cs.tec.library.Utils.ConvertUtils
 import org.cs.tec.library.binding.command.BindingCommand
 import org.cs.tec.library.binding.command.BindingConsumer
+import org.json.JSONObject
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -153,7 +154,7 @@ class TeamItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener {
                 so.userId = mapFr.user.data!!.id
                 teamId = so.teamId
                 teamCode.set(so.teamCode)
-                sendOrder(so)
+                sendOrder(so, false)
                 viewModel.TeamStatus?.teamStatus = TeamStarting
                 viewModel?.TeamStatus?.save()
             }
@@ -174,9 +175,11 @@ class TeamItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener {
     }
 
 
-    fun sendOrder(n: Soket) {
-        if (mapFr.onStart) {
-            mapFr.showProgressDialog(getString(R.string.get_message))
+    fun sendOrder(n: Soket, flag: Boolean) {
+        if (mapFr.onStart && flag) {
+            CoroutineScope(uiContext).launch {
+                mapFr.showProgressDialog(getString(R.string.get_message))
+            }
         }
         var pos = ServiceEven()
         pos.type = "sendData"
@@ -192,9 +195,8 @@ class TeamItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener {
             if (BaseApplication.isClose) {
                 return
             }
-            mapFr.dismissDialog()
             if (it.code == 0) {
-                when (it.code) {
+                when (it.type) {
                     SocketDealType.HEART_BEAT.code -> {
                         //发送心跳
                         if (System.currentTimeMillis() - HeartTimeLimit < 10000) {
@@ -203,27 +205,114 @@ class TeamItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener {
                             //10秒一次心跳
                             var so = Soket()
                             so.type = SocketDealType.HEART_BEAT.code
-                            var pos = ServiceEven()
-                            pos.type = "sendData"
-                            pos.gson = Gson().toJson(so) + "\\r\\n"
-                            RxBus.default?.post(pos)
+                            sendOrder(so, false)
                             HeartTimeLimit = System.currentTimeMillis()
                         }
                     }
                     SocketDealType.JOINTEAM.code -> {
                         //队员加入通知
+                        if (markerListNumber.contains(it.userId.toString())) {
+                            var marker = markerList[it.userId.toString()]
+                            marker!!.remove()
+                            markerListNumber.remove(it.userId.toString())
+                            markerList.remove(it.userId.toString())
+                        }
+                        //查询信息
+                        var m = Soket()
+                        m.type = 1006
+                        m.teamCode = teamCode.get()
+                        sendOrder(m, false)
+                        viewModel?.component!!.arrowVisible.set(false)
+                        viewModel?.component!!.rightVisibleType.set(false)
+                        viewModel?.component!!.rightText.set("")
+                        viewModel?.component!!.rightIcon.set(context.getDrawable(R.drawable.ic_sousuo))
                     }
                     SocketDealType.SENDPOINT.code -> {
                         //发送定位点
+                        var local = Gson().fromJson<LatLonLocal>(it.body, LatLonLocal::class.java)
+                        if (it.userId.toString() != mapFr.user.data?.memberId) {
+                            if (location != null) {
+                                if (markerList.containsKey(it.userId.toString())) {
+                                    var marker = markerList[it.userId.toString()]
+                                    marker?.position = LatLng(local.latitude!!, local.longitude!!)
+                                    var title = marker?.title
+                                    var m = fomatDistance(LatLng(location?.latitude!!, location!!.longitude), LatLng(local.latitude!!, local.longitude!!))
+                                    marker?.title = title!!.split(",")[0] + "," + m
+                                    markerList.set(it.userId.toString(), marker!!)
+                                }
+                            }
+                        }
                     }
                     SocketDealType.OFFLINE.code -> {
                         //离线
+                        if (markerListNumber.contains(it.userId.toString())) {
+                            var maker = markerList[it.userId.toString()]
+                            maker?.remove()
+                            markerList.remove(it.userId.toString())
+                            markerListNumber.remove(it.userId.toString())
+                        }
+                        var m = Soket()
+                        m.type = 1006
+                        m.teamCode = teamCode.get()
+                        sendOrder(m, true)
                     }
                     SocketDealType.LEAVETEAM.code -> {
                         //离开队伍
+                        if (it.userId.toString() == mapFr.user.data?.memberId) {
+                            CoroutineScope(uiContext).launch {
+                                Toast.makeText(context, "已离开队伍！", Toast.LENGTH_SHORT).show()
+                            }
+                            endTeam(false)
+                        } else {
+                            var c = it
+                            TeamInfo?.redisData?.dtoList?.forEach {
+                                if (it.memberId == c.userId) {
+                                    CoroutineScope(uiContext).launch {
+                                        Toast.makeText(context, it.memberName + "已离开队伍！", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            }
+                            var maker = markerList[it.userId.toString()]
+                            maker?.remove()
+                            markerList.remove(it.userId.toString())
+                            markerListNumber.remove(it.userId.toString())
+                            var m = Soket()
+                            m.type = 1006
+                            m.teamCode = teamCode.get()
+                            sendOrder(m, true)
+                        }
                     }
                     SocketDealType.REJECTTEAM.code -> {
                         //队员被移除通知
+                        var remove = Gson().fromJson<RemoveBody>(it.body, RemoveBody::class.java)
+                        var body = remove.userIds?.split(",")
+                        if (body?.contains(mapFr.user.data?.memberId)!!) {
+                            //判断自己是否在内
+                            CoroutineScope(uiContext).launch {
+                                Toast.makeText(mapFr.activity, getString(R.string.remove_by_team), Toast.LENGTH_SHORT).show()
+                            }
+                            var even = RxBusEven()
+                            even.type = RxBusEven.Team_reject_even
+                            RxBus.default!!.post(even)
+                            AppManager.get()?.finishActivity(TeamSettingActivity::class.java)
+                            endTeam(false)
+                        } else {
+                            CoroutineScope(uiContext).launch {
+                                Toast.makeText(context, "已有队员被移除队伍！", Toast.LENGTH_SHORT).show()
+                            }
+
+                            body.forEachIndexed { index, s ->
+                                if (!s.isEmpty()) {
+                                    markerList[s]?.remove()
+                                    markerList.remove(s)
+                                    markerListNumber.remove(s)
+                                }
+                            }
+                            var m = Soket()
+                            m.type = 1006
+                            m.teamCode = teamCode.get()
+                            sendOrder(m, true)
+                        }
                     }
                     SocketDealType.GETTEAMINFO.code -> {
                         //获取队内信息
@@ -254,23 +343,60 @@ class TeamItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener {
                         }
                     }
                     SocketDealType.TEAMER_PASS.code -> {
-
+                        var m = Soket()
+                        m.type = 1006
+                        m.teamCode = teamCode.get()
+                        sendOrder(m, true)
                     }
                     SocketDealType.UPDATETEAMINFO.code -> {
                         //队内信息更新
+
+                        var m = Soket()
+                        m.type = 1006
+                        m.teamCode = teamCode.get()
+                        sendOrder(m, true)
+                        viewModel?.component!!.arrowVisible.set(false)
+                        viewModel?.component!!.rightVisibleType.set(false)
+                        viewModel?.component!!.rightText.set("")
+                        viewModel?.component!!.rightIcon.set(context.getDrawable(R.drawable.ic_sousuo))
                     }
                     SocketDealType.DISMISSTEAM.code -> {
                         //解散队伍
+                        CoroutineScope(uiContext).launch {
+                            Toast.makeText(context, "您的队伍已被解散！", Toast.LENGTH_SHORT).show()
+                        }
+                        var even = RxBusEven()
+                        even.type = RxBusEven.Team_reject_even
+                        RxBus.default!!.post(even)
+                        endTeam(false)
                     }
                     SocketDealType.UPDATE_MANAGER.code -> {
-
+                        var m = Soket()
+                        m.type = 1006
+                        m.teamCode = teamCode.get()
+                        sendOrder(m, true)
                     }
                     SocketDealType.NAVIGATION_START.code -> {
                         // 导航通知
+                        var obj = JSONObject(it.body)
+                        var nav = obj.getString("navigationPoint")
+                        soketNavigation = Gson().fromJson<SoketNavigation>(nav, SoketNavigation::class.java)
+                        if (mapFr.onStart && teamer.toString() != mapFr.user.data?.id && viewModel?.status?.navigationType == 1) {
+                            CoroutineScope(uiContext).launch {
+                                createDistrictDialog()
+//                        {"navigationPoint":"{\"wayPoint\":[],\"navigation_end\":{\"aoiName\":\"长沙县人民政府\",\"longitude\":113.07891494372052,\"latitude\":28.247158541709886}}"}
+                            }
+                        } else {
+                            RxBus.default?.post(soketNavigation!!)
+                        }
+                        var m = Soket()
+                        m.type = 1006
+                        m.teamCode = teamCode.get()
+                        sendOrder(m, true)
                     }
                 }
             } else {
-                if (it.code == 10009) {
+                if (it.type == 10009) {
                     //登录超时 重新登录后，加入组队
                     //关闭Mina
                     //登录
@@ -280,12 +406,42 @@ class TeamItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener {
                         closeMina()
                         //返回到骑行界面
                         viewModel?.selectTab(0)
-
                         showLoginDialogFragment(mapFr)
                     }
                 }
             }
         }
+    }
+
+    var notifyRouteChange: NormalDialog? = null
+    private fun createDistrictDialog() {
+        if (notifyRouteChange == null) {
+            notifyRouteChange = DialogUtils.createNomalDialog(mapFr.activity!!, getString(R.string.route_change), getString(R.string.ignore), getString(R.string.change_route))
+            notifyRouteChange!!.setOnBtnClickL(OnBtnClickL {
+                notifyRouteChange?.dismiss()
+            }, OnBtnClickL {
+                notifyRouteChange?.dismiss()
+                backToDriver()
+                viewModel?.backStatus = true
+                if (viewModel?.status?.navigationType == 1) {
+                    var list = ArrayList<LatLng>()
+                    if (soketNavigation?.wayPoint != null && !soketNavigation?.wayPoint!!.isEmpty()) {
+                        soketNavigation?.wayPoint!!.forEach {
+                            list.add(AMapUtil.convertToLatLng(it))
+                        }
+                    }
+                    viewModel?.status!!.navigationEndPoint = soketNavigation?.navigation_end
+                    viewModel?.startNavi(viewModel?.status!!.navigationStartPoint!!, viewModel?.status!!.navigationEndPoint!!, list, 2)
+                    RxBus.default?.post(soketNavigation!!)
+                } else {
+                    toNavi(false)
+                }
+            })
+        }
+        notifyRouteChange?.show()
+    }
+
+    private fun toNavi(b: Boolean) {
     }
 
     private fun sendNavigationNotify() {
@@ -306,11 +462,11 @@ class TeamItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener {
                     startMinaService()
                 }
                 "cancle" -> {
-
+                    viewModel.selectTab(0)
                 }
             }
         } else {
-
+            viewModel.selectTab(0)
         }
     }
 
@@ -325,15 +481,18 @@ class TeamItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener {
                 var d = Date(TeamInfo?.redisData?.validEndTime!!)
                 date.set("有效期至：" + simple.format(d))
                 addChildView(TeamInfo?.redisData!!.dtoList)
+                viewModel?.component.isTeam.set(true)
             }
         } else {
 
         }
+        mapFr.dismissProgressDialog()
     }
 
     var personDatas = ObservableArrayList<TeamPersonnelInfoDto>().apply {
         this.add(TeamPersonnelInfoDto())
     }
+
     var shareDialog: AlertDialog? = null
 
     var BottomChildClick = BindingCommand(object : BindingConsumer<Int> {
@@ -380,12 +539,13 @@ class TeamItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener {
                         }
                     })
                 } else if (mapFr.user?.data?.memberId == entity.memberId.toString()) {
-                    if (mapFr.getDrverController().curPosition != null) {
-                        mapFr.mAmap.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(mapFr.getDrverController().curPosition!!.latitude, mapFr.getDrverController()!!.curPosition!!.longitude), 15F), 1000, object : AMap.CancelableCallback {
+                    if (viewModel?.curPosition != null) {
+                        mapFr.mAmap.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(viewModel?.curPosition!!.latitude, viewModel?.curPosition!!.longitude), 15F), 1000, object : AMap.CancelableCallback {
                             override fun onFinish() {
                             }
 
                             override fun onCancel() {
+
                             }
                         })
                     }
@@ -437,10 +597,7 @@ class TeamItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener {
                 markerListNumber.clear()
                 markerList.clear()
             }
-
             dtoList.forEach {
-                //                createImageMarker(LatLng(driverModel?.status.driverStartPoint?.latitude!!, driverModel?.status.driverStartPoint?.longitude!!), getImageUrl(it.memberHeaderUrl))
-
                 if (markerListNumber.contains(it.memberId.toString())) {
                     var name = ""
                     if (it.memberName.trim().isEmpty()) {
@@ -484,15 +641,12 @@ class TeamItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener {
                 personDatas.add(it)
             }
         }
-
     }
 
     private fun createImageMarker(it: TeamPersonnelInfoDto) {
-
         var m = it.joinAddr.split(",")
         var position = LatLng(m[0].toDouble(), m[1].toDouble())
         var url = getImageUrl(it.memberHeaderUrl)
-//                LatLng(m[0].toDouble(), m[1].toDouble()), getImageUrl(it.memberHeaderUrl), it.memberId,it.memberName
         var inflater = mapFr.activity!!.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
         var view = inflater.inflate(R.layout.teamm_maker_layout, null)
         view.findViewById<RelativeLayout>(R.id.maker_root).layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -518,7 +672,7 @@ class TeamItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener {
         var corners = CircleCrop()
         var options = RequestOptions().transform(corners).error(R.drawable.team_first).override(ConvertUtils.dp2px(48F), ConvertUtils.dp2px(48F))
         var listener = CustomListener(img, position, view, it, maker)
-        Glide.with(mapFr.activity!!).load(url).apply(options).into(listener)
+        Glide.with(context).load(url).apply(options).into(listener)
     }
 
     private fun fomatDistance(position: LatLng, markerPosition: LatLng): String? {
@@ -533,15 +687,36 @@ class TeamItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener {
     }
 
     fun onClick(view: View) {
-
+        when (view.id) {
+            R.id.team_setting -> {
+                if (TeamInfo != null) {
+                    ARouter.getInstance().build(RouterUtils.TeamModule.SETTING).withSerializable(RouterUtils.TeamModule.TEAM_INFO, TeamInfo).navigation()
+                }
+            }
+        }
     }
 
     fun onComponentFinish() {
-
+        ARouter.getInstance().build(RouterUtils.MapModuleConfig.SEARCH_ACTIVITY).withInt(RouterUtils.MapModuleConfig.SEARCH_MODEL, 0).navigation(mapFr.activity, RESULT_POINT)
     }
 
     fun custionView(maker: Marker?, view: View?) {
-
+        isClick = true
+        var title = maker?.title
+        view?.findViewById<TextView>(R.id.team_window_title)!!.text = title!!.split(",")[0]
+        var tex = view?.findViewById<TextView>(R.id.team_window_sna)
+        if (maker?.snippet == "家属") {
+            tex.visibility = View.GONE
+        } else {
+            tex.visibility = View.VISIBLE
+            if (maker?.snippet == "骑士") {
+                tex.background = context?.getDrawable(R.drawable.little_tv_color_corner)
+            } else {
+                tex.background = context?.getDrawable(R.drawable.little_tv_color_corner_yellow)
+            }
+        }
+        view?.findViewById<TextView>(R.id.team_window_sna)!!.text = maker?.snippet
+        view?.findViewById<TextView>(R.id.team_distance_show)!!.text = "距离" + title!!.split(",")[1]
     }
 
     fun onInfoWindowClick(it: Marker?) {
@@ -549,7 +724,9 @@ class TeamItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener {
     }
 
     fun endTeam(b: Boolean) {
+        if (b) {
 
+        }
     }
 
     fun backToDriver() {
@@ -557,13 +734,22 @@ class TeamItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener {
             //不发送消息 清空所有数据
             restAllData()
         } else {
+            markerListNumber.forEach {
+                markerList[it]?.remove()
+            }
+            markerListNumber.clear()
+            markerList.clear()
             //发送消息
         }
+        if (viewModel?.status.startDriver.get() == TeamModel) {
+            viewModel?.status.startDriver.set(DriverCancle)
+        }
+        viewModel?.component.isTeam.set(false)
         viewModel.changerFragment(0)
-
     }
 
     fun backToRoad() {
+
     }
 
     override fun onLocation(location: AMapLocation) {
@@ -579,24 +765,60 @@ class TeamItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener {
             n.body!!.longitude = location.longitude
             n.body!!.latitude = location.latitude
             n.body!!.token = mapFr.token
-            var pos = ServiceEven()
-            pos.type = "sendData"
-            pos.gson = Gson().toJson(n) + "\\r\\n"
-            RxBus.default?.post(pos)
+            sendOrder(n, false)
         }
     }
 
     override fun onDismiss(fr: BaseDialogFragment) {
+        (viewModel?.items[0] as DriverItemModel).GoTeam()
+        dialogFragment.functionDismiss = null
+    }
 
+    var isClick = false
+    fun MapClick(p0: LatLng?) {
+        var flag = false
+        markerListNumber?.forEach {
+            if (markerList!![it]?.isInfoWindowShown!!) {
+                if (!isClick) {
+                    markerList!![it]?.hideInfoWindow()
+                    flag = true
+                } else {
+                    flag = false
+                }
+            }
+        }
+        isClick = flag
+    }
+
+    fun onFiveBtnClick(view: View) {
+        when (view.id) {
+            R.id.team_btn -> {
+                viewModel?.selectTab(0)
+            }
+            R.id.change_map_point -> {
+                viewModel.backStatus = true
+                backToDriver()
+                (viewModel?.items[0] as DriverItemModel).changeMap_Point_btn()
+            }
+            R.id.setting_btn -> {
+                if (viewModel?.curPosition != null) {
+                    mapFr.mAmap.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(viewModel?.curPosition!!.latitude, viewModel?.curPosition!!.longitude), 15F), 1000, object : AMap.CancelableCallback {
+                        override fun onFinish() {
+                        }
+
+                        override fun onCancel() {
+                        }
+                    })
+                }
+            }
+        }
     }
 
     inner class CustomListener : SimpleTarget<Drawable> {
-
         var img: ImageView? = null
         var position: LatLng? = null
         var view: View? = null
-        lateinit var it: TeamPersonnelInfoDto
-
+        var it: TeamPersonnelInfoDto
         var maker: Marker? = null
 
         constructor(img: ImageView, position: LatLng, view: View, it: TeamPersonnelInfoDto, maker: Marker) {

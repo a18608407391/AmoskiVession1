@@ -31,7 +31,10 @@ class TeamerPassActivity : BaseActivity<ActivityTeamerPassBinding, TeamerPassVie
         StatusbarUtils.setStatusBarMode(this, true, 0x00000000)
         return R.layout.activity_teamer_pass
     }
-
+    override fun doPressBack() {
+        super.doPressBack()
+        finish()
+    }
     override fun initViewModel(): TeamerPassViewModel? {
         return ViewModelProviders.of(this)[TeamerPassViewModel::class.java]
     }

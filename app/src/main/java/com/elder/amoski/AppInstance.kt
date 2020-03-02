@@ -92,15 +92,12 @@ class AppInstance : BaseApplication() {
                     context.startService(Intent(context, LowLocationService::class.java).setAction("driver"))
                 }
                 "sendData" -> {
-                    Log.e("result", "sendData")
                     var session = SessionManager.getInstance().writeToServer(it.gson)
                 }
                 "HomeStop" -> {
                     Log.e("result", "HomeStop")
                     context.startService(Intent(context, LowLocationService::class.java).setAction("stop"))
                 }
-
-
             }
         }
         RxSubscriptions.add(postEven)

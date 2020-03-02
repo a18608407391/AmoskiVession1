@@ -171,8 +171,8 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
     override fun onMapClick(p0: LatLng?) {
 
         Log.e("result", "onMapClick")
-//        var fr = viewModel?.mFragments!![1] as TeamFragment
-//        fr?.MapClick(p0)
+        var fr = viewModel?.items!![1] as TeamItemModel
+        fr?.MapClick(p0)
     }
 
     fun setDriverStyle() {
@@ -186,15 +186,6 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
     override fun onTouch(p0: MotionEvent?) {
 
     }
-
-
-    fun setDark() {
-        CoroutineScope(uiContext).launch {
-            delay(500)
-            Utils.setStatusTextColor(true, activity)
-        }
-    }
-
 
     override fun onInfoWindowClick(it: Marker?) {
         Log.e("result", "onInfoWindowClick")

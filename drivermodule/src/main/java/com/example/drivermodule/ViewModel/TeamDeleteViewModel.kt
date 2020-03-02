@@ -18,6 +18,7 @@ import com.example.drivermodule.BR
 import com.example.drivermodule.R
 import com.google.gson.Gson
 import com.zk.library.Base.BaseViewModel
+import com.zk.library.Bus.event.RxBusEven
 import com.zk.library.Utils.PreferenceUtils
 import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.CoroutineScope
@@ -58,6 +59,15 @@ class TeamDeleteViewModel : BaseViewModel(), TitleComponent.titleComponentCallBa
         }
     }
 
+
+    override fun doRxEven(it: RxBusEven?) {
+        super.doRxEven(it)
+        when (it?.type) {
+            RxBusEven.Team_reject_even -> {
+                finish()
+            }
+        }
+    }
 
     var deleteList = ArrayList<TeamPersonnelInfoDto>()
     var dispose: Disposable? = null

@@ -37,6 +37,11 @@ class TeamManagerActivity : BaseActivity<ActivityTeamManagerBinding, TeamManager
         return ViewModelProviders.of(this)[TeamManagerViewModel::class.java]
     }
 
+    override fun doPressBack() {
+        super.doPressBack()
+        finish()
+    }
+
     override fun initData() {
         super.initData()
         mViewModel?.inject(this)

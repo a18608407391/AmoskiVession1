@@ -64,6 +64,7 @@ import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 import jaydenxiao.com.expandabletextview.ExpandableTextView;
@@ -363,6 +364,7 @@ public class ViewAdapter {
     @BindingAdapter(value = "addcar_local")
     public static void setCar(ImageView img, String path) {
         CircleCrop crop = new CircleCrop();
+
         if (path != null && !path.isEmpty()) {
             if (path.startsWith("/Activity")) {
                 path = LocalUtilsKt.getImageUrl(path);
@@ -572,7 +574,6 @@ public class ViewAdapter {
                 img.setImageResource(R.drawable.team_first);
             } else {
                 CircleCrop corners = new CircleCrop();
-
                 RequestOptions options = new RequestOptions().transform(corners).error(R.drawable.default_avatar).timeout(3000).diskCacheStrategy(DiskCacheStrategy.ALL).skipMemoryCache(true).override(ConvertUtils.Companion.dp2px(55F), ConvertUtils.Companion.dp2px(55F));
                 Glide.with(img.getContext()).asBitmap().load(LocalUtilsKt.getImageUrl(entity.getMemberHeaderUrl())).
                         apply(options).into(img);

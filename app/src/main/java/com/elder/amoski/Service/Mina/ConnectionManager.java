@@ -115,7 +115,6 @@ public class ConnectionManager {
         @Override
         public void sessionOpened(IoSession session) throws Exception {
             super.sessionOpened(session);
-            RxBus.Companion.getDefault().post("MinaConnected");
             SessionManager.getInstance().setSeesion(session);
             //将我们的session保存到我们的session manager类中， 从而可以发送消息到服务器
 //            SessionManager.getInstance().writeToServer("AMC" + BaseApplication.getmApp().getMesh().name);
@@ -130,7 +129,7 @@ public class ConnectionManager {
 //                Log.e("result","执行了这里1");
 //            } else {
 //                Log.e("result","执行了这里");
-            RxBus.Companion.getDefault().post("MINA_FORCE_CLOSE");
+
 //            }
 
 

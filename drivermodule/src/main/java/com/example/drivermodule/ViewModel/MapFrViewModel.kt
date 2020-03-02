@@ -62,7 +62,8 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
 //            mapActivity.getMapPointFragment().viewModel?.FiveBtnClick(view)
         } else if (currentPosition == 3) {
 //            mapActivity.getRoadBookFragment().viewModel?.FiveBtnClick(view)
-
+        } else if (currentPosition == 1) {
+            (items[1] as TeamItemModel).onFiveBtnClick(view)
         }
     }
 
@@ -92,6 +93,7 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
             1 -> {
                 if (currentPosition == 0) {
                     //跳转到组队
+                    Log.e("result", "跳转到组队")
                     mapActivity.getDrverController()?.GoTeam()
                 } else if (currentPosition == 3) {
                     mapActivity.getRoadBookController()?.backToDriver()
@@ -107,7 +109,7 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
                     if (mapActivity.getRoadBookController()?.netWorkData == null) {
                         var date = PreferenceUtils.getString(mapActivity.activity, PreferenceUtils.getString(context, USERID) + "hot")
                         if (date == null && mapActivity.hotData == null) {
-                            if (mapActivity.getDrverController().curPosition != null) {
+                            if (curPosition != null) {
                                 ARouter.getInstance().build(RouterUtils.MapModuleConfig.ROAD_BOOK_ACTIVITY).withInt(RouterUtils.MapModuleConfig.ROAD_CURRENT_TYPE, 1).withSerializable(RouterUtils.MapModuleConfig.ROAD_CURRENT_POINT, mapActivity.getDrverFragment().curPosition).navigation(mapActivity.activity, REQUEST_LOAD_ROADBOOK)
                             }
                         } else {
@@ -135,8 +137,10 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
 
     lateinit var status: DriverDataStatus
     var TeamStatus: SoketTeamStatus? = null
+    var backStatus: Boolean = false
     //    var driverController = DriverController(this)
     var cur = 0L
+    var curPosition: Location? = null
 
     override fun onComponentClick(view: View) {
 
@@ -255,7 +259,7 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
 
     lateinit var tab: TabLayout
     private fun initTab() {
-        tab = mapActivity.binding?.root!!.findViewById<TabLayout>(R.id.topTab)
+        tab = mapActivity.binding?.root!!.findViewById(R.id.topTab)
         tab.addTab(tab.newTab().setText(getString(R.string.driver)))
         tab.addTab(tab.newTab().setText(getString(R.string.team)))
         tab.addTab(tab.newTab().setText(getString(R.string.road_book_nomal_title)))
@@ -273,10 +277,8 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
     fun changerFragment(position: Int) {
         currentPosition = position
         if (position == 2) {
-            component.Drivering.set(false)
             component.rightIcon.set(context.getDrawable(R.drawable.three_point))
         } else {
-            component.Drivering.set(true)
             component.rightIcon.set(context.getDrawable(R.drawable.ic_sousuo))
         }
         if (position == 3) {

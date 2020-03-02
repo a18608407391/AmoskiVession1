@@ -36,7 +36,6 @@ class DriverComponent : TitleComponent(), Serializable {
 
     var isTeam  = ObservableField<Boolean>(false)
 
-
     var Drivering = ObservableField<Boolean>(true)
 
     var fiveListener: onFiveClickListener? = null

@@ -14,6 +14,7 @@ import com.trello.rxlifecycle2.LifecycleProvider
 import com.zk.library.Bus.event.SingleLiveEvent
 import com.zk.library.Base.ContainerActivity.Companion.BUNDLE
 import com.zk.library.Bus.event.ActivityDestroyEven
+import com.zk.library.Bus.event.RxBusEven
 import com.zk.library.R
 import com.zk.library.Utils.CANONICAL_NAME
 import com.zk.library.Utils.CLASS
@@ -113,14 +114,24 @@ open class BaseViewModel : ViewModel(), IBaseViewModel {
 
     var destroyList = ArrayList<String>()
     var destroyEven: Disposable? = null
+    var disposable: Disposable? = null
     override fun registerRxBus() {
         destroyEven = RxBus.default?.toObservable(ActivityDestroyEven::class.java)?.subscribe {
             destroyList.add(it.name!!)
         }
+        disposable = RxBus.default?.toObservable(RxBusEven::class.java)?.subscribe {
+            doRxEven(it)
+        }
+        RxSubscriptions.add(disposable)
         RxSubscriptions.add(destroyEven)
     }
 
+    open fun doRxEven(it: RxBusEven?) {
+
+    }
+
     override fun removeRxBus() {
+        RxSubscriptions.remove(disposable)
         RxSubscriptions.remove(destroyEven)
     }
 

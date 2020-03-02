@@ -136,6 +136,7 @@ class TeamFragment : BaseFragment<FragmentTeamBinding, TeamViewModel>() {
         viewModel?.mapActivity?.viewModel?.component?.isTeam?.set(true)
         viewModel?.mapActivity?.viewModel?.component?.Drivering?.set(true)
     }
+
     fun MapClick(p0: LatLng?) {
         var flag = false
         viewModel?.markerListNumber?.forEach {

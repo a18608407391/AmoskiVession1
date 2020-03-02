@@ -8,6 +8,8 @@ import android.graphics.Color
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
+import com.alibaba.android.arouter.facade.Postcard
+import com.alibaba.android.arouter.facade.callback.NavCallback
 import com.alibaba.android.arouter.launcher.ARouter
 import com.bumptech.glide.Glide
 import com.elder.zcommonmodule.Component.TitleComponent
@@ -29,6 +31,7 @@ import com.tencent.mm.opensdk.modelmsg.WXMediaMessage
 import com.tencent.mm.opensdk.modelmsg.WXWebpageObject
 import com.zk.library.Base.BaseApplication
 import com.zk.library.Base.BaseViewModel
+import com.zk.library.Bus.event.RxBusEven
 import com.zk.library.Utils.PreferenceUtils
 import com.zk.library.Utils.RouterUtils
 import io.reactivex.disposables.Disposable
@@ -53,8 +56,15 @@ import java.util.*
 
 class TeamSettingViewModel : BaseViewModel(), TitleComponent.titleComponentCallBack {
     override fun onComponentClick(view: View) {
-        ARouter.getInstance().build(RouterUtils.MapModuleConfig.MAP_ACTIVITY).navigation()
-        finish()
+        back()
+    }
+
+    fun back() {
+        ARouter.getInstance().build(RouterUtils.ActivityPath.HOME).navigation(teamSettingActivity, object : NavCallback() {
+            override fun onArrival(postcard: Postcard?) {
+                finish()
+            }
+        })
     }
 
     override fun onComponentFinish(view: View) {
@@ -96,6 +106,15 @@ class TeamSettingViewModel : BaseViewModel(), TitleComponent.titleComponentCallB
         component.arrowVisible.set(false)
         component.setCallBack(this)
         validate()
+    }
+
+    override fun doRxEven(it: RxBusEven?) {
+        super.doRxEven(it)
+        when (it?.type) {
+            RxBusEven.Team_reject_even -> {
+                finish()
+            }
+        }
     }
 
     fun validate() {
@@ -212,7 +231,7 @@ class TeamSettingViewModel : BaseViewModel(), TitleComponent.titleComponentCallB
             var files = file.get()
             if (files != null) {
                 var bitmap = BitmapFactory.decodeFile(files.path)
-                var newBitmap = ConvertUtils.compressByQuality(bitmap,32000,true)
+                var newBitmap = ConvertUtils.compressByQuality(bitmap, 32000, true)
                 var wx = WXWebpageObject()
                 wx.webpageUrl = "http://amoski.net/yomoy/index.html?platform=android&teamCode=" + teamSettingActivity.info?.redisData?.teamCode
                 var msg = WXMediaMessage(wx)
@@ -255,22 +274,10 @@ class TeamSettingViewModel : BaseViewModel(), TitleComponent.titleComponentCallB
                         dialog.setOnBtnClickL(OnBtnClickL {
                             dialog.dismiss()
                         }, OnBtnClickL {
-                            var so = Soket()
-                            so.type = SocketDealType.DISMISSTEAM.code
-                            so.teamCode = teamSettingActivity.info?.redisData?.teamCode
-                            so.teamId = teamSettingActivity.info?.redisData?.id.toString()
-                            so.userId = id
                             dialog.dismiss()
                             CoroutineScope(uiContext).launch {
                                 delay(1000)
-                                RxBus.default?.post("showProgress")
-//                                com.elder.amoski.Service.Mina.SessionManager.getInstance().writeToServer(Gson().toJson(so) + "\\r\\n")
-                                var pos = ServiceEven()
-                                pos.type = "sendData"
-                                pos.gson = Gson().toJson(so) + "\\r\\n"
-                                RxBus.default?.post(pos)
-                                ARouter.getInstance().build(RouterUtils.MapModuleConfig.MAP_ACTIVITY).navigation()
-                                teamSettingActivity.finish()
+                                sendOrder( SocketDealType.DISMISSTEAM.code)
                             }
                         })
                         dialog.show()
@@ -280,22 +287,9 @@ class TeamSettingViewModel : BaseViewModel(), TitleComponent.titleComponentCallB
                             dialog.dismiss()
                         }, OnBtnClickL {
                             dialog.dismiss()
-                            var so = Soket()
-                            so.type = SocketDealType.LEAVETEAM.code
-                            so.teamCode = teamSettingActivity.info?.redisData?.teamCode
-                            so.teamId = teamSettingActivity.info?.redisData?.id.toString()
-                            so.userId = id
-                            dialog.dismiss()
                             CoroutineScope(uiContext).launch {
                                 delay(1000)
-                                RxBus.default?.post("showProgress")
-                                var pos = ServiceEven()
-                                pos.type = "sendData"
-                                pos.gson = Gson().toJson(so) + "\\r\\n"
-                                RxBus.default?.post(pos)
-//                                com.elder.amoski.Service.Mina.SessionManager.getInstance().writeToServer(Gson().toJson(so) + "\\r\\n")
-                                ARouter.getInstance().build(RouterUtils.MapModuleConfig.MAP_ACTIVITY).navigation()
-                                teamSettingActivity.finish()
+                                  sendOrder(SocketDealType.LEAVETEAM.code)
                             }
                         })
                         dialog.show()
@@ -303,5 +297,19 @@ class TeamSettingViewModel : BaseViewModel(), TitleComponent.titleComponentCallB
                 }
             }
         }
+    }
+
+    fun sendOrder(type: Int){
+        var so = Soket()
+        so.type = type
+        so.teamCode = teamSettingActivity.info?.redisData?.teamCode
+        so.teamId = teamSettingActivity.info?.redisData?.id.toString()
+        so.userId = id
+        var pos = ServiceEven()
+        pos.type = "sendData"
+        pos.gson = Gson().toJson(so) + "\\r\\n"
+        RxBus.default?.post(pos)
+        ARouter.getInstance().build(RouterUtils.ActivityPath.HOME).navigation()
+        teamSettingActivity.finish()
     }
 }

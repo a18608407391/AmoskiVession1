@@ -133,13 +133,11 @@ public class WXEntryActivity extends Activity implements IWXAPIEventHandler {
         switch (baseResp.errCode) {
             case BaseResp.ErrCode.ERR_AUTH_DENIED:
                 //用户拒绝授权
-
                 Toast.makeText(this, "微信授权取消!!!", Toast.LENGTH_SHORT).show();
                 finish();
 //                ToastUtils.showToast(mContext, "拒绝授权微信登录");
             case BaseResp.ErrCode.ERR_USER_CANCEL:
                 //用户取消
-                Log.e("result", "用户取消");
                 String message = "";
                 if (type == RETURN_MSG_TYPE_LOGIN) {
                     message = "取消了微信登录";
@@ -156,7 +154,6 @@ public class WXEntryActivity extends Activity implements IWXAPIEventHandler {
                 if (type == RETURN_MSG_TYPE_LOGIN) {
                     //用户换取access_token的code，仅在ErrCode为0时有效
                     final String code = ((SendAuth.Resp) baseResp).code;
-                    Log.e("result", "登录" + code);
                     final Dialog dialog = showProgress(getString(R.string.wx_loading_login));
                     Observable.create(new ObservableOnSubscribe<Response>() {
                         @Override
@@ -181,7 +178,6 @@ public class WXEntryActivity extends Activity implements IWXAPIEventHandler {
                         @Override
                         public void onNext(String s) {
                             final BaseResponse res = new Gson().fromJson(s, BaseResponse.class);
-                            Log.e("result", "登录返回数据" + s);
                             if (res.getCode() == 0) {
                                 PreferenceUtils.putString(WXEntryActivity.this, USERID, res.getMsg());
                                 dialog.dismiss();
@@ -256,13 +252,11 @@ public class WXEntryActivity extends Activity implements IWXAPIEventHandler {
 
                         @Override
                         public void onError(Throwable e) {
-                            Log.e("result", "登录2");
                             finish();
                         }
 
                         @Override
                         public void onComplete() {
-                            Log.e("result", "登录3");
                             dialog.dismiss();
                         }
                     });

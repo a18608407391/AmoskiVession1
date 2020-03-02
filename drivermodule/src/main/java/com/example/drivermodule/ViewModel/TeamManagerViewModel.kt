@@ -25,6 +25,7 @@ import com.example.drivermodule.ViewModel.TeamSettingViewModel.Companion.REQUEST
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.zk.library.Base.BaseViewModel
+import com.zk.library.Bus.event.RxBusEven
 import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -51,6 +52,14 @@ class TeamManagerViewModel : BaseViewModel(), TitleComponent.titleComponentCallB
         }
     }
 
+    override fun doRxEven(it: RxBusEven?) {
+        super.doRxEven(it)
+        when (it?.type) {
+            RxBusEven.Team_reject_even -> {
+                finish()
+            }
+        }
+    }
     override fun QueryRollInfoError(ex: Throwable) {
         teamManagerActivity.dismissProgressDialog()
         Toast.makeText(context, getString(R.string.net_error), Toast.LENGTH_SHORT).show()

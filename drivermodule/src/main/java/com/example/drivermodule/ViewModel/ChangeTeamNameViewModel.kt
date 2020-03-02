@@ -15,6 +15,7 @@ import com.example.drivermodule.Activity.Team.TeamChangeNameActivity
 import com.example.drivermodule.R
 import com.example.drivermodule.ViewModel.TeamSettingViewModel.Companion.REQUEST_TEAM_NAME
 import com.zk.library.Base.BaseViewModel
+import com.zk.library.Bus.event.RxBusEven
 import kotlinx.android.synthetic.main.activity_team_changename.*
 import org.cs.tec.library.Base.Utils.context
 import org.cs.tec.library.Base.Utils.getString
@@ -54,6 +55,14 @@ class ChangeTeamNameViewModel : BaseViewModel(), TitleComponent.titleComponentCa
         teamChangeNameActivity.nickname_et.setSelection(0)
     }
 
+    override fun doRxEven(it: RxBusEven?) {
+        super.doRxEven(it)
+        when (it?.type) {
+            RxBusEven.Team_reject_even -> {
+                finish()
+            }
+        }
+    }
     fun String_length(value: String): Int {
         var valueLength = 0
         val chinese = "[\u4e00-\u9fa5]"
