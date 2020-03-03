@@ -106,7 +106,7 @@ class MainFragmentViewModel : BaseViewModel, RadioGroup.OnCheckedChangeListener 
     fun inject(homeActivity: HomeFragment) {
         this.homeActivity = homeActivity
         returnCheckId = R.id.same_city
-        changerFragment(0)
+        initStatus()
         RxSubscriptions.add(RxBus.default?.toObservable(RxBusEven::class.java)?.subscribe {
             when (it.type) {
                 RxBusEven.DriverReturnRequest -> {
@@ -123,6 +123,15 @@ class MainFragmentViewModel : BaseViewModel, RadioGroup.OnCheckedChangeListener 
                 }
             }
         })
+    }
+
+    private fun initStatus() {
+        var home = homeActivity.activity as HomeActivity
+        if (home.resume == "nomal" || home.resume.isNullOrEmpty()) {
+            changerFragment(0)
+        } else {
+            changerFragment(2)
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
@@ -154,10 +163,13 @@ class MainFragmentViewModel : BaseViewModel, RadioGroup.OnCheckedChangeListener 
             if (mapFr == null) {
                 mapFr = ARouter.getInstance().build(RouterUtils.MapModuleConfig.MAP_FR).navigation() as MapFragment?
                 mFragments.add(mapFr!!)
+                var home = homeActivity.activity as HomeActivity
+                mapFr?.setDriverStatus(home.resume)
                 tans!!.add(R.id.rootlayout, mapFr!!)
             } else {
 //                mapFr!!.setDark()
             }
+
             bottomVisible.set(false)
 
         } else if (position == 3) {

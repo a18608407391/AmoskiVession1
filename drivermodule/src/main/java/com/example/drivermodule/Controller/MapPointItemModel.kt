@@ -8,10 +8,7 @@ import android.view.View
 import android.widget.Toast
 import com.alibaba.android.arouter.launcher.ARouter
 import com.amap.api.maps.CameraUpdateFactory
-import com.amap.api.maps.model.BitmapDescriptorFactory
-import com.amap.api.maps.model.Marker
-import com.amap.api.maps.model.MarkerOptions
-import com.amap.api.maps.model.MyLocationStyle
+import com.amap.api.maps.model.*
 import com.amap.api.navi.model.AMapCalcRouteResult
 import com.amap.api.navi.model.NaviLatLng
 import com.amap.api.services.core.LatLonPoint
@@ -251,7 +248,21 @@ class MapPointItemModel : ItemViewModel<MapFrViewModel>(), BaseQuickAdapter.OnIt
     }
 
     private fun startNavigation() {
-
+        if (viewModel?.status.navigationStartPoint == null || viewModel?.status.navigationEndPoint == null) {
+            return
+        }
+        viewModel?.status.navigationType = curRouteEntity?.id!!.get()!!
+        var list = ArrayList<LatLng>()
+        viewModel?.status.passPointDatas.forEach {
+            list.add(LatLng(it.latitude, it.longitude))
+        }
+        if (viewModel?.status.startDriver.get() == Drivering) {
+            //当前在骑行
+            viewModel?.startNavi(list, 2)
+        } else {
+            viewModel?.startDriver(2)
+        }
+        returnDriverFr()
     }
 
     fun addPoint(it: Marker) {
@@ -313,8 +324,9 @@ class MapPointItemModel : ItemViewModel<MapFrViewModel>(), BaseQuickAdapter.OnIt
 
     var routeDistance = 0
     var routeTime = 0
-
+    var curRouteEntity: RouteEntity? = null
     private fun drawRouteLine(routeEntity: RouteEntity?) {
+        curRouteEntity = routeEntity
         var path = mapFr.mapUtils?.navi?.naviPaths!![routeEntity!!.id.get()]
         itemRestore?.clear()
         var entity = RouteDetailEntity()

@@ -121,12 +121,9 @@ class DriverFragment : BaseFragment<FragmentDriverBinding, DriverViewModel>() {
             viewModel?.driverController?.startMarker = mapActivity?.mapUtils?.createMaker(Location(viewModel?.status!!.driverStartPoint!!.latitude, viewModel?.status!!.driverStartPoint!!.longitude, System.currentTimeMillis().toString(), 0F, 0.0, 0F))
 //            viewModel?.driverController?.startMarker = mapActivity?.mapUtils?.createAnimationMarker(true, LatLonPoint(viewModel?.status!!.driverStartPoint!!.latitude, viewModel?.status!!.driverStartPoint!!.longitude))
             var end = viewModel?.status?.locationLat!![viewModel?.status?.locationLat!!.size - 1]
-
 //            viewModel?.driverController?.movemaker = mapActivity.mAmap.addMarker(MarkerOptions().position(LatLng(end.latitude, end.longitude)).zIndex(2f)
 //                    .anchor(0.5f, 0.5f).icon(BitmapDescriptorFactory.fromResource(R.drawable.navi_map_gps_locked)))
             mapActivity?.mapUtils?.createAnimationMarker(true, LatLonPoint(end.latitude, end.longitude))
-
-
             mapActivity.mAmap.moveCamera(CameraUpdateFactory.newLatLngZoom(mapActivity?.mapUtils?.breatheMarker_center?.position, 15F))
             curPoint = viewModel?.status!!.locationLat[viewModel?.status!!.locationLat.size - 1]
             viewModel?.status!!.onDestroyStatus = 2

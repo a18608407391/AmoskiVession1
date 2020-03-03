@@ -8,11 +8,13 @@ import android.support.design.widget.TabLayout
 import android.support.v4.app.Fragment
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import com.alibaba.android.arouter.facade.Postcard
 import com.alibaba.android.arouter.facade.callback.NavCallback
 import com.alibaba.android.arouter.launcher.ARouter
 import com.amap.api.location.AMapLocation
 import com.amap.api.maps.AMap
+import com.amap.api.maps.CameraUpdateFactory
 import com.amap.api.maps.model.CameraPosition
 import com.amap.api.maps.model.LatLng
 import com.amap.api.maps.model.Marker
@@ -34,12 +36,20 @@ import com.example.drivermodule.Controller.TeamItemModel
 import com.example.drivermodule.Ui.*
 import com.google.gson.Gson
 import com.elder.zcommonmodule.Component.ItemViewModel
+import com.elder.zcommonmodule.DataBases.UpdateDriverStatus
+import com.elder.zcommonmodule.DataBases.insertDriverStatus
 import com.elder.zcommonmodule.Entity.SoketBody.SoketTeamStatus
+import com.elder.zcommonmodule.Entity.StartRidingRequest
+import com.elder.zcommonmodule.Service.HttpInteface
+import com.elder.zcommonmodule.Service.HttpRequest
 import com.zk.library.Bus.ServiceEven
 import com.zk.library.Bus.event.RxBusEven
 import com.zk.library.Utils.PreferenceUtils
 import com.zk.library.Utils.RouterUtils
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
+import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_map.*
 import me.tatarka.bindingcollectionadapter2.BindingViewPagerAdapter
 import me.tatarka.bindingcollectionadapter2.ItemBinding
@@ -48,13 +58,46 @@ import org.cs.tec.library.Base.Utils.getString
 import org.cs.tec.library.Bus.RxBus
 import org.cs.tec.library.Bus.RxSubscriptions
 import org.cs.tec.library.USERID
+import org.cs.tec.library.Utils.ConvertUtils
+import org.cs.tec.library.http.NetworkUtil
+import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList
 
 
-class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarkerDragListener, AMap.OnCameraChangeListener, TitleComponent.titleComponentCallBack, TabLayout.BaseOnTabSelectedListener<TabLayout.Tab>, DriverComponent.onFiveClickListener {
+class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarkerDragListener, AMap.OnCameraChangeListener, TitleComponent.titleComponentCallBack, TabLayout.BaseOnTabSelectedListener<TabLayout.Tab>, DriverComponent.onFiveClickListener, HttpInteface.startDriverResult {
+    var driverType = 0
+
+    override fun startDriverSuccess(it: String) {
+        mapActivity.dismissProgressDialog()
+        status.driverNetRecord = Gson().fromJson(it, StartRidingRequest::class.java)
+        status.startDriver.set(Drivering)
+        mapActivity.getDrverController().driverStatus.set(Drivering)
+        mapActivity.getDrverController().timer = Observable.interval(0, 1, TimeUnit.SECONDS).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+        status.StartTime = System.currentTimeMillis()
+//        viewModel?.component!!.Drivering.set(true)
+        insertDriverStatus(status)
+        mapActivity.getDrverController().timerDispose = mapActivity.getDrverController().timer?.subscribe {
+            status.second++
+            mapActivity.getDrverController().driverTime.set(ConvertUtils.formatTimeS(status.second))
+            UpdateDriverStatus(status)
+        }
+        var wayPoint = ArrayList<LatLng>()
+        if (!status?.passPointDatas.isNullOrEmpty()) {
+            status?.passPointDatas.forEach {
+                wayPoint.add(LatLng(it.latitude, it.longitude))
+            }
+        }
+        //默认0，骑行页面点击骑行
+        if (driverType != 0) {
+            startNavi(wayPoint, driverType)
+        }
+    }
+
+    override fun startDriverError(error: Throwable) {
+        mapActivity.dismissProgressDialog()
+    }
+
     override fun FiveBtnClick(view: View) {
-
-
         Log.e("result", "点击事件点急急急急")
         if (currentPosition == 0) {
             (items[0] as DriverItemModel).onFiveBtnClick(view)
@@ -317,29 +360,46 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
         }
     }
 
-    fun startNavi(navigationStartPoint: Location, navigationEndPoint: Location, wayPoint: ArrayList<LatLng>, b: Int) {
-        if (navigationEndPoint != null && navigationStartPoint != null) {
-            status.navigationType = 1
+
+    fun startDriver(type: Int) {
+        this.driverType = type
+        //开始骑行逻辑操作
+        if (!NetworkUtil.isNetworkAvailable(context)) {
+            Toast.makeText(context, getString(R.string.network_notAvailable), Toast.LENGTH_SHORT).show()
+            return
+        }
+        mapActivity.showProgressDialog(getString(R.string.start_driver))
+        HttpRequest.instance.startDriver = this
+        HttpRequest.instance.startDriver(HashMap())
+    }
+
+    fun startNavi(wayPoint: ArrayList<LatLng>, b: Int) {
+        if (status.navigationEndPoint != null && status.navigationStartPoint != null) {
             var list = ArrayList<LatLng>()
-            list.add(LatLng(navigationStartPoint.latitude, navigationStartPoint.longitude))
+            status.navigationType = 1
             if (wayPoint != null && wayPoint.size != 0) {
                 wayPoint.forEach {
                     list.add(it)
                 }
             }
-            list.add(LatLng(navigationEndPoint.latitude, navigationEndPoint.longitude))
-            if (status.startDriver.get() != Drivering) {
-                status.startDriver.set(Drivering)
-                (items[0] as DriverItemModel).driverStatus.set(Drivering)
+            if (b == 1) {
+                //骑行页面搜索点击开始导航
+            } else if (b == 2) {
+                //地图选点点击开始导航
+            } else if (b == 3) {
+                //组队页面点击开始导航
+            } else if (b == 4) {
+
             }
+            mapActivity?.mAmap?.moveCamera(CameraUpdateFactory.changeLatLng(LatLng(status.navigationStartPoint!!.latitude, status.navigationStartPoint!!.longitude)))
             ARouter.getInstance().build(RouterUtils.MapModuleConfig.NAVIGATION)
                     .withSerializable(RouterUtils.MapModuleConfig.NAVIGATION_DATA, list)
+                    .withSerializable(RouterUtils.MapModuleConfig.NAVIGATION_START, status.navigationStartPoint)
+                    .withSerializable(RouterUtils.MapModuleConfig.NAVIGATION_End, status.navigationEndPoint)
                     .withInt(RouterUtils.MapModuleConfig.NAVIGATION_TYPE, status.navigationType)
-                    .withFloat(RouterUtils.MapModuleConfig.NAVIGATION_DISTANCE, status.navigationDistance)
-                    .withLong(RouterUtils.MapModuleConfig.NAVIGATION_TIME, status.navigationTime)
                     .addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT)
                     .navigation()
         }
-
     }
+
 }

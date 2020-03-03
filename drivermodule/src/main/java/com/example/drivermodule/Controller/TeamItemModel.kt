@@ -58,6 +58,7 @@ import com.zk.library.Utils.RouterUtils
 import com.zk.library.binding.command.ViewAdapter.image.SimpleTarget
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.cs.tec.library.Base.Utils.context
 import org.cs.tec.library.Base.Utils.getString
@@ -113,6 +114,7 @@ class TeamItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener {
         join = null
         startTime = 0
         soketNavigation = null
+        personDatas.clear()
     }
 
     lateinit var mapFr: MapFragment
@@ -405,8 +407,10 @@ class TeamItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener {
                     if (!isLoginTimeOut) {
                         closeMina()
                         //返回到骑行界面
-                        viewModel?.selectTab(0)
-                        showLoginDialogFragment(mapFr)
+                        CoroutineScope(uiContext).launch {
+                            viewModel?.selectTab(0)
+                            showLoginDialogFragment(mapFr)
+                        }
                     }
                 }
             }
@@ -431,7 +435,7 @@ class TeamItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener {
                         }
                     }
                     viewModel?.status!!.navigationEndPoint = soketNavigation?.navigation_end
-                    viewModel?.startNavi(viewModel?.status!!.navigationStartPoint!!, viewModel?.status!!.navigationEndPoint!!, list, 2)
+                    viewModel?.startNavi(list, 2)
                     RxBus.default?.post(soketNavigation!!)
                 } else {
                     toNavi(false)
@@ -724,8 +728,24 @@ class TeamItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener {
     }
 
     fun endTeam(b: Boolean) {
+        var so = Soket()
+        so.teamCode = teamCode.get()
+        so.teamId = teamId
+        so.userId = mapFr.user.data?.id
         if (b) {
-
+            if (mapFr.user.data?.id == teamer.toString()) {
+                so.type = SocketDealType.DISMISSTEAM.code
+            } else {
+                so.type = SocketDealType.LEAVETEAM.code
+            }
+        }
+        sendOrder(so, false)
+        closeMina()
+        viewModel.TeamStatus!!.resetTeam()
+        viewModel.TeamStatus = null
+        CoroutineScope(uiContext).launch {
+            delay(200)
+            viewModel?.selectTab(0)
         }
     }
 

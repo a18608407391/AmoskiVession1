@@ -50,6 +50,8 @@ import com.liulishuo.filedownloader.BaseDownloadTask
 import com.liulishuo.filedownloader.FileDownloadSampleListener
 import com.liulishuo.filedownloader.FileDownloader
 import com.zk.library.Base.AppManager
+import com.zk.library.Bus.event.RxBusEven
+import com.zk.library.Bus.event.RxBusEven.Companion.BrowserSendTeamCode
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -66,6 +68,8 @@ import java.io.File
 
 
 class SplashActivity : Activity(), RouteSearch.OnRouteSearchListener {
+
+    var teamCode: String? = null
     override fun onDriveRouteSearched(p0: DriveRouteResult?, p1: Int) {
         var id = PreferenceUtils.getString(context, USERID)
         if (p1 == 1000) {
@@ -101,6 +105,14 @@ class SplashActivity : Activity(), RouteSearch.OnRouteSearchListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
 //        OSUtil.jumpStartInterface(context)
+
+        if (intent != null) {
+            if (!intent.scheme.isNullOrEmpty()) {
+                var uri = intent.data
+                teamCode = uri.getQueryParameter("teamCode")
+                Log.e("result", intent.data.toString() + "|teamCode|" + teamCode)
+            }
+        }
 
 
         if (!NetworkUtil.isNetworkAvailable(this)) {
@@ -159,20 +171,16 @@ class SplashActivity : Activity(), RouteSearch.OnRouteSearchListener {
             RxSubscriptions.add(dispose)
 
         } else {
-
-            if (BaseApplication.getInstance().curActivity == 1) {
-                ARouter.getInstance().build(RouterUtils.ActivityPath.HOME).withOptionsCompat(getScaleUpAnimation(splash_layout)).navigation()
-                finish()
-            } else if (BaseApplication.getInstance().curActivity == 2) {
-                ARouter.getInstance().build(RouterUtils.MapModuleConfig.MAP_ACTIVITY).withOptionsCompat(getScaleUpAnimation(splash_layout)).navigation()
-                finish()
-            } else if (BaseApplication.getInstance().curActivity == 0) {
-//                Nomal()
-
+            if (BaseApplication.getInstance().curActivity == 0) {
                 goHome()
+            } else {
+                ARouter.getInstance().build(RouterUtils.ActivityPath.HOME).withOptionsCompat(getScaleUpAnimation(splash_layout)).navigation()
+                if (teamCode != null) {
+                    RxBus.default?.post(RxBusEven.getInstance(RxBusEven.BrowserSendTeamCode, teamCode!!))
+                }
+                finish()
             }
         }
-
     }
 
 
@@ -309,29 +317,25 @@ class SplashActivity : Activity(), RouteSearch.OnRouteSearchListener {
                     var dialog = DialogUtils.createNomalDialog(this, getString(R.string.checked_exception_out), getString(R.string.finish_driver), getString(R.string.continue_driving))
                     dialog.setOnBtnClickL(OnBtnClickL {
                         dialog.dismiss()
-                        ARouter.getInstance().build(RouterUtils.MapModuleConfig.MAP_ACTIVITY).withOptionsCompat(getScaleUpAnimation(splash_layout)).withString(RouterUtils.MapModuleConfig.RESUME_MAP_ACTIVITY, "cancle").navigation()
+                        ARouter.getInstance().build(RouterUtils.ActivityPath.HOME).withOptionsCompat(getScaleUpAnimation(splash_layout)).withString(RouterUtils.MapModuleConfig.RESUME_MAP_ACTIVITY, "cancle").withString(RouterUtils.MapModuleConfig.RESUME_MAP_TEAMCODE, teamCode).navigation()
                     }, OnBtnClickL {
                         dialog.dismiss()
-                        ARouter.getInstance().build(RouterUtils.MapModuleConfig.MAP_ACTIVITY).withOptionsCompat(getScaleUpAnimation(splash_layout)).withString(RouterUtils.MapModuleConfig.RESUME_MAP_ACTIVITY, "continue").navigation(this, object : NavCallback() {
+                        ARouter.getInstance().build(RouterUtils.ActivityPath.HOME).withOptionsCompat(getScaleUpAnimation(splash_layout)).withString(RouterUtils.MapModuleConfig.RESUME_MAP_ACTIVITY, "continue").withString(RouterUtils.MapModuleConfig.RESUME_MAP_TEAMCODE, teamCode).navigation(this, object : NavCallback() {
                             override fun onArrival(postcard: Postcard?) {
-//                                Log.e("result", "继续骑行111111")
-//                                var pos = ServiceEven()
-//                                pos.type = "splashContinue"
-//                                RxBus.default?.post(pos)
                                 this@SplashActivity.finish()
                             }
                         })
                     })
                     dialog.show()
                 } else {
-                    ARouter.getInstance().build(RouterUtils.MapModuleConfig.MAP_ACTIVITY).withOptionsCompat(getScaleUpAnimation(splash_layout)).withString(RouterUtils.MapModuleConfig.RESUME_MAP_ACTIVITY, "resume").navigation(this, object : NavCallback() {
+                    ARouter.getInstance().build(RouterUtils.ActivityPath.HOME).withOptionsCompat(getScaleUpAnimation(splash_layout)).withString(RouterUtils.MapModuleConfig.RESUME_MAP_ACTIVITY, "resume").withString(RouterUtils.MapModuleConfig.RESUME_MAP_TEAMCODE, teamCode).navigation(this, object : NavCallback() {
                         override fun onArrival(postcard: Postcard?) {
                             this@SplashActivity.finish()
                         }
                     })
                 }
             } else {
-                ARouter.getInstance().build(RouterUtils.MapModuleConfig.MAP_ACTIVITY).withOptionsCompat(getScaleUpAnimation(splash_layout)).withString(RouterUtils.MapModuleConfig.RESUME_MAP_ACTIVITY, "resume").navigation(this, object : NavCallback() {
+                ARouter.getInstance().build(RouterUtils.ActivityPath.HOME).withOptionsCompat(getScaleUpAnimation(splash_layout)).withString(RouterUtils.MapModuleConfig.RESUME_MAP_ACTIVITY, "resume").withString(RouterUtils.MapModuleConfig.RESUME_MAP_TEAMCODE, teamCode).navigation(this, object : NavCallback() {
                     override fun onArrival(postcard: Postcard?) {
                         finish()
                     }
@@ -341,12 +345,9 @@ class SplashActivity : Activity(), RouteSearch.OnRouteSearchListener {
             if (BaseApplication.getInstance().curActivity == 1) {
                 ARouter.getInstance().build(RouterUtils.ActivityPath.HOME).withOptionsCompat(getScaleUpAnimation(splash_layout)).navigation(this, object : NavCallback() {
                     override fun onArrival(postcard: Postcard?) {
-                        finish()
-                    }
-                })
-            } else if (BaseApplication.getInstance().curActivity == 2) {
-                ARouter.getInstance().build(RouterUtils.MapModuleConfig.MAP_ACTIVITY).withOptionsCompat(getScaleUpAnimation(splash_layout)).navigation(this, object : NavCallback() {
-                    override fun onArrival(postcard: Postcard?) {
+                        if (teamCode != null) {
+                            RxBus.default?.post(RxBusEven.getInstance(RxBusEven.BrowserSendTeamCode, teamCode!!))
+                        }
                         finish()
                     }
                 })

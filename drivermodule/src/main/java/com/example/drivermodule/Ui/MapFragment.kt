@@ -51,7 +51,10 @@ import org.cs.tec.library.USERID
 
 
 @Route(path = RouterUtils.MapModuleConfig.MAP_FR)
-class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), LocationSource, AMap.InfoWindowAdapter, AMap.OnMapClickListener, AMap.OnMapTouchListener, AMap.OnInfoWindowClickListener {
+class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), LocationSource, AMap.InfoWindowAdapter, AMap.OnMapClickListener, AMap.OnMapTouchListener, AMap.OnInfoWindowClickListener, AMap.OnMapLoadedListener {
+    override fun onMapLoaded() {
+    }
+
     var onStart = false
     var mLocationOption: AMapLocationClientOption? = null
     var mListener: LocationSource.OnLocationChangedListener? = null
@@ -175,6 +178,7 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
         fr?.MapClick(p0)
     }
 
+
     fun setDriverStyle() {
         mLocationOption?.isSensorEnable = false
         mlocationClient?.setLocationOption(mLocationOption)
@@ -212,7 +216,6 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
         return R.layout.fragment_map
     }
 
-
     override fun initVariableId(): Int {
         return BR.map_fr_Model
     }
@@ -243,8 +246,7 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
         fr_map_view.onCreate(savedInstanceState)
         Utils.setStatusTextColor(true, activity)
         mAmap = fr_map_view.map
-
-
+        mAmap.setOnMapLoadedListener(this)
         setUpMap()
         mAmap.moveCamera(CameraUpdateFactory.zoomTo(15F))
         mAmap.uiSettings.isZoomControlsEnabled = false
@@ -258,184 +260,12 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
         mAmap.setOnInfoWindowClickListener(this)
         //TODO
         mapUtils = MapControllerUtils(this)
-
-//        initResume()
+        initResume()
     }
 
-    private fun resumeDriver() {
-        //骑行数据加载处理  初始化status
-//        Observable.just("").map(Function<String, ArrayList<Location>> {
-//            if (viewModel?.status?.locationLat?.isEmpty()!!) {
-//                viewModel?.status?.locationLat!!?.add(viewModel?.status!!.driverStartPoint)
-//            } else {
-//                viewModel?.status?.locationLat?.forEach {
-//                    hight.add(it.height)
-//                }
-//            }
-////            viewModel?.mapPointController?.startPoint = converLatPoint(viewModel?.status?.locationLat[viewModel?.status?.locationLat.size - 1])
-//
-////            if (viewModel?.status?.locationLat != null && !viewModel?.status?.locationLat!!.isEmpty()) {
-////                viewModel?.status!!.distance = 0.0
-////                viewModel?.status?.locationLat!!.forEachIndexed { index, lat ->
-////                    if (index != 0) {
-////                        viewModel?.status!!.distance += AMapUtils.calculateLineDistance(LatLng(viewModel?.status?.locationLat!![index - 1].latitude, viewModel?.status?.locationLat!![index - 1].longitude), LatLng(viewModel?.status?.locationLat!![index].latitude, viewModel?.status?.locationLat!![index].longitude))
-////                    }
-////                }
-////            }
-//            viewModel?.status?.curModel = 0
-//            mAmap.clear()
-//            viewModel?.driverController?.startMarker = mapUtils?.createMaker(Location(viewModel?.status!!.driverStartPoint!!.latitude, viewModel?.status!!.driverStartPoint!!.longitude, System.currentTimeMillis().toString(), 0F, 0.0, 0F))
-////            viewModel?.driverController?.startMarker = mapActivity?.mapUtils?.createAnimationMarker(true, LatLonPoint(viewModel?.status!!.driverStartPoint!!.latitude, viewModel?.status!!.driverStartPoint!!.longitude))
-//            var end = viewModel?.status?.locationLat!![viewModel?.status?.locationLat!!.size - 1]
-//
-////            viewModel?.driverController?.movemaker = mapActivity.mAmap.addMarker(MarkerOptions().position(LatLng(end.latitude, end.longitude)).zIndex(2f)
-////                    .anchor(0.5f, 0.5f).icon(BitmapDescriptorFactory.fromResource(R.drawable.navi_map_gps_locked)))
-//            mapUtils?.createAnimationMarker(true, LatLonPoint(end.latitude, end.longitude))
-//
-//
-//            mAmap.moveCamera(CameraUpdateFactory.newLatLngZoom(mapUtils?.breatheMarker_center?.position, 15F))
-//            curPoint = viewModel?.status!!.locationLat[viewModel?.status!!.locationLat.size - 1]
-//            viewModel?.status!!.onDestroyStatus = 2
-//            return@Function viewModel?.status!!.locationLat
-//        }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe {
-//            setDriverStyle()
-//            viewModel?.component?.Drivering?.set(true)
-//            viewModel?.status?.startDriver?.set(Drivering)
-//            viewModel?.linearBg!!.set(getColor(R.color.white))
-//            var distanceTv = ""
-//            if (viewModel?.status!!.distance > 1000) {
-//                distanceTv = DecimalFormat("0.00").format(viewModel?.status!!.distance / 1000) + "KM"
-//            } else {
-//                distanceTv = DecimalFormat("0.00").format(viewModel?.status!!.distance) + "M"
-//            }
-//
-//            viewModel?.driverDistance!!.set(distanceTv)
-////            var s = mapActivity.mViewModel?.mFragments!![1] as NavigationFragment
-//
-//            viewModel?.driverController?.setLineDatas(viewModel?.status?.locationLat!!, getColor(R.color.line_color))
-//
-////            SPUtils.getInstance().put("Action", "driver")
-////            KeepLiveHelper.getDefault().setAction("driver")
-////            KeepLiveHelper.getDefault().startBindService(context)
-//        }
-//        viewModel?.timer = Observable.interval(0, 1, TimeUnit.SECONDS).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-//        viewModel?.timerDispose = viewModel?.timer?.subscribe {
-//            viewModel?.status!!.second++
-//            viewModel?.driverTime!!.set(ConvertUtils.formatTimeS(viewModel?.status!!.second))
-//            UpdateDriverStatus(viewModel?.status!!)
-////                s.viewModel?.totalTime?.set(ConvertUtils.formatTimeS(viewModel?.status!!.second))
-//        }
-//        if (resume == "cancle") {
-//            CoroutineScope(uiContext).launch {
-//                delay(500)
-//                if (viewModel?.status!!.distance > 1000) {
-//                    viewModel?.driverController!!.driverOver()
-//                } else {
-//                    deleteDriverStatus(PreferenceUtils.getString(org.cs.tec.library.Base.Utils.context, USERID))
-//                    viewModel?.cancleDriver(true)
-//                }
-//            }
-//        }
+    private fun initResume() {
+        Log.e("result", "执行initResume")
     }
-
-
-//    fun initResume() {
-//        var t: DriverDataStatus? = null
-//        var list = queryDriverStatus(PreferenceUtils.getString(context, USERID))
-//        if (list.size != 0) {
-//            t = list[0]
-//        }
-//        var pos = ServiceEven()
-//        pos.type = "HomeDriver"
-//        RxBus.default?.post(pos)
-////        context!!.startService(Intent(context, LowLocationService::class.java).setAction("driver"))
-//
-//
-//        if (resume == "nomal") {
-//            if (t == null) {
-//                viewModel?.status = DriverDataStatus()
-//            } else {
-//                viewModel?.status = t
-//                if (viewModel?.status?.navigationType == Driver_Navigation) {
-//                    var wayPoint = ArrayList<LatLng>()
-//                    viewModel!!.status.passPointDatas.forEach {
-//                        wayPoint.add(LatLng(it.latitude, it.longitude))
-//                    }
-//                    viewModel?.startNavi(viewModel?.status?.navigationStartPoint!!, viewModel?.status?.navigationEndPoint!!, wayPoint, 0)
-//                } else {
-//                    viewModel?.status?.passPointDatas?.clear()
-//                }
-//                resumeDriver()
-//            }
-//            viewModel?.status?.uid = PreferenceUtils.getString(context, USERID)
-////            viewModel?.startDrive(false)
-//        } else if (resume == "myroad") {
-//            if (t == null) {
-//                viewModel?.status = DriverDataStatus()
-//            } else {
-//                viewModel?.status = t
-//                if (viewModel?.status?.navigationType == Driver_Navigation) {
-//                    var wayPoint = ArrayList<LatLng>()
-//                    viewModel!!.status.passPointDatas.forEach {
-//                        wayPoint.add(LatLng(it.latitude, it.longitude))
-//                    }
-//                    viewModel?.startNavi(viewModel?.status?.navigationStartPoint!!, viewModel?.status?.navigationEndPoint!!, wayPoint, 0)
-//                } else {
-//                    viewModel?.status?.passPointDatas?.clear()
-//                }
-//                resumeDriver()
-//            }
-//            viewModel?.status?.uid = PreferenceUtils.getString(context, USERID)
-//            CoroutineScope(uiContext).async {
-//                delay(200)
-//                viewModel?.selectTab(2)
-//                viewModel?.changerFragment(3)
-//                if (PreferenceUtils.getString(activity, PreferenceUtils.getString(context, USERID) + "hot") == null && hotData == null) {
-//                    getRoadBookFragment().viewModel?.doLoadDatas(hotData!!)
-//                }
-//            }
-//        } else if (resume == "fastTeam") {
-//            Log.e("result", "fastTeam")
-//            if (t == null) {
-//                viewModel?.status = DriverDataStatus()
-//            } else {
-//                viewModel?.status = t
-//                if (viewModel?.status?.navigationType == Driver_Navigation) {
-//                    var wayPoint = ArrayList<LatLng>()
-//                    viewModel!!.status.passPointDatas.forEach {
-//                        wayPoint.add(LatLng(it.latitude, it.longitude))
-//                    }
-//                    viewModel?.startNavi(viewModel?.status?.navigationStartPoint!!, viewModel?.status?.navigationEndPoint!!, wayPoint, 0)
-//                } else {
-//                    viewModel?.status?.passPointDatas?.clear()
-//                }
-//                resumeDriver()
-//            }
-//            viewModel?.status = DriverDataStatus()
-//            viewModel?.status?.uid = PreferenceUtils.getString(context, USERID)
-//            CoroutineScope(uiContext).launch {
-//                delay(500)
-//                viewModel?.selectTab(1)
-//            }
-//        } else {
-//            viewModel?.status = queryDriverStatus(PreferenceUtils.getString(context, USERID))[0]
-//            if (resume == "resume") {
-//                if (viewModel?.status?.navigationType == Driver_Navigation) {
-//                    var wayPoint = ArrayList<LatLng>()
-//                    viewModel!!.status.passPointDatas.forEach {
-//                        wayPoint.add(LatLng(it.latitude, it.longitude))
-//                    }
-//                    viewModel?.startNavi(viewModel?.status?.navigationStartPoint!!, viewModel?.status?.navigationEndPoint!!, wayPoint, 0)
-//                } else {
-//                    viewModel?.status?.passPointDatas?.clear()
-//                }
-//
-//            } else if (resume == "continue" || resume == "cancle") {
-//                viewModel?.status?.startDriver?.set(Drivering)
-//            }
-//            resumeDriver()
-//        }
-//    }
 
 
     fun getDrverFragment(): DriverFragment {
@@ -534,7 +364,6 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
                         viewModel?.changerFragment(2)
                         (viewModel?.items!![2] as RoadBookItemModel).doLoadDatas(its!!)
                     } else {
-                        Log.e("result", "data为Null")
                         if (viewModel?.currentPosition != 2) {
                             viewModel?.selectTab(viewModel?.currentPosition!!)
                         }
@@ -545,6 +374,11 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
             }
         }
         super.onActivityResult(requestCode, resultCode, data)
+    }
 
+    fun setDriverStatus(resume: String?) {
+        if (resume != null) {
+            this.resume = resume
+        }
     }
 }

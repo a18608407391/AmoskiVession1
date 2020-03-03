@@ -28,7 +28,9 @@ import com.zk.library.Bus.ServiceEven
 import com.elder.zcommonmodule.Utils.Dialog.OnBtnClickL
 import com.elder.zcommonmodule.Utils.DialogUtils
 import android.content.ClipData
+import android.util.Log
 import com.alibaba.android.arouter.facade.Postcard
+import com.alibaba.android.arouter.facade.annotation.Autowired
 import com.alibaba.android.arouter.facade.callback.NavCallback
 import com.elder.amoski.Fragment.HomeFragment
 import com.elder.zcommonmodule.*
@@ -55,10 +57,18 @@ class HomeActivity : BaseActivity<ActivityHomeBinding, HomeViewModel>() {
         return R.layout.activity_home
     }
 
+
+    @Autowired(name = RouterUtils.MapModuleConfig.RESUME_MAP_ACTIVITY)
+    @JvmField
+    var resume: String? = null
+
+    @Autowired(name = RouterUtils.MapModuleConfig.RESUME_MAP_TEAMCODE)
+    @JvmField
+    var teamCode: String? = null
+
     override fun initViewModel(): HomeViewModel? {
         return ViewModelProviders.of(this).get(HomeViewModel::class.java)
     }
-
 
     override fun onResume() {
         super.onResume()
@@ -73,11 +83,11 @@ class HomeActivity : BaseActivity<ActivityHomeBinding, HomeViewModel>() {
                 dialog.show()
                 dialog.setOnBtnClickL(OnBtnClickL {
                     key.clearPrimaryClip()
-                    if(dialog!=null){
+                    if (dialog != null) {
                         dialog.dismiss()
                     }
                 }, OnBtnClickL {
-                    if(dialog!=null){
+                    if (dialog != null) {
                         dialog.dismiss()
                     }
                     clip = ClipData.newPlainText("label", "")
@@ -119,10 +129,10 @@ class HomeActivity : BaseActivity<ActivityHomeBinding, HomeViewModel>() {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if(homeFr?.viewModel?.curPosition==2){
-            homeFr?.viewModel?.mapFr?.onActivityResult(requestCode,resultCode, data)
+        if (homeFr?.viewModel?.curPosition == 2) {
+            homeFr?.viewModel?.mapFr?.onActivityResult(requestCode, resultCode, data)
 
-        }else{
+        } else {
             when (requestCode) {
                 GET_USERINFO -> {
                     if (data != null) {
@@ -165,6 +175,7 @@ class HomeActivity : BaseActivity<ActivityHomeBinding, HomeViewModel>() {
     }
 
     var time: Long = 0
+
     override fun doPressBack() {
         super.doPressBack()
         if (System.currentTimeMillis() - time > 3000) {

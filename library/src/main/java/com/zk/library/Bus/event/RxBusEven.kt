@@ -14,8 +14,27 @@ class RxBusEven {
         var TeamSocketDisConnect = 0x1006
         var MinaDataReceive = 0x1007
         var Team_reject_even = 0x1008
-    }
+        var BrowserSendTeamCode = 0x1011
+        //骑行导航相关
+        var DriverCancleByNavigation = 0x1009
+        var DriverNavigationRouteChange = 0x1010
+        val NAVIGATION_FINISH = 0x1011
 
+
+        fun getInstance(type: Int): RxBusEven {
+            var even = RxBusEven()
+            even.type = type
+            return even
+        }
+
+        fun getInstance(type: Int, value: Any): RxBusEven {
+            var even = RxBusEven()
+            even.type = type
+            even.value = value
+            return even
+        }
+
+    }
 
     var type = 0
 

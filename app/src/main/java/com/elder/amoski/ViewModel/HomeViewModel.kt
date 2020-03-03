@@ -2,10 +2,11 @@ package com.elder.amoski.ViewModel
 
 import com.elder.amoski.Activity.HomeActivity
 import com.zk.library.Base.BaseViewModel
+import com.zk.library.Bus.event.RxBusEven
 
 
-class HomeViewModel : BaseViewModel(){
-//    override fun onCheckedChanged(group: RadioGroup?, checkedId: Int) {
+class HomeViewModel : BaseViewModel() {
+    //    override fun onCheckedChanged(group: RadioGroup?, checkedId: Int) {
 //        when (checkedId) {
 //            R.id.same_city -> {
 //                var fr = mFragments[0] as LogRecodeFragment
@@ -266,4 +267,14 @@ class HomeViewModel : BaseViewModel(){
 //        RxSubscriptions.add(s)
 //        RxSubscriptions.add(n)
 //    }
+
+    override fun doRxEven(it: RxBusEven?) {
+        super.doRxEven(it)
+        when (it!!.type) {
+            RxBusEven.BrowserSendTeamCode -> {
+                var teamCode = it.value as String
+                //TODO
+            }
+        }
+    }
 }

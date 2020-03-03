@@ -340,87 +340,31 @@ class AMapNaviViewComponent : AMapNaviViewListener, AMapNaviListener {
 
     override fun onNaviBackClick(): Boolean {
         return false
-        Log.e("result", "onNaviBackClick")
     }
 
     override fun showModeCross(aMapModelCross: AMapModelCross) {
-        Log.e("result", "showModeCross")
     }
 
     override fun hideModeCross() {
-        Log.e("result", "hideModeCross")
     }
 
     override fun updateIntervalCameraInfo(aMapNaviCameraInfo: AMapNaviCameraInfo, aMapNaviCameraInfo1: AMapNaviCameraInfo, i: Int) {
-        Log.e("result", "updateIntervalCameraInfo")
     }
 
     override fun showLaneInfo(aMapLaneInfo: AMapLaneInfo) {
-        Log.e("result", "showLaneInfo")
         //25 18.26 5
     }
 
     override fun onCalculateRouteSuccess(aMapCalcRouteResult: AMapCalcRouteResult) {
-        var path = map.mAMapNavi.naviPaths
-        var id = aMapCalcRouteResult.routeid
-        var minDistanceIndex = 0
-        var minTimeIndex = 0
-        var minD = 0
-        var minT = 0
-        var passId = 0
-
-        Log.e("result", map?.navigationActivity?.distance.toString() + "规划的路线")
-
-        id.forEachIndexed { index, i ->
-            var path = path[i]
-            Log.e("result", path?.allLength.toString() + "当前路线距离")
-            if (minD == 0) {
-                minD = Math.abs(map.navigationActivity.distance.toInt() - path?.allLength!!)
-                passId = i
-            } else {
-                if (minD > Math.abs(map.navigationActivity.distance.toInt() - path?.allLength!!)) {
-                    minD = Math.abs(map.navigationActivity.distance.toInt() - path?.allLength!!)
-                    minDistanceIndex = index
-                    passId = i
-                }
-            }
-            if (minT == 0) {
-                minT = Math.abs(map.navigationActivity.duration.toInt() - path?.allTime)
-                passId = i
-            } else {
-                if (minT > Math.abs(map.navigationActivity.duration.toInt() - path?.allTime)) {
-                    minT = Math.abs(map.navigationActivity.duration.toInt() - path?.allTime)
-                    minTimeIndex = index
-                    passId = i
-                }
-            }
+        if (map.navigationActivity?.type > 1) {
+            map.mAMapNavi.selectRouteId(map.navigationActivity.type)
         }
-        if (minTimeIndex == minDistanceIndex) {
-            map.mAMapNavi.selectRouteId(passId)
-            map.mAMapNavi.startNavi(NaviType.GPS)
-            map.isStartNavigation.set(true)
-            var status = queryDriverStatus(PreferenceUtils.getString(context, USERID))[0]
-            status.navigationDistance = path[passId]?.allLength!!.toFloat()
-            status.navigationTime = path[passId]?.allTime!!.toLong()
-            UpdateDriverStatus(status)
-        } else {
-            //默认以最小距离为准
-            map.mAMapNavi.selectRouteId(id[minTimeIndex])
-            map.mAMapNavi.startNavi(NaviType.GPS)
-            map.isStartNavigation.set(true)
-            var status = queryDriverStatus(PreferenceUtils.getString(context, USERID))[0]
-            status.navigationDistance = path[id[minTimeIndex]]?.allLength!!.toFloat()
-            status.navigationTime = path[id[minTimeIndex]]?.allTime!!.toLong()
-            UpdateDriverStatus(status)
-        }
-
+        map.mAMapNavi.startNavi(NaviType.GPS)
     }
 
     override fun onCalculateRouteFailure(aMapCalcRouteResult: AMapCalcRouteResult) {
-        Log.e("result", "onCalculateRouteFailure")
     }
 
     override fun onNaviRouteNotify(aMapNaviRouteNotifyData: AMapNaviRouteNotifyData) {
-        Log.e("result", "onNaviRouteNotify")
     }
 }

@@ -70,7 +70,6 @@ abstract class BaseActivity<V : ViewDataBinding, VM : BaseViewModel> : RxAppComp
 
 //        }
         initData()
-
         initMap(savedInstanceState)
 
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
@@ -326,8 +325,6 @@ abstract class BaseActivity<V : ViewDataBinding, VM : BaseViewModel> : RxAppComp
     }
 
 
-
-
     fun <T : ISupportFragment> findFragment(fragmentClass: Class<T>): T {
         return SupportHelper.findFragment(getSupportFragmentManager(), fragmentClass)
     }
@@ -342,21 +339,18 @@ abstract class BaseActivity<V : ViewDataBinding, VM : BaseViewModel> : RxAppComp
      * @param containerId 容器id
      * @param toFragment  目标Fragment
      */
-   fun  loadRootFragment(containerId:Int, @NonNull  toFragment :ISupportFragment)
-    {
+    fun loadRootFragment(containerId: Int, @NonNull toFragment: ISupportFragment) {
         mDelegate.loadRootFragment(containerId, toFragment)
     }
 
-   fun  loadRootFragment( containerId:Int,  toFragment:ISupportFragment,  addToBackStack:Boolean,  allowAnimation:Boolean)
-    {
+    fun loadRootFragment(containerId: Int, toFragment: ISupportFragment, addToBackStack: Boolean, allowAnimation: Boolean) {
         mDelegate.loadRootFragment(containerId, toFragment, addToBackStack, allowAnimation);
     }
 
     /**
      * 加载多个同级根Fragment,类似Wechat, QQ主页的场景
      */
-  fun  loadMultipleRootFragment( containerId :Int,  showPosition:Int, vararg  toFragments:ISupportFragment)
-    {
+    fun loadMultipleRootFragment(containerId: Int, showPosition: Int, vararg toFragments: ISupportFragment) {
         mDelegate.loadMultipleRootFragment(containerId, showPosition, *toFragments)
     }
 
@@ -368,8 +362,7 @@ abstract class BaseActivity<V : ViewDataBinding, VM : BaseViewModel> : RxAppComp
      *
      * @param showFragment 需要show的Fragment
      */
-   fun  showHideFragment( showFragment:ISupportFragment)
-    {
+    fun showHideFragment(showFragment: ISupportFragment) {
         mDelegate.showHideFragment(showFragment);
     }
 
@@ -494,6 +487,7 @@ abstract class BaseActivity<V : ViewDataBinding, VM : BaseViewModel> : RxAppComp
         mDelegate.onPostCreate(savedInstanceState);
 
     }
+
     override fun post(runnable: Runnable?) {
         mDelegate.post(runnable)
     }
@@ -502,6 +496,7 @@ abstract class BaseActivity<V : ViewDataBinding, VM : BaseViewModel> : RxAppComp
         super.onBackPressed()
         mDelegate.onBackPressed()
     }
+
     override fun onBackPressedSupport() {
         mDelegate.onBackPressedSupport()
     }
