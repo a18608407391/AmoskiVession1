@@ -95,12 +95,13 @@ const val Drivering = 0
 //查看线路
 const val DriverPause = 1
 
+
 const val TeamModel = 4
 
 
 //选点成功
-
 const val Prepare_Navigation = 3
+
 
 const val NotNavigation = 0
 const val Driver_Navigation = 1

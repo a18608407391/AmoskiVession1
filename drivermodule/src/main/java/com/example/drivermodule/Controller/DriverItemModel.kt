@@ -17,9 +17,6 @@ import com.amap.api.maps.model.*
 import com.amap.api.services.core.LatLonPoint
 import com.amap.api.services.core.PoiItem
 import com.elder.zcommonmodule.*
-import com.elder.zcommonmodule.DataBases.UpdateDriverStatus
-import com.elder.zcommonmodule.DataBases.deleteDriverStatus
-import com.elder.zcommonmodule.DataBases.insertDriverStatus
 import com.elder.zcommonmodule.Entity.*
 import com.elder.zcommonmodule.Entity.HttpResponseEntitiy.BaseResponse
 import com.elder.zcommonmodule.Entity.SoketBody.CreateTeamInfoDto
@@ -41,6 +38,7 @@ import com.example.drivermodule.ViewModel.MapFrViewModel
 import com.google.gson.Gson
 import com.zk.library.Base.BaseApplication
 import com.elder.zcommonmodule.Component.ItemViewModel
+import com.elder.zcommonmodule.DataBases.*
 import com.zk.library.Bus.ServiceEven
 import com.zk.library.Bus.event.RxBusEven
 import com.zk.library.Utils.PreferenceUtils
@@ -52,11 +50,9 @@ import io.reactivex.disposables.Disposable
 import io.reactivex.functions.Function
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import org.cs.tec.library.Base.Utils.context
-import org.cs.tec.library.Base.Utils.getColor
-import org.cs.tec.library.Base.Utils.getString
-import org.cs.tec.library.Base.Utils.uiContext
+import org.cs.tec.library.Base.Utils.*
 import org.cs.tec.library.Bus.RxBus
 import org.cs.tec.library.USERID
 import org.cs.tec.library.Utils.ConvertUtils
@@ -122,7 +118,7 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener, HttpI
     //距离文本
     var driverDistance = ObservableField<String>("0M")
     //时间文本
-    var driverTime = ObservableField<String>("00:")
+    var driverTime = ObservableField<String>("00:00")
     //开始骑行请求结果
     var bottomLayoutVisible = ObservableField<Boolean>(true)
     //骑行用户昵称文本
@@ -144,6 +140,7 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener, HttpI
 
 
     override fun ItemViewModel(viewModel: MapFrViewModel): ItemViewModel<MapFrViewModel> {
+        this.viewModel = viewModel
         mapFr = viewModel?.mapActivity
         mapFr.showProgressDialog(getString(R.string.location_loading))
         viewModel?.listeners.add(this)
@@ -180,6 +177,7 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener, HttpI
                     mapFr?.mapUtils?.breatheMarker_center!!.rotateAngle = amapLocation.bearing
                 }
                 if (viewModel.status.locationLat.size == 0) {
+                    insertLocation(viewModel?.curPosition!!, mapFr?.user.data?.memberId!!)
                     addStartPoint(viewModel?.curPosition!!)
                 } else {
                     if (amapLocation.locationType == 1) {
@@ -204,9 +202,17 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener, HttpI
                                 viewModel?.status.maxSpeed = amapLocation.speed
                             }
                             if (last == null) {
-                                last = viewModel?.status.driverStartPoint!!
+                                if (PauseMath == 2 || isPauseDriver) {
+                                    //暂停以后再骑行  距离重新运算
+                                    //当前最后一个点，与下一个点不作为计算距离的指标
+                                    last = viewModel?.curPosition
+                                    isPauseDriver = false
+                                    PauseMath = 0
+                                } else {
+                                    last = viewModel?.status.locationLat.last()
+                                    viewModel?.status.distance += AMapUtils.calculateLineDistance(LatLng(last?.latitude!!, last?.longitude!!), LatLng(amapLocation?.latitude!!, amapLocation?.longitude!!))
+                                }
                             }
-                            viewModel?.status.distance += AMapUtils.calculateLineDistance(LatLng(last?.latitude!!, last?.longitude!!), LatLng(amapLocation?.latitude!!, amapLocation?.longitude!!))
                             last = viewModel?.curPosition!!
                             viewModel?.mapActivity.mapUtils!!.setLocation(last!!)
                             var distanceTv = ""
@@ -242,6 +248,10 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener, HttpI
         }
     }
 
+
+    var isPauseDriver = false   //骑行暂停后
+    var PauseMath = 0
+
     private fun addStartPoint(amapLocation: Location) {
         mapFr.dismissProgressDialog()
         mapFr.setDriverStyle()
@@ -261,35 +271,58 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener, HttpI
         UpdateDriverStatus(viewModel?.status!!)
     }
 
-    private fun initView(viewModel: MapFrViewModel) {
+    private fun initView(model: MapFrViewModel) {
         //进入方式判断
-
-        if (viewModel?.status.driverStartPoint != null) {
-            Observable.create(ObservableOnSubscribe<DriverDataStatus> {
-                viewModel?.mapActivity.mAmap.clear()
-                driverController?.startMarker = this.viewModel?.mapActivity.mapUtils?.createMaker(viewModel?.status?.navigationStartPoint!!)
-                var end = viewModel?.status?.locationLat.last()
+        if (viewModel.status?.driverStartPoint != null) {
+            if (viewModel?.status?.locationLat.isNullOrEmpty()) {
+                viewModel?.status?.locationLat.add(viewModel?.status?.driverStartPoint)
+            }
+            var end = viewModel?.status?.locationLat.last()
+            if (driverStatus.get() == DriverPause) {
+                isPauseDriver = true
+            } else if (driverStatus.get() == Drivering) {
+                //异常退出
+                isPauseDriver = false
+            }
+            driverController?.setLineDatas(viewModel?.status?.locationLat!!, getColor(R.color.line_color))
+            var distanceTv = ""
+            if (viewModel?.status!!.distance > 1000) {
+                distanceTv = DecimalFormat("0.0").format(viewModel?.status!!.distance / 1000) + "KM"
+            } else {
+                distanceTv = DecimalFormat("0.0").format(viewModel?.status!!.distance) + "M"
+            }
+            CoroutineScope(uiContext).launch {
+                mapFr.mAmap.clear()
+                driverController?.startMarker = mapFr.mapUtils?.createMaker(viewModel?.status?.driverStartPoint!!)
                 mapFr?.mapUtils?.createAnimationMarker(true, LatLonPoint(end.latitude, end.longitude))
                 mapFr.mAmap.moveCamera(CameraUpdateFactory.newLatLngZoom(mapFr?.mapUtils?.breatheMarker_center?.position, 15F))
-                it.onNext(viewModel?.status)
-            }).subscribeOn(Schedulers.io()).map(Function<DriverDataStatus, ArrayList<Location>> {
+                driverDistance!!.set(distanceTv)
+            }
 
-
-                return@Function it.locationLat
-            }).observeOn(AndroidSchedulers.mainThread()).subscribe {
-
+            timer = Observable.interval(0, 1, TimeUnit.SECONDS).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+            timerDispose = timer?.subscribe {
+                if (driverStatus.get() != DriverPause) {
+                    viewModel?.status!!.second++
+                    driverTime!!.set(ConvertUtils.formatTimeS(viewModel?.status!!.second))
+                    UpdateDriverStatus(viewModel?.status!!)
+                }
             }
         }
     }
 
-
     fun onClick(view: View) {
         when (view.id) {
             R.id.item_start_navagation -> {
-                //开始骑行
                 if (driverStatus.get() == Drivering) {
                     driverStatus.set(DriverPause)
                     viewModel.status.startDriver.set(DriverPause)
+                    //点击了暂停
+                    PauseMath = 1
+                    if (viewModel?.status.driverNetRecord!!.passPosition == null) {
+                        viewModel?.status.driverNetRecord!!.passPosition = ArrayList()
+                    }
+                    viewModel?.status.driverNetRecord!!.passPosition!!.add(LatLng(viewModel?.status.locationLat.last().latitude, viewModel?.status.locationLat.last().longitude))
+                    UpdateDriverStatus(viewModel?.status)
                 } else if (driverStatus.get() == DriverCancle || driverStatus.get() == TeamModel) {
                     if (viewModel.status.locationLat.size == 0) {
                         if (viewModel?.curPosition != null) {
@@ -313,15 +346,15 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener, HttpI
                                 //是队长
                                 if (model?.TeamInfo?.redisData?.dtoList?.size == 1) {
                                     //只有自己一人
-                                    dontHaveOneMetre(org.cs.tec.library.Base.Utils.getString(R.string.TeamnotEnoughOneKm), org.cs.tec.library.Base.Utils.getString(R.string.release_team), org.cs.tec.library.Base.Utils.getString(R.string.continue_driving), 0)
+                                    dontHaveOneMetre(getString(R.string.TeamnotEnoughOneKm), getString(R.string.release_team), getString(R.string.continue_driving), 0)
                                 } else {
                                     //多人
-                                    dontHaveOneMetre(org.cs.tec.library.Base.Utils.getString(R.string.TeamernotEnoughOneKmAndOther), org.cs.tec.library.Base.Utils.getString(R.string.release_team), org.cs.tec.library.Base.Utils.getString(R.string.pass_timer), 1)
+                                    dontHaveOneMetre(getString(R.string.TeamernotEnoughOneKmAndOther), getString(R.string.release_team), getString(R.string.pass_timer), 1)
                                 }
                             } else {
                                 //不是队长
                                 //直接退出队伍
-                                dontHaveOneMetre(org.cs.tec.library.Base.Utils.getString(R.string.TeamnotEnoughOneKmBymember), org.cs.tec.library.Base.Utils.getString(R.string.leave_team), org.cs.tec.library.Base.Utils.getString(R.string.continue_driving), 2)
+                                dontHaveOneMetre(getString(R.string.TeamnotEnoughOneKmBymember), getString(R.string.leave_team), getString(R.string.continue_driving), 2)
                             }
                         } else {
                             //超过一公里
@@ -356,6 +389,9 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener, HttpI
             }
             R.id.item_continue_drivering -> {
                 //继续骑行
+                if (PauseMath == 1) {
+                    PauseMath = 2
+                }
                 driverStatus.set(Drivering)
                 viewModel.status.startDriver.set(Drivering)
             }
@@ -429,7 +465,7 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener, HttpI
     fun onInfoWindowClick(it: Marker?) {
         //开始导航了
         it!!.remove()
-
+        viewModel?.status.navigationStartPoint = viewModel?.status.startPoint
         var location = Location(it!!.position.latitude, it!!.position.longitude, System.currentTimeMillis().toString(), 0F, 0.0, 0F, it.title, "")
         viewModel?.status.navigationEndPoint = location
         var list = ArrayList<LatLng>()
@@ -545,6 +581,4 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener, HttpI
             }
         }
     }
-
-
 }

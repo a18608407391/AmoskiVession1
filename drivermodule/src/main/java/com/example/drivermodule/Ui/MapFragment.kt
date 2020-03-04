@@ -36,6 +36,7 @@ import com.example.drivermodule.Utils.MapControllerUtils
 import com.example.drivermodule.Utils.MapUtils
 import com.example.drivermodule.ViewModel.MapFrViewModel
 import com.example.drivermodule.databinding.FragmentMapBinding
+import com.google.gson.Gson
 import com.zk.library.Base.BaseFragment
 import com.zk.library.Bus.ServiceEven
 import com.zk.library.Utils.PreferenceUtils
@@ -51,9 +52,7 @@ import org.cs.tec.library.USERID
 
 
 @Route(path = RouterUtils.MapModuleConfig.MAP_FR)
-class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), LocationSource, AMap.InfoWindowAdapter, AMap.OnMapClickListener, AMap.OnMapTouchListener, AMap.OnInfoWindowClickListener, AMap.OnMapLoadedListener {
-    override fun onMapLoaded() {
-    }
+class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), LocationSource, AMap.InfoWindowAdapter, AMap.OnMapClickListener, AMap.OnMapTouchListener, AMap.OnInfoWindowClickListener{
 
     var onStart = false
     var mLocationOption: AMapLocationClientOption? = null
@@ -223,7 +222,6 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
     override fun initData() {
         super.initData()
         initStatus()
-        viewModel?.inject(this)
     }
 
     private fun initStatus() {
@@ -246,9 +244,12 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
         fr_map_view.onCreate(savedInstanceState)
         Utils.setStatusTextColor(true, activity)
         mAmap = fr_map_view.map
-        mAmap.setOnMapLoadedListener(this)
+        viewModel?.inject(this)
         setUpMap()
         mAmap.moveCamera(CameraUpdateFactory.zoomTo(15F))
+        initListener()
+    }
+    private fun initListener() {
         mAmap.uiSettings.isZoomControlsEnabled = false
         mAmap.uiSettings.isMyLocationButtonEnabled = false
         mAmap.setInfoWindowAdapter(this)
@@ -258,15 +259,8 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
         mAmap.setOnMapClickListener(this)
         mAmap.setOnMapTouchListener(this)
         mAmap.setOnInfoWindowClickListener(this)
-        //TODO
         mapUtils = MapControllerUtils(this)
-        initResume()
     }
-
-    private fun initResume() {
-        Log.e("result", "执行initResume")
-    }
-
 
     fun getDrverFragment(): DriverFragment {
         return viewModel?.mFragments!![0] as DriverFragment
@@ -322,7 +316,9 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
 
     override fun onDestroy() {
         super.onDestroy()
-        fr_map_view.onDestroy()
+        if (fr_map_view != null) {
+            fr_map_view.onDestroy()
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

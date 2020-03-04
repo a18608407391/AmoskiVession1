@@ -6,6 +6,7 @@ import android.os.Build
 import android.support.annotation.RequiresApi
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentTransaction
+import android.util.Log
 import android.view.View
 import android.widget.RadioGroup
 import com.alibaba.android.arouter.launcher.ARouter
@@ -13,6 +14,7 @@ import com.cstec.administrator.social.Fragment.SocialFragment
 import com.elder.amoski.Activity.HomeActivity
 import com.elder.amoski.Fragment.HomeFragment
 import com.elder.amoski.R
+import com.elder.amoski.R.id.driver_middle
 import com.elder.logrecodemodule.UI.LogRecodeFragment
 import com.elder.zcommonmodule.CALL_BACK_STATUS
 import com.elder.zcommonmodule.DriverCancle
@@ -36,17 +38,28 @@ import java.util.ArrayList
 
 
 class MainFragmentViewModel : BaseViewModel, RadioGroup.OnCheckedChangeListener {
-
+    var returnCheckId = 0
+    var checkModel = 0
+    var bottomVisible = ObservableField<Boolean>(true)
+    lateinit var homeActivity: HomeFragment
+    var mFragments = ArrayList<Fragment>()
+    var type = 2
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+    var bottomBg = ObservableField<Drawable>(context.getDrawable(R.drawable.home_bottom_bg))
+    var logSelected = ObservableField<Boolean>()
+    var driverSelected = ObservableField<Drawable>()
+    var privateSelected = ObservableField<Boolean>()
+    var curPosition = 0
+    var myself: Fragment? = null
+    var party: Fragment? = null
+    var social: SocialFragment? = null
+    var logmodule: LogRecodeFragment? = null
+    var mapFr: MapFragment? = null
+    var tans: FragmentTransaction? = null
     var lastCheckediD = R.id.same_city
     override fun onCheckedChanged(group: RadioGroup?, checkedId: Int) {
         when (checkedId) {
             R.id.same_city -> {
-                var fr = mFragments[0] as LogRecodeFragment
-                if (fr.curOffset > -ConvertUtils.dp2px(122F)) {
-                    Utils.setStatusTextColor(false, homeActivity.activity as HomeActivity)
-                } else {
-                    Utils.setStatusTextColor(true, homeActivity.activity as HomeActivity)
-                }
                 changerFragment(0)
                 lastCheckediD = returnCheckId
                 returnCheckId = R.id.same_city
@@ -55,7 +68,9 @@ class MainFragmentViewModel : BaseViewModel, RadioGroup.OnCheckedChangeListener 
                 Utils.setStatusTextColor(true, homeActivity.activity as HomeActivity)
                 changerFragment(1)
                 lastCheckediD = returnCheckId
+                Log.e("resultttt", "returnnnn" + returnCheckId)
                 returnCheckId = R.id.main_left
+                Log.e("resultttt", "lastttt" + returnCheckId)
             }
             R.id.driver_middle -> {
                 Utils.setStatusTextColor(true, homeActivity.activity as HomeActivity)
@@ -81,37 +96,18 @@ class MainFragmentViewModel : BaseViewModel, RadioGroup.OnCheckedChangeListener 
     }
 
 
-    var returnCheckId = 0
-    var checkModel = 0
-    var bottomVisible = ObservableField<Boolean>(true)
-    lateinit var homeActivity: HomeFragment
-    var mFragments = ArrayList<Fragment>()
-    var type = 2
-    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-    var bottomBg = ObservableField<Drawable>(context.getDrawable(R.drawable.home_bottom_bg))
-    var logSelected = ObservableField<Boolean>()
-    var driverSelected = ObservableField<Drawable>()
-    var privateSelected = ObservableField<Boolean>()
-    var curPosition = 0
-
-
-    var myself: Fragment? = null
-    var party: Fragment? = null
-    var social: SocialFragment? = null
-    var logmodule: LogRecodeFragment? = null
-    var mapFr: MapFragment? = null
-
-    var tans: FragmentTransaction? = null
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     fun inject(homeActivity: HomeFragment) {
         this.homeActivity = homeActivity
         returnCheckId = R.id.same_city
+        Log.e("resultttt", "returnID" + returnCheckId.toString())
         initStatus()
         RxSubscriptions.add(RxBus.default?.toObservable(RxBusEven::class.java)?.subscribe {
             when (it.type) {
                 RxBusEven.DriverReturnRequest -> {
-                    homeActivity.main_bottom_bg.check(lastCheckediD)
+                    Log.e("resultttt", "lastID" + lastCheckediD.toString())
                     CoroutineScope(uiContext).launch {
+                        homeActivity.main_bottom_bg.check(lastCheckediD)
                         bottomVisible.set(true)
                     }
                 }
@@ -130,7 +126,8 @@ class MainFragmentViewModel : BaseViewModel, RadioGroup.OnCheckedChangeListener 
         if (home.resume == "nomal" || home.resume.isNullOrEmpty()) {
             changerFragment(0)
         } else {
-            changerFragment(2)
+            homeActivity.main_bottom_bg.check(R.id.driver_middle)
+            lastCheckediD = R.id.same_city
         }
     }
 
@@ -142,6 +139,11 @@ class MainFragmentViewModel : BaseViewModel, RadioGroup.OnCheckedChangeListener 
                 logmodule = ARouter.getInstance().build(RouterUtils.LogRecodeConfig.LogRecodeFR).navigation() as LogRecodeFragment
                 mFragments.add(logmodule!!)
                 tans?.add(R.id.rootlayout, logmodule!!)
+                if (logmodule!!.curOffset > -ConvertUtils.dp2px(122F)) {
+                    Utils.setStatusTextColor(false, homeActivity.activity as HomeActivity)
+                } else {
+                    Utils.setStatusTextColor(true, homeActivity.activity as HomeActivity)
+                }
             }
             bottomBg.set(context.getDrawable(R.drawable.home_bottom_bg))
             if (type == 2) {
@@ -166,10 +168,7 @@ class MainFragmentViewModel : BaseViewModel, RadioGroup.OnCheckedChangeListener 
                 var home = homeActivity.activity as HomeActivity
                 mapFr?.setDriverStatus(home.resume)
                 tans!!.add(R.id.rootlayout, mapFr!!)
-            } else {
-//                mapFr!!.setDark()
             }
-
             bottomVisible.set(false)
 
         } else if (position == 3) {
@@ -178,17 +177,6 @@ class MainFragmentViewModel : BaseViewModel, RadioGroup.OnCheckedChangeListener 
                 mFragments.add(social!!)
                 tans?.add(R.id.rootlayout, social!!)
             }
-
-//            homeActivity.main_layout.setBackgroundColor(getColor(R.color.blackTextColor))
-//            logSelected.set(false)
-//            if (type == 2) {
-//                driverSelected.set(context.getDrawable(R.drawable.start_driver))
-//            } else {
-//                driverSelected.set(context.getDrawable(R.drawable.driving_icon_big))
-//            }
-//            bottomBg.set(context.getDrawable(R.drawable.big_circle_bottom_bg))
-//            privateSelected.set(false)
-
         } else if (position == 4) {
             if (myself == null) {
                 myself = ARouter.getInstance().build(RouterUtils.FragmentPath.MYSELFPAGE).navigation() as Fragment

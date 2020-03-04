@@ -120,9 +120,6 @@ class LogRecodeFragment : BaseFragment<FragmentLogrecodeBinding, LogRecodeViewMo
     }
 
 
-
-
-
     var lastColor = false
 
     var curOffset = 0
@@ -151,6 +148,7 @@ class LogRecodeFragment : BaseFragment<FragmentLogrecodeBinding, LogRecodeViewMo
 
     override fun initContentView(): Int {
         onCreate = true
+        Utils.setStatusTextColor(false, activity)
         return R.layout.fragment_logrecode
     }
 

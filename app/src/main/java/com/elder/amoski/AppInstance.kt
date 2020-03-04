@@ -21,6 +21,8 @@ import cn.jpush.im.android.api.JMessageClient
 import com.cstec.administrator.chart_module.Receiver.NotificationClickEventReceiver
 import com.liulishuo.filedownloader.connection.FileDownloadUrlConnection
 import com.liulishuo.filedownloader.FileDownloader
+import com.umeng.analytics.MobclickAgent
+import com.umeng.commonsdk.UMConfigure
 
 
 class AppInstance : BaseApplication() {
@@ -101,11 +103,14 @@ class AppInstance : BaseApplication() {
             }
         }
         RxSubscriptions.add(postEven)
-        JMessageClient.init(getApplicationContext(), true);
-        JMessageClient.setDebugMode(true);
+        JMessageClient.init(applicationContext, true)
+        JMessageClient.setDebugMode(true)
         JMessageClient.setNotificationFlag(JMessageClient.FLAG_NOTIFY_WITH_SOUND or JMessageClient.FLAG_NOTIFY_WITH_LED or JMessageClient.FLAG_NOTIFY_WITH_VIBRATE)
         //注册Notification点击的接收器
         NotificationClickEventReceiver(applicationContext)
+        UMConfigure.init(this, UMConfigure.DEVICE_TYPE_BOX, null)
+        UMConfigure.setLogEnabled(true)
+        MobclickAgent.setCatchUncaughtExceptions(false)
     }
 
 

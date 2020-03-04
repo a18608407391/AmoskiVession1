@@ -26,6 +26,7 @@ import android.widget.Toast
 import com.afollestad.materialdialogs.MaterialDialog
 import com.alibaba.android.arouter.launcher.ARouter
 import com.trello.rxlifecycle2.components.support.RxAppCompatActivity
+import com.umeng.analytics.MobclickAgent
 import com.zk.library.Base.Transaction.*
 import com.zk.library.Base.Transaction.anim.FragmentAnimator
 import com.zk.library.Bus.Messenger
@@ -378,6 +379,16 @@ abstract class BaseActivity<V : ViewDataBinding, VM : BaseViewModel> : RxAppComp
      */
     fun start(toFragment: ISupportFragment) {
         mDelegate.start(toFragment)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        MobclickAgent.onResume(this)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        MobclickAgent.onPause(this)
     }
 
     /**

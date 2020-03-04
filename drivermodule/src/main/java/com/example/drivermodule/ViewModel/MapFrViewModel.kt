@@ -38,6 +38,7 @@ import com.google.gson.Gson
 import com.elder.zcommonmodule.Component.ItemViewModel
 import com.elder.zcommonmodule.DataBases.UpdateDriverStatus
 import com.elder.zcommonmodule.DataBases.insertDriverStatus
+import com.elder.zcommonmodule.DriverPause
 import com.elder.zcommonmodule.Entity.SoketBody.SoketTeamStatus
 import com.elder.zcommonmodule.Entity.StartRidingRequest
 import com.elder.zcommonmodule.Service.HttpInteface
@@ -77,9 +78,11 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
 //        viewModel?.component!!.Drivering.set(true)
         insertDriverStatus(status)
         mapActivity.getDrverController().timerDispose = mapActivity.getDrverController().timer?.subscribe {
-            status.second++
-            mapActivity.getDrverController().driverTime.set(ConvertUtils.formatTimeS(status.second))
-            UpdateDriverStatus(status)
+            if (status.startDriver.get() != DriverPause) {
+                status.second++
+                mapActivity.getDrverController().driverTime.set(ConvertUtils.formatTimeS(status.second))
+                UpdateDriverStatus(status)
+            }
         }
         var wayPoint = ArrayList<LatLng>()
         if (!status?.passPointDatas.isNullOrEmpty()) {

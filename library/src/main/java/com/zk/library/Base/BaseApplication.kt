@@ -157,7 +157,7 @@ open class BaseApplication : Application() {
         super.onCreate()
         setApplication(this)
         RxJavaPlugins.setErrorHandler {
-            //            Log.e("result", it.message + "网络错误信息")
+
         }
         registerWx()
         RxBus.default?.toObservable(String::class.java)?.subscribe {
