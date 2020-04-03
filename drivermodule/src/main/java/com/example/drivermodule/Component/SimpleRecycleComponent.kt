@@ -1,22 +1,16 @@
 package com.example.drivermodule.Component
 
-import android.content.Context
-import android.databinding.DataBindingUtil
 import android.databinding.ObservableArrayList
-import android.databinding.ViewDataBinding
 import android.support.design.widget.BottomSheetBehavior
-import android.util.Log
-import android.view.LayoutInflater
-import android.widget.LinearLayout
 import com.alibaba.android.arouter.launcher.ARouter
 import com.elder.zcommonmodule.Entity.HotData
+import com.elder.zcommonmodule.Widget.RoadBook.HoriDatas
 import com.elder.zcommonmodule.getRoadImgUrl
 import com.example.drivermodule.BR
 import com.example.drivermodule.Entity.RoadBook.*
 import com.example.drivermodule.R
 import com.example.drivermodule.ViewModel.DriverViewModel
 import com.example.drivermodule.ViewModel.RoadBook.RoadBookFirstViewModel
-import com.google.gson.Gson
 import com.zk.library.Utils.RouterUtils
 import kotlinx.android.synthetic.main.activity_roadbook_first.*
 import kotlinx.android.synthetic.main.fragment_road_book.*
@@ -26,7 +20,6 @@ import kotlinx.coroutines.launch
 import me.tatarka.bindingcollectionadapter2.BindingRecyclerViewAdapter
 import me.tatarka.bindingcollectionadapter2.collections.MergeObservableList
 import me.tatarka.bindingcollectionadapter2.itembindings.OnItemBindClass
-import org.cs.tec.library.Base.Utils.context
 import org.cs.tec.library.Base.Utils.uiContext
 import org.cs.tec.library.Utils.ConvertUtils
 import java.text.DecimalFormat

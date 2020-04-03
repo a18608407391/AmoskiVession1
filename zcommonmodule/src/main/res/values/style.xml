@@ -29,6 +29,7 @@
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowIsTranslucent">true</item>
     </style>
+
     <style name="MyDialogStyle">
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowFrame">@null</item>
@@ -39,18 +40,21 @@
         <item name="android:windowAnimationStyle">@android:style/Animation.Dialog</item>
         <item name="android:backgroundDimEnabled">true</item>
     </style>
+
     <style name="NoTitleFullscreen" parent="AppTheme">
         <item name="android:windowNoTitle">true</item>
         <item name="windowActionBar">false</item>
         <item name="android:windowFullscreen">true</item>
         <item name="android:windowContentOverlay">@null</item>
     </style>
+
     <style name="SwipeBackLayout">
         <item name="edge_size">50dip</item>
         <item name="shadow_left">@drawable/shadow_left</item>
         <item name="shadow_right">@drawable/shadow_right</item>
         <item name="shadow_bottom">@drawable/shadow_bottom</item>
     </style>
+
     <style name="myToolbarNavigationButtonStyle" parent="@style/Widget.AppCompat.Toolbar.Button.Navigation">
         <item name="android:minWidth">0dp</item>
         <item name="android:padding">@dimen/d_20</item>
@@ -85,8 +89,6 @@
         <item name="android:windowBackground">@android:color/transparent</item>
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
     </style>
-
-
 
 
     <style name="TabLayoutTextStyle" parent="TextAppearance.Design.Tab">
@@ -200,9 +202,6 @@
     </style>
 
 
-
-
-
     <style name="DefaultCityPickerTheme" parent="ActivityTheme">
 
         <item name="android:windowIsTranslucent">true</item>
@@ -253,8 +252,20 @@
     </style>
 
     <style name="CityPickerStyle" parent="AlertDialog.AppCompat">
-        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowBackground">@android:color/white</item>
+        <item name="android:windowNoTitle">true</item>
         <item name="android:backgroundDimEnabled">false</item>
+    </style>
+
+    <style name="CityPickerStyle1" parent="@android:style/Theme.Dialog">
+        <item name="android:windowFrame">@null</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:background">@android:color/transparent</item>
+        <!-- <item name="android:windowAnimationStyle">@android:style/Animation.Translucent</item> -->
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowSoftInputMode">stateHidden|adjustPan</item>
     </style>
 
     <style name="DefaultCityPickerAnimation" parent="@android:style/Animation">

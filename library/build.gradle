@@ -95,4 +95,6 @@ dependencies {
     api 'cn.jiguang.sdk:jmessage:2.9.0'
     // 此处以J
     api 'cn.jiguang.sdk:jcore:2.0.0'
+    api 'com.umeng.sdk:common:latest.integration'
+    api 'com.umeng.sdk:analytics:latest.integration'
 }

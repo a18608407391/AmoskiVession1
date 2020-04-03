@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import com.alibaba.android.arouter.launcher.ARouter
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -110,7 +109,6 @@ class SplashActivity : Activity(), RouteSearch.OnRouteSearchListener {
             if (!intent.scheme.isNullOrEmpty()) {
                 var uri = intent.data
                 teamCode = uri.getQueryParameter("teamCode")
-                Log.e("result", intent.data.toString() + "|teamCode|" + teamCode)
             }
         }
 
@@ -135,7 +133,6 @@ class SplashActivity : Activity(), RouteSearch.OnRouteSearchListener {
                 intent.data = Uri.parse("package:$packageName")
                 startActivity(intent)
             } else {
-                Log.e("result", "执行了3")
             }
         }
         var flag = checkDriverStatus()
@@ -250,7 +247,6 @@ class SplashActivity : Activity(), RouteSearch.OnRouteSearchListener {
                     }
                 }
             } else {
-                Log.e("result", "更新借口错误异常" + it.msg)
                 Toast.makeText(context, it.msg, Toast.LENGTH_SHORT).show()
             }
         }
@@ -286,7 +282,6 @@ class SplashActivity : Activity(), RouteSearch.OnRouteSearchListener {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        Log.e("result", "requestCode" + requestCode + "resultCode" + resultCode)
         super.onActivityResult(requestCode, resultCode, data)
         when (requestCode) {
             9999 -> {

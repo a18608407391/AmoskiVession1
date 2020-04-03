@@ -21,6 +21,11 @@ class RxBusEven {
         val NAVIGATION_FINISH = 0x1011
 
 
+        //跳转类型
+        var ENTER_TO_SEARCH = 0x6000
+        var ENTER_TO_ROAD_HOME = 0x6001
+
+
         fun getInstance(type: Int): RxBusEven {
             var even = RxBusEven()
             even.type = type
@@ -34,11 +39,21 @@ class RxBusEven {
             return even
         }
 
+        fun getInstance(type: Int,  value: Any,value2:Any): RxBusEven {
+            var even = RxBusEven()
+            even.type = type
+            even.value = value
+            even.value2 = value2
+            return even
+        }
     }
+
 
     var type = 0
 
     var value: Any? = null
+
+    var value2 :Any ? = null
 
     var secondValue: Any? = null
 

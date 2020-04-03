@@ -3,7 +3,7 @@ package com.elder.zcommonmodule.Component
 import android.support.annotation.NonNull
 import android.support.v4.app.Fragment
 import com.elder.zcommonmodule.Widget.LoginUtils.BaseDialogFragment
-import com.elder.zcommonmodule.Widget.LoginUtils.LoginController
+import com.elder.zcommonmodule.Widget.LoginUtils.FragmentDialogController
 import com.elder.zcommonmodule.Widget.LoginUtils.LoginDialogFragment
 import com.zk.library.Base.BaseApplication
 import com.zk.library.Base.BaseViewModel
@@ -41,7 +41,7 @@ open class ItemViewModel<VM : BaseViewModel>() : BaseDialogFragment.DismissListe
 
 
     fun showLoginDialogFragment(fr: Fragment) {
-        dialogFragment = LoginController(fr).show(LoginDialogFragment()) as LoginDialogFragment
+        dialogFragment = FragmentDialogController(fr).show(LoginDialogFragment()) as LoginDialogFragment
         dialogFragment!!.functionDismiss = this
     }
 

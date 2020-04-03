@@ -148,6 +148,7 @@ class RouterUtils() {
             const val TEAM_NAME = "/team/name"
             const val CHANGE_NAME = "/team/changename"
             const val TEAMER_PASS = "/team/teamerpass"
+            const val SEARCH_CATEGORY = "/team/category"
         }
     }
 
@@ -180,6 +181,7 @@ class RouterUtils() {
             const val IMPAGE = "${IM}/im"
             const val MYSELF = "/bmyself"
             const val MYSELFPAGE = "${MYSELF}/Myself"
+
         }
     }
 
@@ -198,12 +200,10 @@ class RouterUtils() {
             const val SOCIAL_LOCATION = "/social/location"
             const val SOCIAL_TYPE = "/social/navigationtype"
             const val SOCIAL_CAVALIER_HOME = "/social/cavalierhome"
-
             const val SOCIAL_MEMBER_ID = "/social/memberid"
             const val SOCIAL_NAVITATION_ID = "/social/navigationid"
             const val SOCIAL_GET_LIKE = "/social/getlike"
             const val SOCIAL_MAX_COUNT = "/social/maxcount"
-
         }
     }
 
@@ -211,7 +211,6 @@ class RouterUtils() {
         companion object {
             const val PARTY_MAIN = "/party/main"
         }
-
     }
 
     class SameCityConfig {
@@ -220,5 +219,11 @@ class RouterUtils() {
             const val SAME_CITY_MAIN = "/samecity/main"
         }
 
+    }
+
+    class Category {
+        companion object {
+            const val SEARCH_CATEGORY = "/search/category"
+        }
     }
 }

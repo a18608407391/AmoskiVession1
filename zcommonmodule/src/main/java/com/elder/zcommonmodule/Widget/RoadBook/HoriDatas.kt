@@ -1,4 +1,4 @@
-package com.example.drivermodule.Entity.RoadBook
+package com.elder.zcommonmodule.Widget.RoadBook
 
 import android.databinding.ObservableField
 import java.io.Serializable

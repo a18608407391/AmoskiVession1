@@ -16,13 +16,10 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <com.amap.api.maps.MapView
+        <com.amap.api.maps.TextureMapView
             android:id="@+id/first_map"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"></com.amap.api.maps.MapView>
-
-
-
+            android:layout_height="match_parent"></com.amap.api.maps.TextureMapView>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"

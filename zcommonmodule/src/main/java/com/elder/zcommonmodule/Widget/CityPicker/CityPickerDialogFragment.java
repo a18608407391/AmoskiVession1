@@ -114,6 +114,7 @@ public class CityPickerDialogFragment extends DialogFragment implements TextWatc
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+
         mContentView = inflater.inflate(R.layout.cp_dialog_city_picker, container, false);
         return mContentView;
     }

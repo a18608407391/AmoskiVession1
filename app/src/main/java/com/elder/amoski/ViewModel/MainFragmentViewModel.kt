@@ -18,13 +18,18 @@ import com.elder.amoski.R.id.driver_middle
 import com.elder.logrecodemodule.UI.LogRecodeFragment
 import com.elder.zcommonmodule.CALL_BACK_STATUS
 import com.elder.zcommonmodule.DriverCancle
+import com.elder.zcommonmodule.Entity.Location
 import com.elder.zcommonmodule.Even.ActivityResultEven
 import com.zk.library.Bus.event.RxBusEven
 import com.elder.zcommonmodule.Utils.Utils
+import com.elder.zcommonmodule.Widget.Search.SearchCategoryFragment
+import com.example.drivermodule.Activity.RoadBookSearchActivity
+import com.example.drivermodule.Activity.RoadHomeActivity
 import com.example.drivermodule.Ui.MapFragment
 import com.example.private_module.UI.UserInfoFragment
 import com.zk.library.Base.AppManager
 import com.zk.library.Base.BaseViewModel
+import com.zk.library.Base.Transaction.ISupportFragment
 import com.zk.library.Utils.RouterUtils
 import kotlinx.android.synthetic.main.fragment_main.*
 import kotlinx.coroutines.CoroutineScope
@@ -100,12 +105,10 @@ class MainFragmentViewModel : BaseViewModel, RadioGroup.OnCheckedChangeListener 
     fun inject(homeActivity: HomeFragment) {
         this.homeActivity = homeActivity
         returnCheckId = R.id.same_city
-        Log.e("resultttt", "returnID" + returnCheckId.toString())
         initStatus()
         RxSubscriptions.add(RxBus.default?.toObservable(RxBusEven::class.java)?.subscribe {
             when (it.type) {
                 RxBusEven.DriverReturnRequest -> {
-                    Log.e("resultttt", "lastID" + lastCheckediD.toString())
                     CoroutineScope(uiContext).launch {
                         homeActivity.main_bottom_bg.check(lastCheckediD)
                         bottomVisible.set(true)
@@ -116,6 +119,15 @@ class MainFragmentViewModel : BaseViewModel, RadioGroup.OnCheckedChangeListener 
                     if (it.secondValue as Int == 1) {
                         homeActivity.main_bottom_bg.check(lastCheckediD)
                     }
+                }
+                RxBusEven.ENTER_TO_SEARCH -> {
+//                    homeActivity.start(SearchCategoryFragment())
+                    homeActivity.start((ARouter.getInstance().build(RouterUtils.MapModuleConfig.ROAD_BOOK_SEARCH_ACTIVITY).navigation() as RoadBookSearchActivity))
+                }
+                RxBusEven.ENTER_TO_ROAD_HOME -> {
+                    var loc = it.value as Location
+                    var type = it.value2 as Int
+                    homeActivity.start((ARouter.getInstance().build(RouterUtils.MapModuleConfig.ROAD_BOOK_ACTIVITY).navigation() as RoadHomeActivity).setLocation(loc).setType(type))
                 }
             }
         })

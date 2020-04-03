@@ -176,16 +176,10 @@ class HomeActivity : BaseActivity<ActivityHomeBinding, HomeViewModel>() {
 
     var time: Long = 0
 
-    override fun doPressBack() {
-        super.doPressBack()
-        if (System.currentTimeMillis() - time > 3000) {
-            Toast.makeText(this, "再按一次退出程序！", Toast.LENGTH_SHORT).show()
-            time = System.currentTimeMillis()
-        } else {
-            System.exit(0)
-        }
-    }
 
+    override fun onBackPressedSupport() {
+        super.onBackPressedSupport()
+    }
     override fun onDestroy() {
         super.onDestroy()
     }
@@ -198,4 +192,5 @@ class HomeActivity : BaseActivity<ActivityHomeBinding, HomeViewModel>() {
     override fun onCreateFragmentAnimator(): FragmentAnimator {
         return DefaultHorizontalAnimator()
     }
+
 }

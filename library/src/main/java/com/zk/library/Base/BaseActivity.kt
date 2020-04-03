@@ -193,7 +193,7 @@ abstract class BaseActivity<V : ViewDataBinding, VM : BaseViewModel> : RxAppComp
     }
 
     open fun doPressBack() {
-
+        mDelegate.onBackPressedSupport()
     }
 
     override fun onDestroy() {
@@ -503,10 +503,6 @@ abstract class BaseActivity<V : ViewDataBinding, VM : BaseViewModel> : RxAppComp
         mDelegate.post(runnable)
     }
 
-    override fun onBackPressed() {
-        super.onBackPressed()
-        mDelegate.onBackPressed()
-    }
 
     override fun onBackPressedSupport() {
         mDelegate.onBackPressedSupport()

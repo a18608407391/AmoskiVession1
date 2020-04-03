@@ -52,7 +52,7 @@ import org.cs.tec.library.USERID
 
 
 @Route(path = RouterUtils.MapModuleConfig.MAP_FR)
-class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), LocationSource, AMap.InfoWindowAdapter, AMap.OnMapClickListener, AMap.OnMapTouchListener, AMap.OnInfoWindowClickListener{
+class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), LocationSource, AMap.InfoWindowAdapter, AMap.OnMapClickListener, AMap.OnMapTouchListener, AMap.OnInfoWindowClickListener {
 
     var onStart = false
     var mLocationOption: AMapLocationClientOption? = null
@@ -249,6 +249,7 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
         mAmap.moveCamera(CameraUpdateFactory.zoomTo(15F))
         initListener()
     }
+
     private fun initListener() {
         mAmap.uiSettings.isZoomControlsEnabled = false
         mAmap.uiSettings.isMyLocationButtonEnabled = false
@@ -291,7 +292,7 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
     }
 
     fun getRoadBookController(): RoadBookItemModel {
-        return viewModel?.mFragments!![2] as RoadBookItemModel
+        return viewModel?.items!![2] as RoadBookItemModel
     }
 
     private fun setUpMap() {
@@ -333,6 +334,7 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
         myLocationStyle = MyLocationStyle()
         // 自定义定位蓝点图标
 
+
         myLocationStyle.myLocationIcon(BitmapDescriptorFactory.fromResource(R.drawable.navi_map_gps_locked))
         myLocationStyle.radiusFillColor(Color.parseColor("#303FC5C9"))
         // 自定义精度范围的圆形边框颜色
@@ -354,22 +356,29 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
             if (requestCode == RESULT_POINT) {
                 (viewModel?.items!![0] as DriverItemModel).setResult(requestCode, resultCode, data)
             } else {
-                if (requestCode == REQUEST_LOAD_ROADBOOK) {
-                    if (data != null) {
-                        var its = data.getSerializableExtra("hotdata") as HotData
-                        viewModel?.changerFragment(2)
-                        (viewModel?.items!![2] as RoadBookItemModel).doLoadDatas(its!!)
-                    } else {
-                        if (viewModel?.currentPosition != 2) {
-                            viewModel?.selectTab(viewModel?.currentPosition!!)
-                        }
-                    }
-                } else {
-                    (viewModel?.items!![3] as MapPointItemModel).SearchResult(requestCode, resultCode, data)
-                }
+
             }
         }
         super.onActivityResult(requestCode, resultCode, data)
+    }
+
+
+    override fun onFragmentResult(requestCode: Int, resultCode: Int, data: Bundle?) {
+        super.onFragmentResult(requestCode, resultCode, data)
+        Log.e("result", "onFragmentResult" + requestCode)
+        if (resultCode == REQUEST_LOAD_ROADBOOK) {
+            if (data?.getSerializable("hotdata") != null) {
+                var its = data.getSerializable("hotdata") as HotData
+                viewModel?.changerFragment(2)
+                (viewModel?.items!![2] as RoadBookItemModel).doLoadDatas(its!!)
+            } else {
+                if (viewModel?.currentPosition != 2) {
+                    viewModel?.selectTab(viewModel?.currentPosition!!)
+                }
+            }
+        } else {
+            (viewModel?.items!![3] as MapPointItemModel).SearchResult(requestCode, resultCode, data)
+        }
     }
 
     fun setDriverStatus(resume: String?) {
@@ -377,4 +386,6 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
             this.resume = resume
         }
     }
+
+
 }

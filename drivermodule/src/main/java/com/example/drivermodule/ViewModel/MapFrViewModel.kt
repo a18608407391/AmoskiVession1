@@ -3,6 +3,7 @@ package com.example.drivermodule.ViewModel
 import android.content.Intent
 import android.databinding.ObservableArrayList
 import android.databinding.ObservableField
+import android.databinding.ViewDataBinding
 import android.support.design.widget.BottomSheetBehavior
 import android.support.design.widget.TabLayout
 import android.support.v4.app.Fragment
@@ -43,8 +44,13 @@ import com.elder.zcommonmodule.Entity.SoketBody.SoketTeamStatus
 import com.elder.zcommonmodule.Entity.StartRidingRequest
 import com.elder.zcommonmodule.Service.HttpInteface
 import com.elder.zcommonmodule.Service.HttpRequest
+import com.elder.zcommonmodule.Widget.LoginUtils.FragmentDialogController
+import com.elder.zcommonmodule.Widget.RoadBook.RoadBookHomeFragment
+import com.example.drivermodule.Activity.RoadHomeActivity
+import com.zk.library.Base.BaseFragment
 import com.zk.library.Bus.ServiceEven
 import com.zk.library.Bus.event.RxBusEven
+import com.zk.library.Bus.event.RxBusEven.Companion.ENTER_TO_ROAD_HOME
 import com.zk.library.Utils.PreferenceUtils
 import com.zk.library.Utils.RouterUtils
 import io.reactivex.Observable
@@ -101,7 +107,6 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
     }
 
     override fun FiveBtnClick(view: View) {
-        Log.e("result", "点击事件点急急急急")
         if (currentPosition == 0) {
             (items[0] as DriverItemModel).onFiveBtnClick(view)
         } else if (currentPosition == 2) {
@@ -130,7 +135,6 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
             0 -> {
                 if (currentPosition == 1) {
                     mapActivity.getTeamController()?.backToDriver()
-
                 } else if (currentPosition == 3) {
                     mapActivity.getRoadBookController()?.backToDriver()
                     changerFragment(0)
@@ -153,10 +157,15 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
                         mapActivity.getTeamController()?.backToRoad()
                     }
                     if (mapActivity.getRoadBookController()?.netWorkData == null) {
-                        var date = PreferenceUtils.getString(mapActivity.activity, PreferenceUtils.getString(context, USERID) + "hot")
+                        var date = PreferenceUtils.getString(mapActivity.activity!!, PreferenceUtils.getString(context, USERID) + "hot")
                         if (date == null && mapActivity.hotData == null) {
                             if (curPosition != null) {
-                                ARouter.getInstance().build(RouterUtils.MapModuleConfig.ROAD_BOOK_ACTIVITY).withInt(RouterUtils.MapModuleConfig.ROAD_CURRENT_TYPE, 1).withSerializable(RouterUtils.MapModuleConfig.ROAD_CURRENT_POINT, mapActivity.getDrverFragment().curPosition).navigation(mapActivity.activity, REQUEST_LOAD_ROADBOOK)
+                                var fr = mapActivity.parentFragment as BaseFragment<ViewDataBinding, BaseViewModel>
+                                fr!!.startForResult((ARouter.getInstance().build(RouterUtils.MapModuleConfig.ROAD_BOOK_ACTIVITY).navigation() as RoadHomeActivity).setLocation(curPosition!!).setType(1), REQUEST_LOAD_ROADBOOK)
+
+//                                RxBus.default?.post(RxBusEven.getInstance(ENTER_TO_ROAD_HOME, curPosition!!, 1))
+//                                var fr = FragmentDialogController(mapActivity).show(RoadBookHomeFragment().setLocation(curPosition!!).setType(1)) as RoadBookHomeFragment
+//                                ARouter.getInstance().build(RouterUtils.MapModuleConfig.ROAD_BOOK_ACTIVITY).withInt(RouterUtils.MapModuleConfig.ROAD_CURRENT_TYPE, 1).withSerializable(RouterUtils.MapModuleConfig.ROAD_CURRENT_POINT, curPosition).navigation(mapActivity.activity, REQUEST_LOAD_ROADBOOK)
                             }
                         } else {
                             if (date == null) {

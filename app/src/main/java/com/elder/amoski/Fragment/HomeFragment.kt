@@ -2,6 +2,7 @@ package com.elder.amoski.Fragment
 
 import android.databinding.ViewDataBinding
 import android.os.Bundle
+import android.util.Log
 import com.elder.amoski.BR
 import com.elder.amoski.R
 import com.elder.amoski.ViewModel.MainFragmentViewModel
@@ -39,4 +40,20 @@ class HomeFragment : BaseFragment<FragmentMainBinding, MainFragmentViewModel>() 
     }
 
 
+    override fun onFragmentResult(requestCode: Int, resultCode: Int, data: Bundle?) {
+        super.onFragmentResult(requestCode, resultCode, data)
+        when (viewModel?.curPosition) {
+            0 -> {
+            }
+            1 -> {
+
+            }
+            2 -> {
+                viewModel?.mapFr?.onFragmentResult(requestCode, resultCode, data)
+            }
+            3 -> {
+
+            }
+        }
+    }
 }

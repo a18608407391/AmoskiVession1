@@ -17,6 +17,7 @@ import com.elder.zcommonmodule.Service.HttpRequest
 import com.example.drivermodule.Activity.RoadBookSearchActivity
 import com.example.drivermodule.BR
 import com.elder.zcommonmodule.Entity.HotData
+import com.example.drivermodule.Activity.RoadBookFirstActivity
 import com.example.drivermodule.R
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -83,11 +84,11 @@ class RoadBookSearchViewModel : BaseViewModel(), TextView.OnEditorActionListener
     var time = 0L
     fun onClick(view: View) {
         if (System.currentTimeMillis() - time > 1000) {
-            val imm = roadBookSearchActivity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager?
+            val imm = roadBookSearchActivity.activity!!.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager?
             imm!!.toggleSoftInput(0, InputMethodManager.HIDE_NOT_ALWAYS)
             CoroutineScope(uiContext).launch {
                 delay(500)
-                roadBookSearchActivity.finish()
+//                roadBookSearchActivity.finish()
             }
         }
         time = System.currentTimeMillis()
@@ -97,8 +98,8 @@ class RoadBookSearchViewModel : BaseViewModel(), TextView.OnEditorActionListener
         if (data == null) {
             return
         }
-        ARouter.getInstance().build(RouterUtils.MapModuleConfig.ROAD_BOOK_FIRST_ACTIVITY).withSerializable(RouterUtils.MapModuleConfig.ROAD_BOOK_FIRST_ENTITY, data).navigation(roadBookSearchActivity, REQUEST_LOAD_ROADBOOK)
-
+//        ARouter.getInstance().build(RouterUtils.MapModuleConfig.ROAD_BOOK_FIRST_ACTIVITY).withSerializable(RouterUtils.MapModuleConfig.ROAD_BOOK_FIRST_ENTITY, data).navigation(roadBookSearchActivity.activity, REQUEST_LOAD_ROADBOOK)
+        roadBookSearchActivity._mActivity!!.startForResult((ARouter.getInstance().build(RouterUtils.MapModuleConfig.ROAD_BOOK_FIRST_ACTIVITY).navigation() as RoadBookFirstActivity).setHotData(data),REQUEST_LOAD_ROADBOOK)
 
 //        var intent = Intent()
 //        intent.putExtra("hotdata", data)

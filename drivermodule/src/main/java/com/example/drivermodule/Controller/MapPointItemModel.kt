@@ -3,6 +3,7 @@ package com.example.drivermodule.Controller
 import android.content.Intent
 import android.databinding.ObservableArrayList
 import android.databinding.ObservableField
+import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Toast
@@ -84,10 +85,10 @@ class MapPointItemModel : ItemViewModel<MapFrViewModel>(), BaseQuickAdapter.OnIt
         this.add(PointEntity("", LatLonPoint(0.0, 0.0)))
     }
 
-    fun SearchResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (data?.extras != null) {
-            var tip = data?.extras!!["tip"] as PoiItem
-            if (data?.extras!!["tip"] != null) {
+    fun SearchResult(requestCode: Int, resultCode: Int, data: Bundle?) {
+        if (data != null) {
+            var tip = data?.getSerializable("tip") as PoiItem
+            if (tip != null) {
                 if (requestCode == RESULT_STR) {
                     if (finallyMarker == null) {
                         viewModel.status.navigationEndPoint = Location(tip.latLonPoint.latitude, tip.latLonPoint.longitude, System.currentTimeMillis().toString(), 0F, 0.0, 0F, tip.title)
@@ -199,22 +200,31 @@ class MapPointItemModel : ItemViewModel<MapFrViewModel>(), BaseQuickAdapter.OnIt
         mapFr.mapUtils?.queryGeocoder(LatLonPoint(viewModel?.status.navigationStartPoint!!.latitude, viewModel?.status.navigationStartPoint!!.longitude))
     }
 
+    fun closeBottom() {
+        listvisible.set(false)
+        RoadDetailItems.clear()
+        panelState.set(SlidingUpPanelLayout.PanelState.COLLAPSED)
+    }
+
+
+    fun showBottom() {
+        listvisible.set(true)
+        itemRestore.forEach {
+            RoadDetailItems.add(it)
+        }
+        CoroutineScope(uiContext).launch {
+            delay(500)
+            panelState.set(SlidingUpPanelLayout.PanelState.EXPANDED)
+        }
+    }
+
     fun onClick(view: View) {
         when (view?.id) {
             R.id.detail_click -> {
                 if (!listvisible.get()!!) {
-                    listvisible.set(true)
-                    itemRestore.forEach {
-                        RoadDetailItems.add(it)
-                    }
-                    CoroutineScope(uiContext).launch {
-                        delay(500)
-                        panelState.set(SlidingUpPanelLayout.PanelState.EXPANDED)
-                    }
+                    showBottom()
                 } else {
-                    listvisible.set(false)
-                    RoadDetailItems.clear()
-                    panelState.set(SlidingUpPanelLayout.PanelState.COLLAPSED)
+                    closeBottom()
                 }
             }
             R.id.navi_btn -> {
@@ -298,6 +308,8 @@ class MapPointItemModel : ItemViewModel<MapFrViewModel>(), BaseQuickAdapter.OnIt
         if (result.errorCode == 0) {
             items.clear()
             result?.routeid!!.forEachIndexed { index, it ->
+                Log.e("result", "routeId" + it)
+
                 var path = mapFr.mapUtils?.navi?.naviPaths!![it]
                 var entity = RouteEntity()
                 if (index == 0) {
@@ -306,7 +318,6 @@ class MapPointItemModel : ItemViewModel<MapFrViewModel>(), BaseQuickAdapter.OnIt
                     entity.select.set(false)
                 }
                 entity.id.set(it)
-
                 entity.title.set(path?.labels)
                 if (path?.tollCost!! < 1) {
                     entity.distance.set(DecimalFormat("0.0").format(path?.allLength!! / 1000) + "KM")
@@ -389,7 +400,10 @@ class MapPointItemModel : ItemViewModel<MapFrViewModel>(), BaseQuickAdapter.OnIt
             screenMaker = drivingRouteOverlay.addRemoveMarker(drivingRouteOverlay.convertToLatLng(path!!.wayPoint[path.wayPoint.size - 1]))
         }
         if (panelState.get() == SlidingUpPanelLayout.PanelState.HIDDEN) {
-            panelState.set(SlidingUpPanelLayout.PanelState.COLLAPSED)
+            Log.e("result", "展开")
+            CoroutineScope(uiContext).launch {
+                panelState.set(SlidingUpPanelLayout.PanelState.COLLAPSED)
+            }
         }
     }
 
@@ -399,7 +413,9 @@ class MapPointItemModel : ItemViewModel<MapFrViewModel>(), BaseQuickAdapter.OnIt
 
     fun returnDriverFr() {
         //关闭地图选点
-        choiceVisible.set(false)
+        listvisible.set(false)
+        RoadDetailItems.clear()
+        panelState.set(SlidingUpPanelLayout.PanelState.HIDDEN)
         RoadDetailItems.clear()
         itemRestore.clear()
         items.clear()
@@ -442,6 +458,7 @@ class MapPointItemModel : ItemViewModel<MapFrViewModel>(), BaseQuickAdapter.OnIt
             viewModel?.backStatus = false
         }
     }
+
 
     fun reset() {
         if (screenMaker != null) {

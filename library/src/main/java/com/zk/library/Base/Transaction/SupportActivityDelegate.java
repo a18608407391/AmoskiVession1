@@ -8,6 +8,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentationMagician;
+import android.util.Log;
 import android.view.MotionEvent;
 
 import com.zk.library.Base.Transaction.anim.DefaultVerticalAnimator;
@@ -151,11 +152,9 @@ public class SupportActivityDelegate {
                 if (!mFragmentClickable) {
                     mFragmentClickable = true;
                 }
-
                 // 获取activeFragment:即从栈顶开始 状态为show的那个Fragment
                 ISupportFragment activeFragment = SupportHelper.getActiveFragment(getSupportFragmentManager());
                 if (mTransactionDelegate.dispatchBackPressedEvent(activeFragment)) return;
-
                 mSupport.onBackPressedSupport();
             }
         });

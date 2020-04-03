@@ -348,7 +348,6 @@ abstract class BaseFragment<V : ViewDataBinding, VM : BaseViewModel> : RxFragmen
         super.onAttach(activity)
         mDelegate.onAttach(activity)
         _mActivity = mDelegate.activity as BaseActivity<ViewDataBinding, BaseViewModel>
-
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

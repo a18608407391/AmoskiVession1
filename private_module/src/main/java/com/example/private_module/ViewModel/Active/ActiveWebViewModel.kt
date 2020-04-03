@@ -74,9 +74,6 @@ class ActiveWebViewModel : BaseViewModel() {
     var webUrl = ObservableField<String>("")
     var roadCommand = BindingCommand(object : BindingConsumer<String> {
         override fun call(t: String) {
-
-            Log.e("result", t + "当前链接")
-
             if (t.endsWith("gotoApp")) {
                 ARouter.getInstance().build(RouterUtils.ActivityPath.HOME).navigation()
                 finish()
@@ -184,6 +181,7 @@ class ActiveWebViewModel : BaseViewModel() {
             }
         }
     })
+
     var LoadingFinishCommand = BindingCommand(object : BindingConsumer<String> {
         override fun call(t: String) {
             ac.dismissProgressDialog()
@@ -191,9 +189,7 @@ class ActiveWebViewModel : BaseViewModel() {
     })
 
     fun shareWx(type: Int, url: String, title: String, html: String, time: String, flag: Boolean) {
-
         Log.e("result", "图片地址" + Base_URL + url)
-
         ac.showProgressDialog(getString(R.string.http_loading))
         Observable.create(ObservableOnSubscribe<Response> {
             var client = OkHttpClient.Builder().readTimeout(30, TimeUnit.SECONDS).build()

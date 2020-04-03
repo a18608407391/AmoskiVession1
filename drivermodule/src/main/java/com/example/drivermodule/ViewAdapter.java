@@ -15,6 +15,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.Html;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,7 +31,6 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
 import com.chad.library.adapter.base.callback.ItemDragAndSwipeCallback;
-import com.elder.zcommonmodule.ConfigKt;
 import com.elder.zcommonmodule.Entity.DriverDataStatus;
 import com.elder.zcommonmodule.Entity.HotData;
 import com.elder.zcommonmodule.Entity.Location;
@@ -41,11 +41,9 @@ import com.elder.zcommonmodule.Utils.URLImageParser;
 import com.elder.zcommonmodule.Widget.Chart.SuitLines;
 import com.elder.zcommonmodule.Widget.Chart.Unit;
 import com.elder.zcommonmodule.Widget.CustomRecycleView;
-import com.elder.zcommonmodule.Widget.LongPressToFinishButton;
-import com.example.drivermodule.Adapter.AddPointAdapter;
 import com.example.drivermodule.Adapter.AddPointItemAdapter;
 import com.example.drivermodule.Controller.MapPointItemModel;
-import com.example.drivermodule.Entity.RoadBook.HotBannerData;
+import com.elder.zcommonmodule.Widget.RoadBook.HotBannerData;
 import com.example.drivermodule.Entity.RouteEntity;
 import com.example.drivermodule.ItemModel.HotRoadItemModle;
 import com.example.drivermodule.ItemModel.NearRoadItemModle;
@@ -53,19 +51,15 @@ import com.example.drivermodule.Overlay.NextTurnTipView;
 import com.example.drivermodule.Sliding.SlidingUpPanelLayout;
 import com.zk.library.Base.BaseApplication;
 import com.zk.library.Utils.PreferenceUtils;
-import com.zk.library.binding.command.ViewAdapter.image.SimpleTarget;
 
 import org.cs.tec.library.Base.Utils.UtilsKt;
 import org.cs.tec.library.ConstantKt;
 import org.cs.tec.library.Utils.ConvertUtils;
 import org.cs.tec.library.binding.command.BindingCommand;
 
-import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
 
 import jaydenxiao.com.expandabletextview.ExpandableTextView;
 
@@ -107,6 +101,7 @@ public class ViewAdapter {
 
     @BindingAdapter({"initPanelMapPoint", "initPanelMapListener"})
     public static void initPanelMapPoint(SlidingUpPanelLayout panel, SlidingUpPanelLayout.PanelState state, MapPointItemModel model) {
+        Log.e("result","initPanelMapPoint" + state);
         panel.setPanelState(state);
         panel.setScrollableView((ViewGroup) panel.findViewById(R.id.scroll_view));
         panel.setScrollableViewHelper(new NestedScrollableViewHelper());

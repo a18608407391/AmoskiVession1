@@ -27,7 +27,6 @@ import com.elder.zcommonmodule.Service.HttpRequest
 import com.elder.zcommonmodule.Utils.Dialog.OnBtnClickL
 import com.elder.zcommonmodule.Utils.DialogUtils
 import com.elder.zcommonmodule.Widget.LoginUtils.BaseDialogFragment
-import com.elder.zcommonmodule.Widget.LoginUtils.LoginController
 import com.elder.zcommonmodule.Widget.LoginUtils.LoginDialogFragment
 import com.example.drivermodule.AMapUtil
 import com.example.drivermodule.Component.DriverItemController
@@ -39,24 +38,19 @@ import com.google.gson.Gson
 import com.zk.library.Base.BaseApplication
 import com.elder.zcommonmodule.Component.ItemViewModel
 import com.elder.zcommonmodule.DataBases.*
-import com.zk.library.Bus.ServiceEven
 import com.zk.library.Bus.event.RxBusEven
 import com.zk.library.Utils.PreferenceUtils
 import com.zk.library.Utils.RouterUtils
 import io.reactivex.Observable
-import io.reactivex.ObservableOnSubscribe
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
-import io.reactivex.functions.Function
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import org.cs.tec.library.Base.Utils.*
 import org.cs.tec.library.Bus.RxBus
 import org.cs.tec.library.USERID
 import org.cs.tec.library.Utils.ConvertUtils
-import org.cs.tec.library.http.NetworkUtil
 import java.text.DecimalFormat
 import java.util.concurrent.TimeUnit
 
@@ -73,7 +67,6 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener, HttpI
             dialogFragment!!.functionDismiss = null
         }
         super.onDismiss(fr)
-
     }
 
     override fun CheckTeamStatusSucccess(it: BaseResponse) {

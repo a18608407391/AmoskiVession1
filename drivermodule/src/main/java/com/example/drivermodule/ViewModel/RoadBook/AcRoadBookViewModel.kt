@@ -1,6 +1,7 @@
 package com.example.drivermodule.ViewModel.RoadBook
 
 import android.databinding.ObservableArrayList
+import android.os.Bundle
 import com.elder.zcommonmodule.Component.TitleComponent
 import com.example.drivermodule.Activity.RoadHomeActivity
 import com.example.drivermodule.BR
@@ -22,12 +23,16 @@ import android.view.LayoutInflater
 import android.view.View
 import com.alibaba.android.arouter.launcher.ARouter
 import com.elder.zcommonmodule.REQUEST_LOAD_ROADBOOK
+import com.example.drivermodule.Activity.RoadBookSearchActivity
+import com.zk.library.Base.BaseActivity
+import com.zk.library.Bus.event.RxBusEven
 import com.zk.library.Utils.RouterUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.cs.tec.library.Base.Utils.getColor
 import org.cs.tec.library.Base.Utils.uiContext
+import org.cs.tec.library.Bus.RxBus
 import org.cs.tec.library.binding.command.BindingCommand
 import org.cs.tec.library.binding.command.BindingConsumer
 
@@ -47,33 +52,27 @@ class AcRoadBookViewModel : BaseViewModel(), TitleComponent.titleComponentCallBa
     }
 
     override fun onComponentClick(view: View) {
-        finish()
+//        finish()
+        var bundle = Bundle()
+        roadHomeActivity.setFragmentResult(REQUEST_LOAD_ROADBOOK, bundle)
+        roadHomeActivity._mActivity!!.onBackPressedSupport()
     }
 
     override fun onComponentFinish(view: View) {
-        ARouter.getInstance().build(RouterUtils.MapModuleConfig.ROAD_BOOK_SEARCH_ACTIVITY).navigation(roadHomeActivity, REQUEST_LOAD_ROADBOOK)
+
+        roadHomeActivity._mActivity!!.startForResult(ARouter.getInstance().build(RouterUtils.MapModuleConfig.ROAD_BOOK_SEARCH_ACTIVITY).navigation() as RoadBookSearchActivity, REQUEST_LOAD_ROADBOOK)
+
+//        RxBus.default?.post(RxBusEven.getInstance(RxBusEven.ENTER_TO_SEARCH))
+//        ARouter.getInstance().build(RouterUtils.MapModuleConfig.ROAD_BOOK_SEARCH_ACTIVITY).navigation(roadHomeActivity.activity, REQUEST_LOAD_ROADBOOK)
     }
 
     lateinit var roadHomeActivity: RoadHomeActivity
-
-
     fun inject(roadHomeActivity: RoadHomeActivity) {
         this.roadHomeActivity = roadHomeActivity
         CoroutineScope(uiContext).launch {
             delay(500)
             initTabLayoutChangeUI()
             (items[0] as HotRoadItemModle).initDatas((items[0] as HotRoadItemModle).page)
-//            if (roadHomeActivity.type == 0) {
-////                var t = roadHomeActivity.mTabLayout.getTabAt(0)
-////                t!!.select()
-//
-//                roadHomeActivity.road_book_viewpager.currentItem = 0
-//            } else {
-////                var t = roadHomeActivity.mTabLayout.getTabAt(1)
-////                t!!.select()
-////                (items[1] as NearRoadItemModle).initDatas()
-
-//            }
         }
     }
 
@@ -113,14 +112,6 @@ class AcRoadBookViewModel : BaseViewModel(), TitleComponent.titleComponentCallBa
 
     var itembingding = OnItemBind<ItemViewModel<AcRoadBookViewModel>> { itemBinding, position, item ->
         when (position) {
-
-            //list A
-            // 热门  ->{1
-            //          {2
-            //           {3
-            // 附近
-
-
             0 -> {
                 itemBinding.set(BR.hot_itemmodel, R.layout.hot_item_model_layout)
             }
@@ -133,7 +124,6 @@ class AcRoadBookViewModel : BaseViewModel(), TitleComponent.titleComponentCallBa
     var pagerTitle = BindingViewPagerAdapter.PageTitles<ItemViewModel<AcRoadBookViewModel>> { position, item ->
         mTiltes[position]
     }
-
 
     private fun initTabLayoutChangeUI() {
         for (i in 0..roadHomeActivity.mTabLayout.tabCount) {

@@ -20,6 +20,15 @@
         android:background="@color/white"
         android:orientation="vertical">
 
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:fitsSystemWindows="true"
+            android:orientation="vertical"></LinearLayout>
+
+
         <include
             layout="@layout/base_tab_driver_layout"
             app:data="@{map_fr_Model.component}"></include>
@@ -31,12 +40,12 @@
             android:layout_height="match_parent"
             android:keepScreenOn="true">
 
-            <com.amap.api.maps.MapView
+            <com.amap.api.maps.TextureMapView
                 android:id="@+id/fr_map_view"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_alignParentStart="true"
-                android:layout_alignParentTop="true"></com.amap.api.maps.MapView>
+                android:layout_alignParentTop="true"></com.amap.api.maps.TextureMapView>
 
             <com.zk.library.Weidge.NoScrollViewPager
                 android:id="@+id/fr_main_rootlay"

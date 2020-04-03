@@ -91,7 +91,6 @@ class LoginDialogFragment : BaseDialogFragment, View.OnClickListener {
         loginName = mContentView?.findViewById(R.id.fragment_phone_number)!!
         Password = mContentView?.findViewById(R.id.fragment_visible_pass)!!
         visibleIcon = mContentView?.findViewById(R.id.fragment_visible_icon_change)!!
-
         mContentView?.findViewById<TextView>(R.id.fragment_passwordLogin)!!.setOnClickListener(this)
         mContentView?.findViewById<LinearLayout>(R.id.fragment_login_towx)!!.setOnClickListener(this)
         return mContentView

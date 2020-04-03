@@ -76,26 +76,26 @@ class RoadBookFirstViewModel : BaseViewModel(), HttpInteface.RoadBookDetail, Rou
         Log.e("result", "DownLoadRoadBookSuccess")
         activity.dismissProgressDialog()
         if (resp.code == 0) {
-            var ho = PreferenceUtils.getString(activity, PreferenceUtils.getString(context, USERID) + "hot")
-            var s = Gson().fromJson<HotData>(ho, HotData::class.java)
-            if (s == null || s.id == activity.data!!.id) {
-                var intent = Intent()
-                intent.putExtra("hotdata", activity.data)
-                activity.setResult(REQUEST_LOAD_ROADBOOK, intent)
-                finish()
-            } else {
-                var dialog = DialogUtils.createNomalDialog(activity, getString(R.string.isExChangeLine), getString(R.string.cancle), getString(R.string.confirm))
-                dialog.setOnBtnClickL(OnBtnClickL {
-                    dialog.dismiss()
-                }, OnBtnClickL {
-                    dialog.dismiss()
-                    var intent = Intent()
-                    intent.putExtra("hotdata", activity.data)
-                    activity.setResult(REQUEST_LOAD_ROADBOOK, intent)
-                    finish()
-                })
-                dialog.show()
-            }
+//            var ho = PreferenceUtils.getString(activity, PreferenceUtils.getString(context, USERID) + "hot")
+//            var s = Gson().fromJson<HotData>(ho, HotData::class.java)
+//            if (s == null || s.id == activity.data!!.id) {
+//                var intent = Intent()
+//                intent.putExtra("hotdata", activity.data)
+//                activity.setResult(REQUEST_LOAD_ROADBOOK, intent)
+//                finish()
+//            } else {
+//                var dialog = DialogUtils.createNomalDialog(activity, getString(R.string.isExChangeLine), getString(R.string.cancle), getString(R.string.confirm))
+//                dialog.setOnBtnClickL(OnBtnClickL {
+//                    dialog.dismiss()
+//                }, OnBtnClickL {
+//                    dialog.dismiss()
+//                    var intent = Intent()
+//                    intent.putExtra("hotdata", activity.data)
+//                    activity.setResult(REQUEST_LOAD_ROADBOOK, intent)
+//                    finish()
+//                })
+//                dialog.show()
+//            }
         } else {
             Toast.makeText(context, resp.msg, Toast.LENGTH_SHORT).show()
         }
@@ -296,7 +296,7 @@ class RoadBookFirstViewModel : BaseViewModel(), HttpInteface.RoadBookDetail, Rou
                 .width(18f).zIndex(0f).color(getColor(R.color.line_color)))
         var list = ArrayList<LatLng>()
         data.pointList!!.forEachIndexed { index, roadDetailItem ->
-            var inflater = activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+            var inflater = activity.activity!!.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
             var view = inflater.inflate(R.layout.roadbook_maker_layout, null)
             var tv = view.findViewById<TextView>(R.id.marker_tv)
             tv.text = (index + 1).toString()
@@ -353,7 +353,7 @@ class RoadBookFirstViewModel : BaseViewModel(), HttpInteface.RoadBookDetail, Rou
             selectTab(index + 1)
         } else {
             if (lastMarker != null) {
-                var inflater = activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+                var inflater = activity.activity!!.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
                 var view = inflater.inflate(R.layout.roadbook_maker_layout, null)
                 var tv = view.findViewById<TextView>(R.id.marker_tv)
                 var img = view.findViewById<ImageView>(R.id.marker_icon)
@@ -362,7 +362,7 @@ class RoadBookFirstViewModel : BaseViewModel(), HttpInteface.RoadBookDetail, Rou
                 lastMarker?.setIcon(BitmapDescriptorFactory.fromView(view))
                 lastMarker?.showInfoWindow()
             }
-            var inflater = activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+            var inflater = activity.activity!!.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
             var view = inflater.inflate(R.layout.roadbook_maker_layout, null)
             var img = view.findViewById<ImageView>(R.id.marker_icon)
             img.setImageResource(R.drawable.orange_oval)
@@ -420,7 +420,7 @@ class RoadBookFirstViewModel : BaseViewModel(), HttpInteface.RoadBookDetail, Rou
 
     fun inject(roadBookFirstActivity: RoadBookFirstActivity) {
         this.activity = roadBookFirstActivity
-        mRoutePath = RouteSearch(activity)
+        mRoutePath = RouteSearch(activity.activity)
         mRoutePath!!.setRouteSearchListener(this)
         activity.mAmap.setOnMarkerClickListener {
             Log.e("result", "markerChange")
@@ -464,7 +464,7 @@ class RoadBookFirstViewModel : BaseViewModel(), HttpInteface.RoadBookDetail, Rou
         var list = ArrayList<LatLng>()
         var b = LatLngBounds.builder()
         data.forEachIndexed { index, roadDetailItem ->
-            var inflater = activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+            var inflater = activity.activity!!.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
             var view = inflater.inflate(R.layout.roadbook_popuwindow_custom, null)
             var tv = view.findViewById<TextView>(R.id.window_day)
             tv.text = "D" + (index + 1).toString()
@@ -473,7 +473,7 @@ class RoadBookFirstViewModel : BaseViewModel(), HttpInteface.RoadBookDetail, Rou
             tv1.text = roadDetailItem.pointList!!.size.toString()
             var corner = RoundedCorners(ConvertUtils.dp2px(5F))
             var opition = RequestOptions().transform(corner).error(R.drawable.road_windown_img).override(ConvertUtils.dp2px(32F), ConvertUtils.dp2px(32F))
-            if (activity == null || activity.isFinishing() || (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && activity.isDestroyed())) {
+            if (activity == null ) {
                 Glide.with(img.context).load(getRoadImgUrl(roadDetailItem.pointList!![0].imgUrl)).apply(opition).into(object : SimpleTarget<Drawable>() {
                     override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
                         super.onResourceReady(resource, transition)

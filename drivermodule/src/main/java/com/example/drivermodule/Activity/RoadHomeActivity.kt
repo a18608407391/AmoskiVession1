@@ -15,13 +15,15 @@ import com.example.drivermodule.R
 import com.example.drivermodule.ViewModel.RoadBook.AcRoadBookViewModel
 import com.example.drivermodule.databinding.ActivityRoadbookBinding
 import com.zk.library.Base.BaseActivity
+import com.zk.library.Base.BaseFragment
 import com.zk.library.Utils.RouterUtils
 import com.zk.library.Utils.StatusbarUtils
 import kotlinx.android.synthetic.main.activity_roadbook.*
 
 
 @Route(path = RouterUtils.MapModuleConfig.ROAD_BOOK_ACTIVITY)
-class RoadHomeActivity : BaseActivity<ActivityRoadbookBinding, AcRoadBookViewModel>() {
+class RoadHomeActivity : BaseFragment<ActivityRoadbookBinding, AcRoadBookViewModel>() {
+
     @Autowired(name = RouterUtils.MapModuleConfig.ROAD_CURRENT_POINT)
     @JvmField
     var location: Location? = null
@@ -34,39 +36,61 @@ class RoadHomeActivity : BaseActivity<ActivityRoadbookBinding, AcRoadBookViewMod
         return BR.roadbook_viewmodel
     }
 
-    override fun initContentView(savedInstanceState: Bundle?): Int {
-        StatusbarUtils.setRootViewFitsSystemWindows(this, false)
-        StatusbarUtils.setTranslucentStatus(this)
-        StatusbarUtils.setStatusBarMode(this, true, 0x000000)
+    override fun initContentView(): Int {
+//        StatusbarUtils.setRootViewFitsSystemWindows(this, false)
+//        StatusbarUtils.setTranslucentStatus(this)
+//        StatusbarUtils.setStatusBarMode(this, true, 0x000000)
         return R.layout.activity_roadbook
     }
-
-    override fun initViewModel(): AcRoadBookViewModel? {
-        return ViewModelProviders.of(this)[AcRoadBookViewModel::class.java]
-    }
+//
+//    override fun initViewModel(): AcRoadBookViewModel? {
+//        return ViewModelProviders.of(this)[AcRoadBookViewModel::class.java]
+//    }
 
     override fun initData() {
         super.initData()
+    }
+
+    override fun onEnterAnimationEnd(savedInstanceState: Bundle?) {
+        super.onEnterAnimationEnd(savedInstanceState)
         road_book_viewpager.addOnPageChangeListener(TabLayout.TabLayoutOnPageChangeListener(mTabLayout))
         mTabLayout.setupWithViewPager(road_book_viewpager)
         swipe.setColorSchemeColors(Color.RED, Color.GREEN, Color.BLUE)
-        swipe.setOnRefreshListener(mViewModel)
-        mViewModel?.inject(this)
+        swipe.setOnRefreshListener(viewModel)
+        viewModel?.inject(this)
     }
 
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQUEST_LOAD_ROADBOOK) {
-            if (data != null) {
-                setResult(REQUEST_LOAD_ROADBOOK, data)
-                finish()
-            }
-        }
+    fun setLocation(location: Location): RoadHomeActivity {
+        this.location = location
+        var bundle = Bundle()
+        bundle.putSerializable("location", location)
+        this.arguments = bundle
+        return this@RoadHomeActivity
     }
 
-    override fun doPressBack() {
-        super.doPressBack()
-        finish()
+    fun setType(type: Int): RoadHomeActivity {
+        this.type = type
+        return this@RoadHomeActivity
     }
+
+    override fun onBackPressedSupport(): Boolean {
+        var bundle = Bundle()
+        setFragmentResult(REQUEST_LOAD_ROADBOOK, bundle)
+        return false
+    }
+
+//    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+//        super.onActivityResult(requestCode, resultCode, data)
+//        if (requestCode == REQUEST_LOAD_ROADBOOK) {
+//            if (data != null) {
+//                setResult(REQUEST_LOAD_ROADBOOK, data)
+//                finish()
+//            }
+//        }
+//    }
+//
+//    override fun doPressBack() {
+//        super.doPressBack()
+//        finish()
+//    }
 }

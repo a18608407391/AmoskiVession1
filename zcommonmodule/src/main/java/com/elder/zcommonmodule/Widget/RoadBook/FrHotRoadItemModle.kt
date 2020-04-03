@@ -1,33 +1,29 @@
-package com.example.drivermodule.ItemModel
+package com.elder.zcommonmodule.Widget.RoadBook
 
 import android.databinding.ObservableArrayList
 import com.alibaba.android.arouter.launcher.ARouter
+import com.elder.zcommonmodule.BR
+import com.elder.zcommonmodule.Component.ItemViewModel
+import com.elder.zcommonmodule.Entity.HotData
+import com.elder.zcommonmodule.R
 import com.elder.zcommonmodule.REQUEST_LOAD_ROADBOOK
 import com.elder.zcommonmodule.Service.HttpInteface
 import com.elder.zcommonmodule.Service.HttpRequest
-import com.example.drivermodule.BR
-import com.elder.zcommonmodule.Widget.RoadBook.HotBannerData
-import com.elder.zcommonmodule.Entity.HotData
-import com.example.drivermodule.Adapter.StrageAdapter
-import com.example.drivermodule.R
-import com.example.drivermodule.ViewModel.RoadBook.AcRoadBookViewModel
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.elder.zcommonmodule.Component.ItemViewModel
-import com.example.drivermodule.Activity.RoadBookFirstActivity
 import com.zk.library.Utils.RouterUtils
-import kotlinx.android.synthetic.main.activity_roadbook.*
+import kotlinx.android.synthetic.main.big_pic_layout.*
+import kotlinx.android.synthetic.main.fragment_road_book_dialog.*
 import me.tatarka.bindingcollectionadapter2.ItemBinding
 import org.cs.tec.library.Base.Utils.getString
 import org.cs.tec.library.binding.command.BindingCommand
 import org.cs.tec.library.binding.command.BindingConsumer
 
 
-class HotRoadItemModle : ItemViewModel<AcRoadBookViewModel>, HttpInteface.getRoadBookList {
-
+class FrHotRoadItemModle :ItemViewModel<RoadBookHomeViewModel>, HttpInteface.getRoadBookList {
     override fun getRoadBookSuccess(it: String) {
-        acRoadBookViewModel?.roadHomeActivity.dismissProgressDialog()
-        acRoadBookViewModel.roadHomeActivity.swipe.isRefreshing = false
+        acRoadBookViewModel?.roadHomeActivity.dissmissProgress()
+        acRoadBookViewModel.roadHomeActivity.dialog_swipe.isRefreshing = false
         if (it.isNullOrEmpty()) {
             return
         }
@@ -43,21 +39,20 @@ class HotRoadItemModle : ItemViewModel<AcRoadBookViewModel>, HttpInteface.getRoa
         }
         if (acRoadBookViewModel.roadHomeActivity.type == 1 && category) {
             category = false
-            acRoadBookViewModel.roadHomeActivity.road_book_viewpager.currentItem = 1
+            acRoadBookViewModel.roadHomeActivity.dialog_viewpager.currentItem = 1
         }
     }
 
 
     var category = true
     override fun getRoadBookError(ex: Throwable) {
-        viewModel?.roadHomeActivity.dismissProgressDialog()
-        acRoadBookViewModel.roadHomeActivity.swipe.isRefreshing = false
+        acRoadBookViewModel
+        acRoadBookViewModel.roadHomeActivity.dialog_swipe.isRefreshing = false
     }
 
 
     fun ItemClickCommand(date: HotData) {
-//        ARouter.getInstance().build(RouterUtils.MapModuleConfig.ROAD_BOOK_FIRST_ACTIVITY).withSerializable(RouterUtils.MapModuleConfig.ROAD_BOOK_FIRST_ENTITY, date).navigation(acRoadBookViewModel.roadHomeActivity.activity, REQUEST_LOAD_ROADBOOK)
-        acRoadBookViewModel.roadHomeActivity._mActivity!!.startForResult((ARouter.getInstance().build(RouterUtils.MapModuleConfig.ROAD_BOOK_FIRST_ACTIVITY).navigation() as RoadBookFirstActivity).setHotData(date),REQUEST_LOAD_ROADBOOK)
+        ARouter.getInstance().build(RouterUtils.MapModuleConfig.ROAD_BOOK_FIRST_ACTIVITY).withSerializable(RouterUtils.MapModuleConfig.ROAD_BOOK_FIRST_ENTITY, date).navigation(acRoadBookViewModel.roadHomeActivity.activity, REQUEST_LOAD_ROADBOOK)
 
 //        ARouter.getInstance().build(RouterUtils.MapModuleConfig.ROAD_BOOK_FIRST_ACTIVITY).withSerializable(RouterUtils.MapModuleConfig.ROAD_BOOK_FIRST_ENTITY,date).navigation(acRoadBookViewModel.roadHomeActivity,REQUEST_LOAD_ROADBOOK)
 
@@ -68,9 +63,9 @@ class HotRoadItemModle : ItemViewModel<AcRoadBookViewModel>, HttpInteface.getRoa
 //        acRoadBookViewModel.roadHomeActivity.finish()
     }
 
-    var acRoadBookViewModel: AcRoadBookViewModel
+    var acRoadBookViewModel: RoadBookHomeViewModel
 
-    constructor(acRoadBookViewModel: AcRoadBookViewModel, i: Int) {
+    constructor(acRoadBookViewModel: RoadBookHomeViewModel, i: Int) {
         this.acRoadBookViewModel = acRoadBookViewModel
     }
 
@@ -78,7 +73,7 @@ class HotRoadItemModle : ItemViewModel<AcRoadBookViewModel>, HttpInteface.getRoa
 
     override fun initDatas(i: Int) {
         super.initDatas(i)
-        acRoadBookViewModel?.roadHomeActivity.showProgressDialog(getString(R.string.http_loading_roadbook))
+        acRoadBookViewModel?.roadHomeActivity.showProgress(getString(R.string.http_loading_roadbook))
         HttpRequest.instance.RoadBookGuideList = this
         var map = HashMap<String, String>()
         map["limit"] = "10"
@@ -87,12 +82,12 @@ class HotRoadItemModle : ItemViewModel<AcRoadBookViewModel>, HttpInteface.getRoa
         HttpRequest.instance.getRoadBookList(map)
     }
 
-    var adapter = StrageAdapter()
+    var adapter = FrStrageAdapter()
 
     var items = ObservableArrayList<HotData>()
 
     var itemBinding = ItemBinding.of<HotData> { itemBinding, position, item ->
-        itemBinding.set(BR.hot_data, R.layout.hot_recy_item_layout).bindExtra(BR.hot_item_model, this@HotRoadItemModle)
+        itemBinding.set(BR.fr_hot_data, R.layout.fr_hot_recy_item_layout).bindExtra(BR.hot_item_model, this@FrHotRoadItemModle)
     }
 
     var listDatas = ObservableArrayList<HotBannerData>()

@@ -1,6 +1,7 @@
 package com.elder.zcommonmodule.Widget.LoginUtils
 
 import android.annotation.SuppressLint
+import android.app.Dialog
 import android.os.Build
 import android.support.annotation.StyleRes
 import android.support.v4.app.DialogFragment
@@ -11,7 +12,11 @@ import android.view.Gravity
 import android.view.WindowManager
 import android.view.KeyEvent.KEYCODE_BACK
 import android.content.DialogInterface
+import android.graphics.Color
+import android.os.Bundle
 import android.view.KeyEvent
+import com.amap.api.maps2d.MapFragment
+import com.elder.zcommonmodule.Utils.DialogUtils
 import com.elder.zcommonmodule.Widget.CityPicker.util.ScreenUtil
 
 
@@ -20,6 +25,12 @@ open class BaseDialogFragment : DialogFragment() {
     var mContentView: View? = null
     private var height: Int = 0
     private var width: Int = 0
+
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setStyle(DialogFragment.STYLE_NORMAL, R.style.CityPickerStyle)
+    }
 
     @SuppressLint("ResourceType")
     fun setAnimationStyle(@StyleRes resId: Int) {
@@ -58,7 +69,7 @@ open class BaseDialogFragment : DialogFragment() {
         if (window != null) {
             window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
             window.setGravity(Gravity.BOTTOM)
-            window.setLayout(width, height - ScreenUtil.getStatusBarHeight(activity))
+            window.setLayout(width, height - ScreenUtil.getStatusBarHeight(getActivity()))
             window.setWindowAnimations(mAnimStyle)
         }
     }
@@ -66,6 +77,22 @@ open class BaseDialogFragment : DialogFragment() {
     override fun dismiss() {
         super.dismiss()
         functionDismiss?.onDismiss(this@BaseDialogFragment)
+    }
+
+    var progress: Dialog? = null
+
+    fun showProgress(title: String) {
+        if (progress == null) {
+            progress = DialogUtils.showProgress(this.activity!!, title)
+        } else if (progress!!.isShowing) {
+            progress!!.show()
+        }
+    }
+
+    fun dissmissProgress() {
+        if (progress != null && progress!!.isShowing) {
+            progress!!.dismiss()
+        }
     }
 
     var functionDismiss: DismissListener? = null
