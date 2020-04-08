@@ -19,6 +19,7 @@ import com.amap.api.maps.model.LatLng
 import com.amap.api.maps.model.Marker
 import com.amap.api.maps.model.MyLocationStyle
 import com.amap.api.navi.AMapNavi
+import com.amap.api.navi.model.AMapCalcRouteResult
 import com.elder.zcommonmodule.*
 import com.elder.zcommonmodule.DataBases.queryDriverStatus
 import com.elder.zcommonmodule.DataBases.queryUserInfo
@@ -27,6 +28,7 @@ import com.elder.zcommonmodule.Entity.HotData
 import com.elder.zcommonmodule.Entity.UserInfo
 import com.elder.zcommonmodule.Utils.Utils
 import com.example.drivermodule.BR
+import com.example.drivermodule.CalculateRouteListener
 import com.example.drivermodule.Controller.DriverItemModel
 import com.example.drivermodule.Controller.MapPointItemModel
 import com.example.drivermodule.Controller.RoadBookItemModel
@@ -52,7 +54,16 @@ import org.cs.tec.library.USERID
 
 
 @Route(path = RouterUtils.MapModuleConfig.MAP_FR)
-class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), LocationSource, AMap.InfoWindowAdapter, AMap.OnMapClickListener, AMap.OnMapTouchListener, AMap.OnInfoWindowClickListener {
+class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), LocationSource, AMap.InfoWindowAdapter, AMap.OnMapClickListener, AMap.OnMapTouchListener, AMap.OnInfoWindowClickListener, CalculateRouteListener {
+    override fun CalculateCallBack(p0: AMapCalcRouteResult) {
+        if (viewModel?.currentPosition == 2) {
+            var model = viewModel?.items!![2] as RoadBookItemModel
+            model.CalculateCallBack(p0)
+        } else if (viewModel?.currentPosition == 3) {
+            var model = viewModel?.items!![3] as MapPointItemModel
+            model.CalculateCallBack(p0)
+        }
+    }
 
     var onStart = false
     var mLocationOption: AMapLocationClientOption? = null
@@ -173,6 +184,7 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
     override fun onMapClick(p0: LatLng?) {
 
         Log.e("result", "onMapClick")
+
         var fr = viewModel?.items!![1] as TeamItemModel
         fr?.MapClick(p0)
     }
@@ -261,6 +273,7 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
         mAmap.setOnMapTouchListener(this)
         mAmap.setOnInfoWindowClickListener(this)
         mapUtils = MapControllerUtils(this)
+        mapUtils?.caculateRouteListener = this
     }
 
     fun getDrverFragment(): DriverFragment {
@@ -346,38 +359,30 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
         mAmap.myLocationStyle = myLocationStyle
     }
 
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        Log.e("result", "requestCode" + requestCode + "resultCode" + resultCode)
-        if (resultCode == REQUEST_CREATE_JOIN) {
+    override fun onFragmentResult(requestCode: Int, resultCode: Int, data: Bundle?) {
+        super.onFragmentResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_CREATE_JOIN) {
             viewModel?.changerFragment(1)
             (viewModel?.items!![1] as TeamItemModel).doCreate(data)
         } else {
             if (requestCode == RESULT_POINT) {
                 (viewModel?.items!![0] as DriverItemModel).setResult(requestCode, resultCode, data)
-            } else {
-
-            }
-        }
-        super.onActivityResult(requestCode, resultCode, data)
-    }
-
-
-    override fun onFragmentResult(requestCode: Int, resultCode: Int, data: Bundle?) {
-        super.onFragmentResult(requestCode, resultCode, data)
-        Log.e("result", "onFragmentResult" + requestCode)
-        if (resultCode == REQUEST_LOAD_ROADBOOK) {
-            if (data?.getSerializable("hotdata") != null) {
-                var its = data.getSerializable("hotdata") as HotData
-                viewModel?.changerFragment(2)
-                (viewModel?.items!![2] as RoadBookItemModel).doLoadDatas(its!!)
-            } else {
-                if (viewModel?.currentPosition != 2) {
-                    viewModel?.selectTab(viewModel?.currentPosition!!)
+            }else{
+                if (requestCode == REQUEST_LOAD_ROADBOOK) {
+                    if (data?.getSerializable("hotdata") != null) {
+                        var its = data.getSerializable("hotdata") as HotData
+                        viewModel?.changerFragment(2)
+                        (viewModel?.items!![2] as RoadBookItemModel).doLoadDatas(its!!)
+                    } else {
+                        if (viewModel?.currentPosition != 2) {
+                            viewModel?.selectTab(viewModel?.currentPosition!!)
+                        }
+                    }
+                } else {
+                    (viewModel?.items!![3] as MapPointItemModel).SearchResult(requestCode, resultCode, data)
                 }
             }
-        } else {
-            (viewModel?.items!![3] as MapPointItemModel).SearchResult(requestCode, resultCode, data)
+
         }
     }
 

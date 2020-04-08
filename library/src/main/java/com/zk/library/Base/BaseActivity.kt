@@ -20,6 +20,7 @@ import android.support.annotation.NonNull
 import android.support.v4.app.FragmentActivity
 import android.util.Log
 import android.view.*
+import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast

@@ -48,7 +48,7 @@ import org.cs.tec.library.binding.command.BindingConsumer
 import java.text.DecimalFormat
 
 
-class MapPointItemModel : ItemViewModel<MapFrViewModel>(), BaseQuickAdapter.OnItemClickListener, CalculateRouteListener, SlidingUpPanelLayout.PanelSlideListener {
+class MapPointItemModel : ItemViewModel<MapFrViewModel>(), BaseQuickAdapter.OnItemClickListener, SlidingUpPanelLayout.PanelSlideListener {
     override fun onPanelSlide(panel: View?, slideOffset: Float) {
 
     }
@@ -196,7 +196,6 @@ class MapPointItemModel : ItemViewModel<MapFrViewModel>(), BaseQuickAdapter.OnIt
         mapFr.mAmap.clear()
         startMaker = mapFr.mapUtils?.createMaker(Location(viewModel.status.navigationStartPoint!!.latitude, viewModel.status.navigationStartPoint!!.longitude))
         screenMaker = mapFr.mapUtils?.createScreenMarker()
-        mapFr.mapUtils?.caculateRouteListener = this
         mapFr.mapUtils?.queryGeocoder(LatLonPoint(viewModel?.status.navigationStartPoint!!.latitude, viewModel?.status.navigationStartPoint!!.longitude))
     }
 
@@ -304,12 +303,10 @@ class MapPointItemModel : ItemViewModel<MapFrViewModel>(), BaseQuickAdapter.OnIt
         }
     }
 
-    override fun CalculateCallBack(result: AMapCalcRouteResult) {
+     fun CalculateCallBack(result: AMapCalcRouteResult) {
         if (result.errorCode == 0) {
             items.clear()
             result?.routeid!!.forEachIndexed { index, it ->
-                Log.e("result", "routeId" + it)
-
                 var path = mapFr.mapUtils?.navi?.naviPaths!![it]
                 var entity = RouteEntity()
                 if (index == 0) {

@@ -155,7 +155,6 @@ class HomeActivity : BaseActivity<ActivityHomeBinding, HomeViewModel>() {
                         var date = data.getSerializableExtra("hotdata") as HotData
                         RxBus.default?.post(date)
                         ARouter.getInstance().build(RouterUtils.MapModuleConfig.MAP_ACTIVITY).addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT).withString(RouterUtils.MapModuleConfig.RESUME_MAP_ACTIVITY, "myroad").withSerializable(RouterUtils.MapModuleConfig.RESUME_MAP_ACTIVITY_ROAD, date).navigation()
-                        finish()
                     }
                 }
                 SOCIAL_DETAIL_RETURN -> {
@@ -180,6 +179,7 @@ class HomeActivity : BaseActivity<ActivityHomeBinding, HomeViewModel>() {
     override fun onBackPressedSupport() {
         super.onBackPressedSupport()
     }
+
     override fun onDestroy() {
         super.onDestroy()
     }

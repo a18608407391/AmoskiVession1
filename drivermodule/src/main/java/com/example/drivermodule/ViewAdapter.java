@@ -7,10 +7,12 @@ import android.databinding.ObservableArrayList;
 import android.databinding.ViewDataBinding;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.support.annotation.NonNull;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.TabLayout;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.LinearSnapHelper;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.helper.ItemTouchHelper;
@@ -101,7 +103,7 @@ public class ViewAdapter {
 
     @BindingAdapter({"initPanelMapPoint", "initPanelMapListener"})
     public static void initPanelMapPoint(SlidingUpPanelLayout panel, SlidingUpPanelLayout.PanelState state, MapPointItemModel model) {
-        Log.e("result","initPanelMapPoint" + state);
+        Log.e("result", "initPanelMapPoint" + state);
         panel.setPanelState(state);
         panel.setScrollableView((ViewGroup) panel.findViewById(R.id.scroll_view));
         panel.setScrollableViewHelper(new NestedScrollableViewHelper());
@@ -495,6 +497,30 @@ public class ViewAdapter {
     }
 
 
+    @BindingAdapter({"initTabSelect","selectTab"})
+    public static void initTabSelect(TabLayout tabLayout, BindingCommand value,int position) {
+        tabLayout.getTabAt(position).select();
+        tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                if (value != null) {
+                    value.execute(tab.getPosition());
+                }
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
+        });
+    }
+
+
     @BindingAdapter("StrageImageLoad")
     public static void StrageImageLoad(final ImageView relativeLayout, HotData url) {
         int width = url.getWidth();
@@ -531,7 +557,7 @@ public class ViewAdapter {
     }
 
 
-    @BindingAdapter({"LoadTeamBottomHoriData","LoadTeamBottomClick"})
+    @BindingAdapter({"LoadTeamBottomHoriData", "LoadTeamBottomClick"})
     public static void LoadTeamBottomHoriData(LinearLayout layout, ArrayList<TeamPersonnelInfoDto> daoList, final BindingCommand<Integer> command) {
         layout.removeAllViews();
         for (int i = 0; i < daoList.size(); i++) {
@@ -587,5 +613,47 @@ public class ViewAdapter {
             layout.addView(view);
         }
         layout.invalidate();
+    }
+
+
+    @BindingAdapter("SnapRecycler")
+    public static void SnapRecycler(RecyclerView recyclerView, int position) {
+        //position为固定值，不作处理
+        new LinearSnapHelper().attachToRecyclerView(recyclerView);
+    }
+
+
+    @BindingAdapter("ScrollerPosition")
+    public static void ScrollerPosition(RecyclerView recyclerView, int position) {
+        if (position == -1) {
+            return;
+        }
+        recyclerView.smoothScrollToPosition(position);
+    }
+
+
+    @BindingAdapter("recyclePositionCommand")
+    public static void  recyclePositionCommand(RecyclerView recyclerView, BindingCommand command) {
+        if (recyclerView == null || recyclerView.getLayoutManager() == null) {
+            return;
+        }
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                LinearLayoutManager manager = (LinearLayoutManager) recyclerView.getLayoutManager();
+                if (newState == 0) {
+                    if (manager.findLastCompletelyVisibleItemPosition() >= 0) {
+                        command.execute(manager.findLastCompletelyVisibleItemPosition());
+                    }
+//                }
+                }
+            }
+
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+            }
+        });
     }
 }

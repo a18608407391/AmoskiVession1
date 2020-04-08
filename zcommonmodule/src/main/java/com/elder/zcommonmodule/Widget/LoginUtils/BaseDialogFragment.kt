@@ -25,6 +25,7 @@ open class BaseDialogFragment : DialogFragment() {
     var mContentView: View? = null
     private var height: Int = 0
     private var width: Int = 0
+    var dismissValue: Any? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,7 +58,7 @@ open class BaseDialogFragment : DialogFragment() {
             override fun onKey(dialog: DialogInterface, keyCode: Int, event: KeyEvent): Boolean {
                 if (keyCode == KeyEvent.KEYCODE_BACK) {
                     if (functionDismiss != null) {
-                        functionDismiss?.onDismiss(this@BaseDialogFragment)
+                        functionDismiss?.onDismiss(this@BaseDialogFragment,dismissValue!!)
                     }
                 }
                 return false
@@ -76,7 +77,7 @@ open class BaseDialogFragment : DialogFragment() {
 
     override fun dismiss() {
         super.dismiss()
-        functionDismiss?.onDismiss(this@BaseDialogFragment)
+        functionDismiss?.onDismiss(this,dismissValue!!)
     }
 
     var progress: Dialog? = null
@@ -98,6 +99,6 @@ open class BaseDialogFragment : DialogFragment() {
     var functionDismiss: DismissListener? = null
 
     interface DismissListener {
-        fun onDismiss(fr: BaseDialogFragment)
+        fun onDismiss(fr: BaseDialogFragment, value: Any)
     }
 }

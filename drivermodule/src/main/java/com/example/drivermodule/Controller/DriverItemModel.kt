@@ -3,7 +3,9 @@ package com.example.drivermodule.Controller
 import android.content.Intent
 import android.databinding.ObservableArrayList
 import android.databinding.ObservableField
+import android.databinding.ViewDataBinding
 import android.net.Uri
+import android.os.Bundle
 import android.support.design.widget.BottomSheetBehavior
 import android.util.Log
 import android.view.View
@@ -38,6 +40,10 @@ import com.google.gson.Gson
 import com.zk.library.Base.BaseApplication
 import com.elder.zcommonmodule.Component.ItemViewModel
 import com.elder.zcommonmodule.DataBases.*
+import com.example.drivermodule.Activity.RoadHomeActivity
+import com.example.drivermodule.Activity.Team.CreateTeamActivity
+import com.zk.library.Base.BaseFragment
+import com.zk.library.Base.BaseViewModel
 import com.zk.library.Bus.event.RxBusEven
 import com.zk.library.Utils.PreferenceUtils
 import com.zk.library.Utils.RouterUtils
@@ -58,7 +64,7 @@ import java.util.concurrent.TimeUnit
 class DriverItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener, HttpInteface.CheckTeamStatus {
 
 
-    override fun onDismiss(fr: BaseDialogFragment) {
+    override fun onDismiss(fr: BaseDialogFragment, value: Any) {
         if (fr is LoginDialogFragment) {
             mapFr.showProgressDialog(getString(R.string.http_loading))
             HttpRequest.instance.setCheckStatusResult(this)
@@ -66,7 +72,7 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener, HttpI
             HttpRequest.instance.checkTeamStatus(map)
             dialogFragment!!.functionDismiss = null
         }
-        super.onDismiss(fr)
+        super.onDismiss(fr, value)
     }
 
     override fun CheckTeamStatusSucccess(it: BaseResponse) {
@@ -80,7 +86,12 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener, HttpI
             if (it.code == 20001) {
                 //队伍不存在
                 viewModel.TeamStatus = SoketTeamStatus()
-                ARouter.getInstance().build(RouterUtils.TeamModule.TEAM_CREATE).navigation(mapFr.activity, REQUEST_CREATE_JOIN)
+                var fr = mapFr.parentFragment as BaseFragment<ViewDataBinding, BaseViewModel>
+                fr!!.startForResult((ARouter.getInstance().build(RouterUtils.TeamModule.TEAM_CREATE).navigation() as CreateTeamActivity), REQUEST_LOAD_ROADBOOK)
+
+//                ARouter.getInstance().build(RouterUtils.TeamModule.TEAM_CREATE).navigation(mapFr.activity, REQUEST_CREATE_JOIN)
+
+
             } else if (it.code == 10009) {
                 showLoginDialogFragment(mapFr)
             }
@@ -425,12 +436,12 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener, HttpI
 
     var isResultPoint = false
 
-    fun setResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    fun setResult(requestCode: Int, resultCode: Int, data: Bundle?) {
         when (requestCode) {
             RESULT_POINT -> {
-                if (data!!.extras != null) {
-                    if (data?.extras!!["tip"] != null) {
-                        var tip = data?.extras!!["tip"] as PoiItem
+                if (data != null) {
+                    if (data?.getSerializable("tip") != null) {
+                        var tip = data?.getSerializable("tip") as PoiItem
                         if (tip != null) {
                             if (resultCode == RESULT_POINT) {
                                 if (tip.latLonPoint?.latitude != null && tip.latLonPoint?.longitude != null) {

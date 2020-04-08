@@ -7,6 +7,7 @@ import android.databinding.ObservableArrayList
 import android.databinding.ObservableField
 import android.graphics.BitmapFactory
 import android.graphics.drawable.Drawable
+import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -453,16 +454,16 @@ class TeamItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener {
     }
 
 
-    fun doCreate(data: Intent?) {
+    fun doCreate(data: Bundle?) {
         if (data != null) {
-            type = data.extras.getString("type")
+            type = data.getString("type")
             when (type) {
                 "create" -> {
-                    create = data.getSerializableExtra("data") as CreateTeamInfoDto?
+                    create = data.getSerializable("data") as CreateTeamInfoDto?
                     startMinaService()
                 }
                 "join" -> {
-                    join = data.getSerializableExtra("data") as TeamPersonnelInfoDto?
+                    join = data.getSerializable("data") as TeamPersonnelInfoDto?
                     startMinaService()
                 }
                 "cancle" -> {
@@ -788,8 +789,7 @@ class TeamItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener {
             sendOrder(n, false)
         }
     }
-
-    override fun onDismiss(fr: BaseDialogFragment) {
+    override fun onDismiss(fr: BaseDialogFragment,value:Any) {
         (viewModel?.items[0] as DriverItemModel).GoTeam()
         dialogFragment.functionDismiss = null
     }

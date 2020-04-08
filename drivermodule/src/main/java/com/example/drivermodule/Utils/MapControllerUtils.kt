@@ -412,8 +412,6 @@ class MapControllerUtils : GeocodeSearch.OnGeocodeSearchListener, DistanceSearch
         }
         navi.calculateDriveRoute(sList, eList, wayPoint, strategy)
     }
-
-
     var caculateRouteListener: CalculateRouteListener? = null
 
     override fun onCalculateRouteSuccess(p0: AMapCalcRouteResult?) {

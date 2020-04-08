@@ -91,6 +91,10 @@ class RoadBookViewModel : BaseViewModel(), HttpInteface.RoadBookDetail, RouteSea
     }
 
 
+
+
+
+
     fun initTabSelect(position: Int, type: Boolean) {
         if (driverViewModel.recycleComponent!!.allData != null) {
             if (position == 0) {
@@ -566,6 +570,7 @@ class RoadBookViewModel : BaseViewModel(), HttpInteface.RoadBookDetail, RouteSea
 
     fun onComponentFinish(view: View) {
         var dialog = ChoiceBagPopupWindow(activity.activity!!)
+
         dialog.contentView.findViewById<TextView>(com.elder.zcommonmodule.R.id.pop_delete).setOnClickListener {
             PreferenceUtils.putString(activity.activity, PreferenceUtils.getString(context, USERID) + "hot", null)
             data = null

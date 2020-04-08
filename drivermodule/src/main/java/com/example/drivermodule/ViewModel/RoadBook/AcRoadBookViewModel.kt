@@ -53,14 +53,13 @@ class AcRoadBookViewModel : BaseViewModel(), TitleComponent.titleComponentCallBa
 
     override fun onComponentClick(view: View) {
 //        finish()
-        var bundle = Bundle()
-        roadHomeActivity.setFragmentResult(REQUEST_LOAD_ROADBOOK, bundle)
+        roadHomeActivity.setFragmentResult(REQUEST_LOAD_ROADBOOK, null)
         roadHomeActivity._mActivity!!.onBackPressedSupport()
     }
 
     override fun onComponentFinish(view: View) {
 
-        roadHomeActivity._mActivity!!.startForResult(ARouter.getInstance().build(RouterUtils.MapModuleConfig.ROAD_BOOK_SEARCH_ACTIVITY).navigation() as RoadBookSearchActivity, REQUEST_LOAD_ROADBOOK)
+        roadHomeActivity.startForResult(ARouter.getInstance().build(RouterUtils.MapModuleConfig.ROAD_BOOK_SEARCH_ACTIVITY).navigation() as RoadBookSearchActivity, REQUEST_LOAD_ROADBOOK)
 
 //        RxBus.default?.post(RxBusEven.getInstance(RxBusEven.ENTER_TO_SEARCH))
 //        ARouter.getInstance().build(RouterUtils.MapModuleConfig.ROAD_BOOK_SEARCH_ACTIVITY).navigation(roadHomeActivity.activity, REQUEST_LOAD_ROADBOOK)

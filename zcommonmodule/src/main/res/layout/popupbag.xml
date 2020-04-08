@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="@dimen/d_88"
     android:layout_height="@dimen/d_88"
+    android:elevation="@dimen/d_05"
     android:gravity="center"
     android:orientation="vertical">
 
@@ -12,9 +13,9 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:drawableLeft="@drawable/search_icon"
+        android:drawablePadding="@dimen/d_10"
         android:gravity="center"
         android:text="@string/sousuo"
-        android:drawablePadding="@dimen/d_10"
         android:textColor="#67676F"
         android:textSize="@dimen/s_15" />
 
@@ -29,8 +30,8 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:drawableLeft="@drawable/remove_icon"
-        android:gravity="center"
         android:drawablePadding="@dimen/d_10"
+        android:gravity="center"
         android:text="@string/remove"
         android:textColor="#67676F"
         android:textSize="@dimen/s_15" />

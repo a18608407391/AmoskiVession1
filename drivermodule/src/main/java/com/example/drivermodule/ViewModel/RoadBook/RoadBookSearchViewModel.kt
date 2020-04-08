@@ -3,6 +3,7 @@ package com.example.drivermodule.ViewModel.RoadBook
 import android.content.Context
 import android.databinding.ObservableArrayList
 import android.databinding.ObservableField
+import android.support.v4.content.ContextCompat.getSystemService
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
@@ -84,12 +85,16 @@ class RoadBookSearchViewModel : BaseViewModel(), TextView.OnEditorActionListener
     var time = 0L
     fun onClick(view: View) {
         if (System.currentTimeMillis() - time > 1000) {
-            val imm = roadBookSearchActivity.activity!!.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager?
-            imm!!.toggleSoftInput(0, InputMethodManager.HIDE_NOT_ALWAYS)
-            CoroutineScope(uiContext).launch {
-                delay(500)
-//                roadBookSearchActivity.finish()
+            var imm = roadBookSearchActivity.activity!!.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager?
+            if (roadBookSearchActivity.activity!!.currentFocus != null) {
+                var binder = roadBookSearchActivity.activity!!.currentFocus.windowToken
+                if (imm!!.isActive && binder != null) {
+                    Log.e("result", "isActive" + imm!!.isActive)
+                    (roadBookSearchActivity.activity!!.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).hideSoftInputFromWindow(binder, InputMethodManager.HIDE_NOT_ALWAYS)
+                }
             }
+            roadBookSearchActivity.setFragmentResult(REQUEST_LOAD_ROADBOOK, null)
+            roadBookSearchActivity._mActivity!!.onBackPressedSupport()
         }
         time = System.currentTimeMillis()
     }
@@ -99,7 +104,7 @@ class RoadBookSearchViewModel : BaseViewModel(), TextView.OnEditorActionListener
             return
         }
 //        ARouter.getInstance().build(RouterUtils.MapModuleConfig.ROAD_BOOK_FIRST_ACTIVITY).withSerializable(RouterUtils.MapModuleConfig.ROAD_BOOK_FIRST_ENTITY, data).navigation(roadBookSearchActivity.activity, REQUEST_LOAD_ROADBOOK)
-        roadBookSearchActivity._mActivity!!.startForResult((ARouter.getInstance().build(RouterUtils.MapModuleConfig.ROAD_BOOK_FIRST_ACTIVITY).navigation() as RoadBookFirstActivity).setHotData(data),REQUEST_LOAD_ROADBOOK)
+        roadBookSearchActivity!!.startForResult((ARouter.getInstance().build(RouterUtils.MapModuleConfig.ROAD_BOOK_FIRST_ACTIVITY).navigation() as RoadBookFirstActivity).setHotData(data), REQUEST_LOAD_ROADBOOK)
 
 //        var intent = Intent()
 //        intent.putExtra("hotdata", data)

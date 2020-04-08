@@ -7,7 +7,6 @@ import android.databinding.ViewDataBinding
 import android.support.design.widget.BottomSheetBehavior
 import android.support.design.widget.TabLayout
 import android.support.v4.app.Fragment
-import android.util.Log
 import android.view.View
 import android.widget.Toast
 import com.alibaba.android.arouter.facade.Postcard
@@ -44,13 +43,10 @@ import com.elder.zcommonmodule.Entity.SoketBody.SoketTeamStatus
 import com.elder.zcommonmodule.Entity.StartRidingRequest
 import com.elder.zcommonmodule.Service.HttpInteface
 import com.elder.zcommonmodule.Service.HttpRequest
-import com.elder.zcommonmodule.Widget.LoginUtils.FragmentDialogController
-import com.elder.zcommonmodule.Widget.RoadBook.RoadBookHomeFragment
 import com.example.drivermodule.Activity.RoadHomeActivity
 import com.zk.library.Base.BaseFragment
 import com.zk.library.Bus.ServiceEven
 import com.zk.library.Bus.event.RxBusEven
-import com.zk.library.Bus.event.RxBusEven.Companion.ENTER_TO_ROAD_HOME
 import com.zk.library.Utils.PreferenceUtils
 import com.zk.library.Utils.RouterUtils
 import io.reactivex.Observable
@@ -135,17 +131,15 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
             0 -> {
                 if (currentPosition == 1) {
                     mapActivity.getTeamController()?.backToDriver()
-                } else if (currentPosition == 3) {
+                } else if (currentPosition == 2) {
                     mapActivity.getRoadBookController()?.backToDriver()
                     changerFragment(0)
                 }
             }
             1 -> {
                 if (currentPosition == 0) {
-                    //跳转到组队
-                    Log.e("result", "跳转到组队")
                     mapActivity.getDrverController()?.GoTeam()
-                } else if (currentPosition == 3) {
+                } else if (currentPosition == 2) {
                     mapActivity.getRoadBookController()?.backToDriver()
                     mapActivity.getDrverController()?.GoTeam()
                 }
@@ -173,17 +167,17 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
                             } else {
                                 mapActivity.getRoadBookController()?.data = Gson().fromJson<HotData>(date, HotData::class.java)
                             }
-                            changerFragment(3)
+                            changerFragment(2)
                             mapActivity.getRoadBookController()?.doLoadDatas(mapActivity.getRoadBookController()?.data!!)
 
                         }
                     } else {
-                        changerFragment(3)
-//                        if (mapActivity.getRoadBookController().road_tab.selectedTabPosition != 0) {
-//                            mapActivity.getRoadBookController().viewModel!!.selectTab(0)
-//                        } else {
-//                            mapActivity.getDrverController()?.recycleComponent?.initDatas(mapActivity.getRoadBookFragment().viewModel?.netWorkData!!, mapActivity.getRoadBookFragment().viewModel?.data, 0)
-//                        }
+                        changerFragment(2)
+                        if (mapActivity.getRoadBookController().selecPosition != 0) {
+                            mapActivity.getRoadBookController()!!.select_position.set(0)
+                        } else {
+                            mapActivity.getRoadBookController()?.recycleComponent?.initDatas(mapActivity.getRoadBookController()?.netWorkData!!, mapActivity.getRoadBookController()?.data, 0)
+                        }
                     }
                 }
             }
@@ -218,7 +212,7 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
         } else if (currentPosition == 3) {
             (items[3] as MapPointItemModel).onComponentFinish()
         } else if (currentPosition == 2) {
-            (items[2] as RoadBookItemModel).onComponentFinish()
+            (items[2] as RoadBookItemModel).onComponentFinish(view)
         }
     }
 
@@ -265,10 +259,9 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
     }
 
     override fun onMarkerClick(p0: Marker?): Boolean {
-        Log.e("result", "onMarkerClick")
         when (currentPosition) {
-            3 -> {
-//                mapActivity.getRoadBookFragment().viewModel?.markerChange(p0)
+            2 -> {
+                mapActivity.getRoadBookController()?.markerChange(p0!!)
             }
         }
         return false
@@ -354,6 +347,7 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
         mapActivity.fr_main_rootlay.currentItem = currentPosition
     }
 
+
     fun onClick(view: View) {
         when (view.id) {
             R.id.fr_share_btn -> {
@@ -413,5 +407,4 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
                     .navigation()
         }
     }
-
 }

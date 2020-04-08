@@ -50,7 +50,7 @@ open class ItemViewModel<VM : BaseViewModel>() : BaseDialogFragment.DismissListe
         RxSubscriptions.remove(disposable)
     }
 
-    override fun onDismiss(fr: BaseDialogFragment) {
+    override fun onDismiss(fr: BaseDialogFragment,value:Any) {
 
     }
 

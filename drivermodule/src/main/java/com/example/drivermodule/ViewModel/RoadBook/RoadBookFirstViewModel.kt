@@ -6,6 +6,7 @@ import android.databinding.ObservableArrayList
 import android.databinding.ObservableField
 import android.graphics.drawable.Drawable
 import android.os.Build
+import android.os.Bundle
 import android.support.design.widget.BottomSheetBehavior
 import android.support.design.widget.TabLayout
 import android.support.v7.widget.LinearLayoutManager
@@ -36,6 +37,7 @@ import com.elder.zcommonmodule.Entity.HotData
 import com.elder.zcommonmodule.Utils.Dialog.OnBtnClickL
 import com.elder.zcommonmodule.Utils.DialogUtils
 import com.elder.zcommonmodule.getRoadImgUrl
+import com.example.drivermodule.Component.SimpleItemRecycleComponent
 import com.example.drivermodule.Entity.RoadBook.*
 import com.example.drivermodule.R
 import com.google.gson.Gson
@@ -73,29 +75,32 @@ class RoadBookFirstViewModel : BaseViewModel(), HttpInteface.RoadBookDetail, Rou
     }
 
     override fun DownLoadRoadBookSuccess(resp: BaseResponse) {
-        Log.e("result", "DownLoadRoadBookSuccess")
         activity.dismissProgressDialog()
         if (resp.code == 0) {
-//            var ho = PreferenceUtils.getString(activity, PreferenceUtils.getString(context, USERID) + "hot")
-//            var s = Gson().fromJson<HotData>(ho, HotData::class.java)
-//            if (s == null || s.id == activity.data!!.id) {
+            var ho = PreferenceUtils.getString(activity.activity, PreferenceUtils.getString(context, USERID) + "hot")
+            var s = Gson().fromJson<HotData>(ho, HotData::class.java)
+            if (s == null || s.id == activity.data!!.id) {
+                var bundle = Bundle()
+                bundle.putSerializable("hotdata", activity.data)
+                activity.setFragmentResult(REQUEST_LOAD_ROADBOOK, bundle)
+                activity._mActivity!!.onBackPressedSupport()
 //                var intent = Intent()
 //                intent.putExtra("hotdata", activity.data)
 //                activity.setResult(REQUEST_LOAD_ROADBOOK, intent)
 //                finish()
-//            } else {
-//                var dialog = DialogUtils.createNomalDialog(activity, getString(R.string.isExChangeLine), getString(R.string.cancle), getString(R.string.confirm))
-//                dialog.setOnBtnClickL(OnBtnClickL {
-//                    dialog.dismiss()
-//                }, OnBtnClickL {
-//                    dialog.dismiss()
-//                    var intent = Intent()
-//                    intent.putExtra("hotdata", activity.data)
-//                    activity.setResult(REQUEST_LOAD_ROADBOOK, intent)
-//                    finish()
-//                })
-//                dialog.show()
-//            }
+            } else {
+                var dialog = DialogUtils.createNomalDialog(activity.activity!!, getString(R.string.isExChangeLine), getString(R.string.cancle), getString(R.string.confirm))
+                dialog.setOnBtnClickL(OnBtnClickL {
+                    dialog.dismiss()
+                }, OnBtnClickL {
+                    dialog.dismiss()
+                    var bundle = Bundle()
+                    bundle.putSerializable("hotdata", activity.data)
+                    activity.setFragmentResult(REQUEST_LOAD_ROADBOOK, bundle)
+                    activity._mActivity!!.onBackPressedSupport()
+                })
+                dialog.show()
+            }
         } else {
             Toast.makeText(context, resp.msg, Toast.LENGTH_SHORT).show()
         }
@@ -159,6 +164,7 @@ class RoadBookFirstViewModel : BaseViewModel(), HttpInteface.RoadBookDetail, Rou
                 b.include(LatLng(it.latitude, it.longitude))
             }
         }
+
         activity.mAmap.animateCamera(CameraUpdateFactory
                 .newLatLngBounds(b.build(), getWindowWidth()!!, ConvertUtils.dp2px(345F - 130), 150))
         lines?.points = list
@@ -170,7 +176,8 @@ class RoadBookFirstViewModel : BaseViewModel(), HttpInteface.RoadBookDetail, Rou
     }
 
     override fun onComponentClick(view: View) {
-        finish()
+        activity.setFragmentResult(REQUEST_LOAD_ROADBOOK, null)
+        activity._mActivity!!.onBackPressedSupport()
     }
 
     override fun onComponentFinish(view: View) {
@@ -226,7 +233,7 @@ class RoadBookFirstViewModel : BaseViewModel(), HttpInteface.RoadBookDetail, Rou
 
     var discribe = ObservableField<String>()
 
-    var recycleComponent = SimpleRecycleComponent(this)
+    var recycleComponent = SimpleItemRecycleComponent(this)
 
 
     var pagerAdapter = BindingRecyclerViewAdapter<BottomHoriDatas>()
@@ -473,7 +480,7 @@ class RoadBookFirstViewModel : BaseViewModel(), HttpInteface.RoadBookDetail, Rou
             tv1.text = roadDetailItem.pointList!!.size.toString()
             var corner = RoundedCorners(ConvertUtils.dp2px(5F))
             var opition = RequestOptions().transform(corner).error(R.drawable.road_windown_img).override(ConvertUtils.dp2px(32F), ConvertUtils.dp2px(32F))
-            if (activity == null ) {
+            if (activity == null) {
                 Glide.with(img.context).load(getRoadImgUrl(roadDetailItem.pointList!![0].imgUrl)).apply(opition).into(object : SimpleTarget<Drawable>() {
                     override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
                         super.onResourceReady(resource, transition)

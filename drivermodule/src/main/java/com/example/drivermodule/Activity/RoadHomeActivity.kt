@@ -5,6 +5,7 @@ import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.support.design.widget.TabLayout
+import android.util.Log
 import com.alibaba.android.arouter.facade.annotation.Autowired
 import com.alibaba.android.arouter.facade.annotation.Route
 import com.elder.zcommonmodule.Entity.Location
@@ -73,24 +74,31 @@ class RoadHomeActivity : BaseFragment<ActivityRoadbookBinding, AcRoadBookViewMod
         return this@RoadHomeActivity
     }
 
-    override fun onBackPressedSupport(): Boolean {
-        var bundle = Bundle()
-        setFragmentResult(REQUEST_LOAD_ROADBOOK, bundle)
-        return false
+
+    override fun onFragmentResult(requestCode: Int, resultCode: Int, data: Bundle?) {
+        super.onFragmentResult(requestCode, resultCode, data)
+        Log.e("result", "home" + requestCode)
+        if (requestCode == REQUEST_LOAD_ROADBOOK) {
+            if (data?.getSerializable("hotdata") != null) {
+                setFragmentResult(REQUEST_LOAD_ROADBOOK, data)
+                _mActivity!!.onBackPressedSupport()
+//                setResult(REQUEST_LOAD_ROADBOOK, data)
+//                finish()
+            } else {
+//                _mActivity!!.onBackPressedSupport()
+            }
+        }
     }
+
 
 //    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 //        super.onActivityResult(requestCode, resultCode, data)
-//        if (requestCode == REQUEST_LOAD_ROADBOOK) {
-//            if (data != null) {
-//                setResult(REQUEST_LOAD_ROADBOOK, data)
-//                finish()
-//            }
-//        }
+
 //    }
 //
 //    override fun doPressBack() {
 //        super.doPressBack()
 //        finish()
 //    }
+
 }
