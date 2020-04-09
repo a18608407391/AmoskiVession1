@@ -91,25 +91,21 @@ public class ConnectionManager {
         @Override
         public void sessionIdle(IoSession session, IdleStatus status) throws Exception {
             super.sessionIdle(session, status);
-            Log.e("result", "idle");
         }
 
         @Override
         public void exceptionCaught(IoSession session, Throwable cause) throws Exception {
             super.exceptionCaught(session, cause);
-            Log.e("result", "异常" + cause.getMessage() + session.toString());
         }
 
         @Override
         public void inputClosed(IoSession session) throws Exception {
             super.inputClosed(session);
-            Log.e("result", "输入关闭");
         }
 
         @Override
         public void sessionCreated(IoSession session) throws Exception {
             super.sessionCreated(session);
-            Log.e("result", "创建");
         }
 
         @Override
@@ -124,29 +120,17 @@ public class ConnectionManager {
         @Override
         public void sessionClosed(IoSession session) throws Exception {
             super.sessionClosed(session);
-
-//            if (NetworkUtil.INSTANCE.isNetworkAvailable(UtilsKt.getContext())) {
-//                Log.e("result","执行了这里1");
-//            } else {
-//                Log.e("result","执行了这里");
-
-//            }
-
-
-            Log.e("result", "关闭");
+            RxBus.Companion.getDefault().post("MINA_FORCE_CLOSE");
         }
 
         @Override
         public void messageReceived(IoSession session, Object message) throws Exception {
-            Log.e("result", "当前数据" + message.toString());
             if (message.toString().isEmpty() || message.toString() == null) {
                 return;
             }
 
             RxBusEven even = new RxBusEven();
             even.setType(RxBusEven.Companion.getMinaDataReceive());
-
-
             if (message.toString().split("body").length > 2 && message.toString().split("type").length > 2) {
                 BasePacketReceive receive = null;
                 if (message.toString().contains("redisData")) {

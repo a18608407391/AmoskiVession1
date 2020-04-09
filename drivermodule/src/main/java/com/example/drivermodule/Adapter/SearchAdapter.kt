@@ -21,7 +21,7 @@ class SearchAdapter : RecyclerView.Adapter<SearchAdapter.SearchViewHolder> {
 
     constructor(activity: SearchActivity) {
         this.activity = activity
-        this.mInflate = activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        this.mInflate = activity.activity!!.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
     }
 
     override fun onCreateViewHolder(p0: ViewGroup, p1: Int): SearchViewHolder {

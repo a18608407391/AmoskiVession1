@@ -313,15 +313,11 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
         tab.addTab(tab.newTab().setText(getString(R.string.road_book_nomal_title)))
         tab.addOnTabSelectedListener(this)
     }
-
-
     fun selectTab(position: Int) {
         var tabs = tab.getTabAt(position)
         tabs?.select()
     }
-
     var currentPosition = 0
-
     fun changerFragment(position: Int) {
         currentPosition = position
         if (position == 2) {
@@ -344,7 +340,9 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
             component.rightText.set("")
             component.type.set(1)
         }
-        mapActivity.fr_main_rootlay.currentItem = currentPosition
+        if(mapActivity.isAdded){
+            mapActivity.fr_main_rootlay.currentItem = currentPosition
+        }
     }
 
 

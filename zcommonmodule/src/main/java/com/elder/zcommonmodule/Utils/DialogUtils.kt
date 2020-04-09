@@ -147,7 +147,7 @@ class DialogUtils() {
             }
         }
 
-        fun startCrop(activity: AppCompatActivity, uri: Uri, width: Int, hight: Int): String {
+        fun startCrop(activity: Activity, uri: Uri, width: Int, hight: Int): String {
             var intent = Intent("com.android.camera.action.CROP")
             intent.setDataAndType(uri, "image/*")
             // 图片处于可裁剪状态
@@ -267,7 +267,7 @@ class DialogUtils() {
         }
 
 
-        fun showGenderDialog(activity: AppCompatActivity, genderCommand: BindingCommand<String>, list: ArrayList<String>, title: String): WheelView<String>? {
+        fun showGenderDialog(activity: Activity, genderCommand: BindingCommand<String>, list: ArrayList<String>, title: String): WheelView<String>? {
             var buidler = AlertDialog.Builder(activity, R.style.PopupAnimation)
             var alertDialog = buidler.create()
             alertDialog!!.setCanceledOnTouchOutside(true)
@@ -415,7 +415,7 @@ class DialogUtils() {
             return dialog
         }
 
-        fun showAnim(activity: AppCompatActivity, type: Int): ActionSheetDialog {
+        fun showAnim(activity: Activity, type: Int): ActionSheetDialog {
             val cs = arrayOf(getString(R.string.localImg), //
                     getString(R.string.opencamera)//
             )

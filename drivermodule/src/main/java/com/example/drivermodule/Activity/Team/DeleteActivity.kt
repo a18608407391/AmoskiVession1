@@ -10,12 +10,17 @@ import com.example.drivermodule.R
 import com.example.drivermodule.ViewModel.TeamDeleteViewModel
 import com.example.drivermodule.databinding.ActivityTeamDeleteMemberBinding
 import com.zk.library.Base.BaseActivity
+import com.zk.library.Base.BaseFragment
 import com.zk.library.Utils.RouterUtils
 import com.zk.library.Utils.StatusbarUtils
 
 
 @Route(path = RouterUtils.TeamModule.DELETE)
-class DeleteActivity : BaseActivity<ActivityTeamDeleteMemberBinding, TeamDeleteViewModel>() {
+class DeleteActivity : BaseFragment<ActivityTeamDeleteMemberBinding, TeamDeleteViewModel>() {
+    override fun initContentView(): Int {
+        return R.layout.activity_team_delete_member
+    }
+
     @Autowired(name = RouterUtils.TeamModule.TEAM_INFO)
     @JvmField
     var info: TeamPersonInfo? = null
@@ -23,25 +28,28 @@ class DeleteActivity : BaseActivity<ActivityTeamDeleteMemberBinding, TeamDeleteV
     override fun initVariableId(): Int {
         return BR.delete_model
     }
-
-    override fun initContentView(savedInstanceState: Bundle?): Int {
-        StatusbarUtils.setRootViewFitsSystemWindows(this, true)
-        StatusbarUtils.setTranslucentStatus(this)
-        StatusbarUtils.setStatusBarMode(this, true, 0x00000000)
-        return R.layout.activity_team_delete_member
+    fun setValue(info: TeamPersonInfo): DeleteActivity {
+        this.info = info
+        return this@DeleteActivity
     }
-
-    override fun initViewModel(): TeamDeleteViewModel? {
-        return ViewModelProviders.of(this)[TeamDeleteViewModel::class.java]
-    }
-
-    override fun doPressBack() {
-        super.doPressBack()
-        finish()
-    }
+//    override fun initContentView(savedInstanceState: Bundle?): Int {
+//        StatusbarUtils.setRootViewFitsSystemWindows(this, true)
+//        StatusbarUtils.setTranslucentStatus(this)
+//        StatusbarUtils.setStatusBarMode(this, true, 0x00000000)
+//        return R.layout.activity_team_delete_member
+//    }
+//
+//    override fun initViewModel(): TeamDeleteViewModel? {
+//        return ViewModelProviders.of(this)[TeamDeleteViewModel::class.java]
+//    }
+//
+//    override fun doPressBack() {
+//        super.doPressBack()
+//        finish()
+//    }
 
     override fun initData() {
         super.initData()
-        mViewModel?.inject(this)
+        viewModel?.inject(this)
     }
 }

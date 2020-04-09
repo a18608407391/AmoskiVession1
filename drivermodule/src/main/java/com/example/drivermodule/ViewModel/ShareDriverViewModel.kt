@@ -150,8 +150,6 @@ class ShareDriverViewModel : BaseViewModel(), ShareAdapter.AddCarItemClickCallBa
                     var hold = shareDriverActivity.share_recycle.findViewHolderForAdapterPosition(i)
                     var layout = hold?.itemView
                     var bitmap = ConvertUtils.view2Bitmap(layout)
-
-
                     var newBitmap = Bitmap.createBitmap(bitmap, 0, 0, ConvertUtils.dp2px(28F), ConvertUtils.dp2px(50F))
                     var imgobj = WXImageObject(bitmap)
                     var msg = WXMediaMessage()
@@ -215,7 +213,7 @@ class ShareDriverViewModel : BaseViewModel(), ShareAdapter.AddCarItemClickCallBa
             }
 
             R.id.share_right_tv -> {
-                DialogUtils.showAnim(shareDriverActivity,0)
+                DialogUtils.showAnim(shareDriverActivity.activity!!,0)
                 DialogUtils.lisentner = this@ShareDriverViewModel
             }
         }

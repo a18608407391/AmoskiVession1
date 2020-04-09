@@ -41,6 +41,7 @@ import com.zk.library.Base.BaseApplication
 import com.elder.zcommonmodule.Component.ItemViewModel
 import com.elder.zcommonmodule.DataBases.*
 import com.example.drivermodule.Activity.RoadHomeActivity
+import com.example.drivermodule.Activity.SearchActivity
 import com.example.drivermodule.Activity.Team.CreateTeamActivity
 import com.zk.library.Base.BaseFragment
 import com.zk.library.Base.BaseViewModel
@@ -87,7 +88,7 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener, HttpI
                 //队伍不存在
                 viewModel.TeamStatus = SoketTeamStatus()
                 var fr = mapFr.parentFragment as BaseFragment<ViewDataBinding, BaseViewModel>
-                fr!!.startForResult((ARouter.getInstance().build(RouterUtils.TeamModule.TEAM_CREATE).navigation() as CreateTeamActivity), REQUEST_LOAD_ROADBOOK)
+                fr!!.startForResult((ARouter.getInstance().build(RouterUtils.TeamModule.TEAM_CREATE).navigation() as CreateTeamActivity), REQUEST_CREATE_JOIN)
 
 //                ARouter.getInstance().build(RouterUtils.TeamModule.TEAM_CREATE).navigation(mapFr.activity, REQUEST_CREATE_JOIN)
 
@@ -463,7 +464,9 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener, HttpI
     }
 
     fun onComponentFinish() {
-        ARouter.getInstance().build(RouterUtils.MapModuleConfig.SEARCH_ACTIVITY).withInt(RouterUtils.MapModuleConfig.SEARCH_MODEL, 0).navigation(mapFr.activity, RESULT_POINT)
+        var fr = viewModel?.mapActivity.parentFragment as BaseFragment<ViewDataBinding, BaseViewModel>
+        fr.startForResult((ARouter.getInstance().build(RouterUtils.MapModuleConfig.SEARCH_ACTIVITY).navigation() as SearchActivity).setModel(0), RESULT_POINT)
+//        ARouter.getInstance().build(RouterUtils.MapModuleConfig.SEARCH_ACTIVITY).withInt(RouterUtils.MapModuleConfig.SEARCH_MODEL, 0).navigation(mapFr.activity, RESULT_POINT)
     }
 
     fun onInfoWindowClick(it: Marker?) {
@@ -551,9 +554,9 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener, HttpI
     fun GoTeam() {
         //检查当前组队信息
         //检查当前进入方式
-
         if (BaseApplication.MinaConnected) {
             //如果当前在组队
+            Log.e("result","MinaConnected")
             if (viewModel?.TeamStatus?.teamStatus == TeamStarting) {
                 Log.e("result", "当前组队进行中")
                 var model = viewModel?.items[1] as TeamItemModel
@@ -563,6 +566,7 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener, HttpI
             }
         } else if (!BaseApplication.MinaConnected) {
             //如果当前未组队 检查当前个人信息
+            Log.e("result","DisMinaConnected")
             mapFr.showProgressDialog(getString(R.string.http_loading))
             HttpRequest.instance.setCheckStatusResult(this)
             var map = HashMap<String, String>()

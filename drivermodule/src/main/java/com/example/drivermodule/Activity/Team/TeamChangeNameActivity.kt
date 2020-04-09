@@ -11,12 +11,16 @@ import com.example.drivermodule.R
 import com.example.drivermodule.ViewModel.ChangeTeamNameViewModel
 import com.example.drivermodule.databinding.ActivityTeamChangenameBinding
 import com.zk.library.Base.BaseActivity
+import com.zk.library.Base.BaseFragment
 import com.zk.library.Utils.RouterUtils
 import com.zk.library.Utils.StatusbarUtils
 
 
 @Route(path = RouterUtils.TeamModule.CHANGE_NAME)
-class TeamChangeNameActivity : BaseActivity<ActivityTeamChangenameBinding, ChangeTeamNameViewModel>() {
+class TeamChangeNameActivity : BaseFragment<ActivityTeamChangenameBinding, ChangeTeamNameViewModel>() {
+    override fun initContentView(): Int {
+        return R.layout.activity_team_changename
+    }
 
     @Autowired(name = RouterUtils.TeamModule.TEAM_INFO)
     @JvmField
@@ -27,22 +31,28 @@ class TeamChangeNameActivity : BaseActivity<ActivityTeamChangenameBinding, Chang
         return BR.change_team_name
     }
 
-    override fun initContentView(savedInstanceState: Bundle?): Int {
-        StatusbarUtils.setRootViewFitsSystemWindows(this, true)
-        StatusbarUtils.setTranslucentStatus(this)
-        StatusbarUtils.setStatusBarMode(this, true, 0x00000000)
-        return R.layout.activity_team_changename
+
+    fun setValue(info: TeamPersonInfo): TeamChangeNameActivity {
+        this.info = info
+        return this@TeamChangeNameActivity
     }
 
-    override fun initViewModel(): ChangeTeamNameViewModel? {
-        return ViewModelProviders.of(this)[ChangeTeamNameViewModel::class.java]
-    }
-    override fun doPressBack() {
-        super.doPressBack()
-        finish()
-    }
+//    override fun initContentView(savedInstanceState: Bundle?): Int {
+//        StatusbarUtils.setRootViewFitsSystemWindows(this, true)
+//        StatusbarUtils.setTranslucentStatus(this)
+//        StatusbarUtils.setStatusBarMode(this, true, 0x00000000)
+//        return R.layout.activity_team_changename
+//    }
+
+    //    override fun initViewModel(): ChangeTeamNameViewModel? {
+//        return ViewModelProviders.of(this)[ChangeTeamNameViewModel::class.java]
+//    }
+//    override fun doPressBack() {
+//        super.doPressBack()
+//        finish()
+//    }
     override fun initData() {
         super.initData()
-        mViewModel?.inject(this)
+        viewModel?.inject(this)
     }
 }

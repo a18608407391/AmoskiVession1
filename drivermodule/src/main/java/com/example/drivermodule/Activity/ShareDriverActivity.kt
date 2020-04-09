@@ -22,6 +22,7 @@ import com.example.drivermodule.R
 import com.example.drivermodule.ViewModel.ShareDriverViewModel
 import com.example.drivermodule.databinding.ActivityShareDriverBinding
 import com.zk.library.Base.BaseActivity
+import com.zk.library.Base.BaseFragment
 import com.zk.library.Utils.RouterUtils
 import com.zk.library.Utils.StatusbarUtils
 import org.cs.tec.library.Bus.RxBus
@@ -30,7 +31,10 @@ import java.io.File
 
 
 @Route(path = RouterUtils.MapModuleConfig.SHARE_ACTIVITY)
-class ShareDriverActivity : BaseActivity<ActivityShareDriverBinding, ShareDriverViewModel>() {
+class ShareDriverActivity : BaseFragment<ActivityShareDriverBinding, ShareDriverViewModel>() {
+    override fun initContentView(): Int {
+        return R.layout.activity_share_driver
+    }
 
     @Autowired(name = RouterUtils.MapModuleConfig.SHARE_TYPE)
     @JvmField
@@ -41,29 +45,29 @@ class ShareDriverActivity : BaseActivity<ActivityShareDriverBinding, ShareDriver
         return BR.share_viewModel
     }
 
-    override fun initContentView(savedInstanceState: Bundle?): Int {
-        StatusbarUtils.setRootViewFitsSystemWindows(this, true)
-        StatusbarUtils.setTranslucentStatus(this)
-        StatusbarUtils.setStatusBarMode(this, false, 0x00000000)
-        return R.layout.activity_share_driver
-    }
+//    override fun initContentView(savedInstanceState: Bundle?): Int {
+//        StatusbarUtils.setRootViewFitsSystemWindows(this, true)
+//        StatusbarUtils.setTranslucentStatus(this)
+//        StatusbarUtils.setStatusBarMode(this, false, 0x00000000)
+//        return R.layout.activity_share_driver
+//    }
 
-    override fun doPressBack() {
-        super.doPressBack()
-        if (type == null) {
-            ARouter.getInstance().build(RouterUtils.ActivityPath.HOME).navigation()
-            RxBus.default?.post("ShareFinish")
-        }
-        finish()
-    }
+//    override fun doPressBack() {
+//        super.doPressBack()
+//        if (type == null) {
+//            ARouter.getInstance().build(RouterUtils.ActivityPath.HOME).navigation()
+//            RxBus.default?.post("ShareFinish")
+//        }
+//        finish()
+//    }
 
-    override fun initViewModel(): ShareDriverViewModel? {
-        return ViewModelProviders.of(this)[ShareDriverViewModel::class.java]
-    }
+//    override fun initViewModel(): ShareDriverViewModel? {
+//        return ViewModelProviders.of(this)[ShareDriverViewModel::class.java]
+//    }
 
     override fun initData() {
         super.initData()
-        mViewModel?.inject(this)
+        viewModel?.inject(this)
     }
 
     var realPath: String? = null
@@ -73,22 +77,22 @@ class ShareDriverActivity : BaseActivity<ActivityShareDriverBinding, ShareDriver
             //照片裁剪回调
             if (realPath != null) {
                 if(File(realPath).exists()){
-                    var date = mViewModel?.adapter?.mListDatas?.get(1)
+                    var date = viewModel?.adapter?.mListDatas?.get(1)
                     var bitmap = BitmapFactory.decodeFile(realPath)
                     date?.secondBitmap = bitmap
-                    mViewModel?.adapter?.mListDatas?.set(1, date!!)
-                    mViewModel?.adapter?.setCarDatas(mViewModel?.adapter?.mListDatas!!)
+                    viewModel?.adapter?.mListDatas?.set(1, date!!)
+                    viewModel?.adapter?.setCarDatas(viewModel?.adapter?.mListDatas!!)
                 }
             }
         } else if (requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK) {
-                if (mViewModel?.cameraUri != null) {
-                    realPath = DialogUtils.startCrop(this, mViewModel?.cameraUri!!, ConvertUtils.dp2px(225F), ConvertUtils.dp2px(402F))
+                if (viewModel?.cameraUri != null) {
+                    realPath = DialogUtils.startCrop(this.activity!!, viewModel?.cameraUri!!, ConvertUtils.dp2px(225F), ConvertUtils.dp2px(402F))
                 }
             }
         } else if (requestCode == PICK_IMAGE_ACTIVITY_REQUEST_CODE) {
             if (data != null) {
-                var u = getRealPathFromUri(this, data?.data!!)
+                var u = getRealPathFromUri(activity!!, data?.data!!)
                 var path: Uri
                 if (Build.VERSION.SDK_INT >= 24) {
                     path = data?.data!!
@@ -96,7 +100,7 @@ class ShareDriverActivity : BaseActivity<ActivityShareDriverBinding, ShareDriver
                     u = "file://$u"
                     path = Uri.parse(u)
                 }
-                realPath = DialogUtils.startCrop(this, path, ConvertUtils.dp2px(225F), ConvertUtils.dp2px(402F))
+                realPath = DialogUtils.startCrop(activity!!, path, ConvertUtils.dp2px(225F), ConvertUtils.dp2px(402F))
             }
         }
     }

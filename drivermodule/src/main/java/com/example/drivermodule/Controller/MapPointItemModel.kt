@@ -3,6 +3,7 @@ package com.example.drivermodule.Controller
 import android.content.Intent
 import android.databinding.ObservableArrayList
 import android.databinding.ObservableField
+import android.databinding.ViewDataBinding
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -32,6 +33,9 @@ import com.example.drivermodule.Ui.MapFragment
 import com.example.drivermodule.Utils.ErrorInfo
 import com.example.drivermodule.ViewModel.MapFrViewModel
 import com.elder.zcommonmodule.Component.ItemViewModel
+import com.example.drivermodule.Activity.RoadDetailActivity
+import com.zk.library.Base.BaseFragment
+import com.zk.library.Base.BaseViewModel
 import com.zk.library.Bus.event.RxBusEven
 import com.zk.library.Utils.RouterUtils
 import kotlinx.coroutines.CoroutineScope
@@ -303,7 +307,7 @@ class MapPointItemModel : ItemViewModel<MapFrViewModel>(), BaseQuickAdapter.OnIt
         }
     }
 
-     fun CalculateCallBack(result: AMapCalcRouteResult) {
+    fun CalculateCallBack(result: AMapCalcRouteResult) {
         if (result.errorCode == 0) {
             items.clear()
             result?.routeid!!.forEachIndexed { index, it ->
@@ -487,11 +491,14 @@ class MapPointItemModel : ItemViewModel<MapFrViewModel>(), BaseQuickAdapter.OnIt
             datas.add(LatLonPoint(it.latitude, it.longitude))
         }
         datas.add(LatLonPoint(viewModel.status.navigationEndPoint!!.latitude, viewModel.status.navigationEndPoint!!.longitude))
-        ARouter.getInstance().build(RouterUtils.MapModuleConfig.ROAD_DETAIL)
-                .withFloat(RouterUtils.MapModuleConfig.ROAD_DISTANCE, routeDistance * 1F)
-                .withLong(RouterUtils.MapModuleConfig.ROAD_TIME, routeTime.toLong())
-                .withSerializable(RouterUtils.MapModuleConfig.ROAD_DATA, datas)
-                .navigation()
+        var fr = viewModel?.mapActivity.parentFragment as BaseFragment<ViewDataBinding, BaseViewModel>
+        fr?.startForResult((ARouter.getInstance().build(RouterUtils.MapModuleConfig.ROAD_DETAIL)
+                .navigation() as RoadDetailActivity).setValue(datas, routeDistance * 1F, routeTime.toLong()), ROAD_DETAIL_RETURN_VALUE)
+
+//                .withFloat(RouterUtils.MapModuleConfig.ROAD_DISTANCE, routeDistance * 1F)
+//                .withLong(RouterUtils.MapModuleConfig.ROAD_TIME, routeTime.toLong())
+//                .withSerializable(RouterUtils.MapModuleConfig.ROAD_DATA, datas)
+
     }
 
     var items = ObservableArrayList<RouteEntity>()

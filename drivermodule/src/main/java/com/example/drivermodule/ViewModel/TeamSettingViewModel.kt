@@ -22,7 +22,7 @@ import com.zk.library.Bus.ServiceEven
 import com.elder.zcommonmodule.Utils.Dialog.OnBtnClickL
 import com.elder.zcommonmodule.Utils.DialogUtils
 import com.elder.zcommonmodule.getImageUrl
-import com.example.drivermodule.Activity.Team.TeamSettingActivity
+import com.example.drivermodule.Activity.Team.*
 import com.example.drivermodule.BR
 import com.example.drivermodule.R
 import com.google.gson.Gson
@@ -60,11 +60,12 @@ class TeamSettingViewModel : BaseViewModel(), TitleComponent.titleComponentCallB
     }
 
     fun back() {
-        ARouter.getInstance().build(RouterUtils.ActivityPath.HOME).navigation(teamSettingActivity, object : NavCallback() {
-            override fun onArrival(postcard: Postcard?) {
-                finish()
-            }
-        })
+        teamSettingActivity._mActivity!!.onBackPressedSupport()
+//        ARouter.getInstance().build(RouterUtils.ActivityPath.HOME).navigation(teamSettingActivity.activity, object : NavCallback() {
+//            override fun onArrival(postcard: Postcard?) {
+//                finish()
+//            }
+//        })
     }
 
     override fun onComponentFinish(view: View) {
@@ -112,7 +113,7 @@ class TeamSettingViewModel : BaseViewModel(), TitleComponent.titleComponentCallB
         super.doRxEven(it)
         when (it?.type) {
             RxBusEven.Team_reject_even -> {
-                finish()
+                back()
             }
         }
     }
@@ -186,14 +187,15 @@ class TeamSettingViewModel : BaseViewModel(), TitleComponent.titleComponentCallB
         if (position == 1) {
             var id = PreferenceUtils.getString(context, USERID)
             if (teamSettingActivity.info?.redisData?.teamer.toString() == id) {
-                ARouter.getInstance().build(RouterUtils.TeamModule.DELETE).withSerializable(RouterUtils.TeamModule.TEAM_INFO, teamSettingActivity.info).navigation(teamSettingActivity, REQUEST_TEAM_DELETE)
+                teamSettingActivity.startForResult((ARouter.getInstance().build(RouterUtils.TeamModule.DELETE).navigation() as DeleteActivity).setValue(teamSettingActivity.info!!), REQUEST_TEAM_DELETE)
+//                ARouter.getInstance().build(RouterUtils.TeamModule.DELETE).withSerializable(RouterUtils.TeamModule.TEAM_INFO, teamSettingActivity.info).navigation(teamSettingActivity.activity, REQUEST_TEAM_DELETE)
             }
         } else if (position == 0) {
             if (teamSettingActivity?.info?.redisData?.dtoList?.size == teamSettingActivity?.info?.redisData?.teamMaxCount) {
                 Toast.makeText(context, getString(R.string.max_member) + teamSettingActivity?.info?.redisData?.teamMaxCount + "人", Toast.LENGTH_SHORT).show()
             } else {
                 if (shareDialog == null) {
-                    shareDialog = DialogUtils.createShareDialog(teamSettingActivity, "", "")
+                    shareDialog = DialogUtils.createShareDialog(teamSettingActivity.activity!!, "", "")
                 } else if (shareDialog != null && !shareDialog!!.isShowing) {
                     shareDialog!!.show()
                 }
@@ -255,41 +257,45 @@ class TeamSettingViewModel : BaseViewModel(), TitleComponent.titleComponentCallB
         }
         when (view.id) {
             R.id.teamer_setting_click -> {
-                ARouter.getInstance().build(RouterUtils.TeamModule.TEAMER_PASS).withSerializable(RouterUtils.TeamModule.TEAM_INFO, teamSettingActivity.info).navigation(teamSettingActivity, REQUEST_TEAM_PASS)
+                teamSettingActivity.startForResult((ARouter.getInstance().build(RouterUtils.TeamModule.TEAMER_PASS).navigation() as TeamerPassActivity).setValue(teamSettingActivity.info!!), REQUEST_TEAM_PASS)
+
+//                ARouter.getInstance().build(RouterUtils.TeamModule.TEAMER_PASS).withSerializable(RouterUtils.TeamModule.TEAM_INFO, teamSettingActivity.info).navigation(teamSettingActivity.activity, REQUEST_TEAM_PASS)
             }
             R.id.manager_click -> {
                 if (teamSettingActivity.info?.redisData?.teamer.toString() == id) {
-                    ARouter.getInstance().build(RouterUtils.TeamModule.MANAGER).withSerializable(RouterUtils.TeamModule.TEAM_INFO, teamSettingActivity.info).navigation(teamSettingActivity, REQUEST_TEAM_MANAGER)
+                    teamSettingActivity.startForResult((ARouter.getInstance().build(RouterUtils.TeamModule.MANAGER).navigation() as TeamManagerActivity).setValue(teamSettingActivity.info!!), REQUEST_TEAM_MANAGER)
+//                    ARouter.getInstance().build(RouterUtils.TeamModule.MANAGER).withSerializable(RouterUtils.TeamModule.TEAM_INFO, teamSettingActivity.info).navigation(teamSettingActivity.activity, REQUEST_TEAM_MANAGER)
                 }
             }
             R.id.team_name_click -> {
                 if (teamSettingActivity.info?.redisData?.teamer.toString() == id) {
-                    ARouter.getInstance().build(RouterUtils.TeamModule.CHANGE_NAME).withSerializable(RouterUtils.TeamModule.TEAM_INFO, teamSettingActivity.info).navigation(teamSettingActivity, REQUEST_TEAM_NAME)
+                    teamSettingActivity.startForResult((ARouter.getInstance().build(RouterUtils.TeamModule.CHANGE_NAME).navigation() as TeamChangeNameActivity).setValue(teamSettingActivity.info!!), REQUEST_TEAM_NAME)
+//                    ARouter.getInstance().build(RouterUtils.TeamModule.CHANGE_NAME).withSerializable(RouterUtils.TeamModule.TEAM_INFO, teamSettingActivity.info).navigation(teamSettingActivity.activity, REQUEST_TEAM_NAME)
                 }
             }
             R.id.exit_team -> {
-                if (NetworkUtil.isNetworkAvailable(teamSettingActivity)) {
+                if (NetworkUtil.isNetworkAvailable(teamSettingActivity.activity!!)) {
                     if (teamSettingActivity.info?.redisData?.teamer.toString() == id) {
-                        var dialog = DialogUtils.createNomalDialog(teamSettingActivity, getString(R.string.exit_team_warm), getString(R.string.cancle), getString(R.string.confirm))
+                        var dialog = DialogUtils.createNomalDialog(teamSettingActivity.activity!!, getString(R.string.exit_team_warm), getString(R.string.cancle), getString(R.string.confirm))
                         dialog.setOnBtnClickL(OnBtnClickL {
                             dialog.dismiss()
                         }, OnBtnClickL {
                             dialog.dismiss()
                             CoroutineScope(uiContext).launch {
                                 delay(1000)
-                                sendOrder( SocketDealType.DISMISSTEAM.code)
+                                sendOrder(SocketDealType.DISMISSTEAM.code)
                             }
                         })
                         dialog.show()
                     } else {
-                        var dialog = DialogUtils.createNomalDialog(teamSettingActivity, getString(R.string.single_exit_team_warm), getString(R.string.cancle), getString(R.string.confirm))
+                        var dialog = DialogUtils.createNomalDialog(teamSettingActivity.activity!!, getString(R.string.single_exit_team_warm), getString(R.string.cancle), getString(R.string.confirm))
                         dialog.setOnBtnClickL(OnBtnClickL {
                             dialog.dismiss()
                         }, OnBtnClickL {
                             dialog.dismiss()
                             CoroutineScope(uiContext).launch {
                                 delay(1000)
-                                  sendOrder(SocketDealType.LEAVETEAM.code)
+                                sendOrder(SocketDealType.LEAVETEAM.code)
                             }
                         })
                         dialog.show()
@@ -299,7 +305,7 @@ class TeamSettingViewModel : BaseViewModel(), TitleComponent.titleComponentCallB
         }
     }
 
-    fun sendOrder(type: Int){
+    fun sendOrder(type: Int) {
         var so = Soket()
         so.type = type
         so.teamCode = teamSettingActivity.info?.redisData?.teamCode
@@ -309,7 +315,8 @@ class TeamSettingViewModel : BaseViewModel(), TitleComponent.titleComponentCallB
         pos.type = "sendData"
         pos.gson = Gson().toJson(so) + "\\r\\n"
         RxBus.default?.post(pos)
-        ARouter.getInstance().build(RouterUtils.ActivityPath.HOME).navigation()
-        teamSettingActivity.finish()
+        back()
+//        ARouter.getInstance().build(RouterUtils.ActivityPath.HOME).navigation()
+//        teamSettingActivity.finish()
     }
 }

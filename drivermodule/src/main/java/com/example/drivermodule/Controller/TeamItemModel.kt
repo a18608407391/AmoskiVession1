@@ -5,9 +5,11 @@ import android.content.Context
 import android.content.Intent
 import android.databinding.ObservableArrayList
 import android.databinding.ObservableField
+import android.databinding.ViewDataBinding
 import android.graphics.BitmapFactory
 import android.graphics.drawable.Drawable
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -45,11 +47,14 @@ import com.elder.zcommonmodule.Utils.Dialog.NormalDialog
 import com.elder.zcommonmodule.Utils.Dialog.OnBtnClickL
 import com.elder.zcommonmodule.Utils.DialogUtils
 import com.example.drivermodule.AMapUtil
+import com.example.drivermodule.Activity.SearchActivity
 import com.example.drivermodule.Activity.Team.TeamSettingActivity
 import com.tencent.mm.opensdk.modelmsg.SendMessageToWX
 import com.tencent.mm.opensdk.modelmsg.WXMediaMessage
 import com.tencent.mm.opensdk.modelmsg.WXWebpageObject
 import com.zk.library.Base.AppManager
+import com.zk.library.Base.BaseFragment
+import com.zk.library.Base.BaseViewModel
 import com.zk.library.Bus.ServiceEven
 import com.zk.library.Bus.event.RxBusEven
 import com.zk.library.Bus.event.RxBusEven.Companion.MinaDataReceive
@@ -303,7 +308,6 @@ class TeamItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener {
                             CoroutineScope(uiContext).launch {
                                 Toast.makeText(context, "已有队员被移除队伍！", Toast.LENGTH_SHORT).show()
                             }
-
                             body.forEachIndexed { index, s ->
                                 if (!s.isEmpty()) {
                                     markerList[s]?.remove()
@@ -447,6 +451,7 @@ class TeamItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener {
     }
 
     private fun toNavi(b: Boolean) {
+
     }
 
     private fun sendNavigationNotify() {
@@ -471,6 +476,7 @@ class TeamItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener {
                 }
             }
         } else {
+            Log.e("result", "data==null")
             viewModel.selectTab(0)
         }
     }
@@ -639,8 +645,6 @@ class TeamItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener {
                     if (it.memberId.toString() != mapFr.user.data?.id) {
                         createImageMarker(it)
 
-                    } else {
-
                     }
                 }
                 personDatas.add(it)
@@ -695,14 +699,21 @@ class TeamItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener {
         when (view.id) {
             R.id.team_setting -> {
                 if (TeamInfo != null) {
-                    ARouter.getInstance().build(RouterUtils.TeamModule.SETTING).withSerializable(RouterUtils.TeamModule.TEAM_INFO, TeamInfo).navigation()
+                    var fr = viewModel?.mapActivity.parentFragment as BaseFragment<ViewDataBinding, BaseViewModel>
+                    fr.start((ARouter.getInstance().build(RouterUtils.TeamModule.SETTING).navigation() as TeamSettingActivity).SettingValue(TeamInfo!!))
+//                    ARouter.getInstance().build(RouterUtils.TeamModule.SETTING).withSerializable(RouterUtils.TeamModule.TEAM_INFO, TeamInfo).navigation()
                 }
             }
         }
     }
 
     fun onComponentFinish() {
-        ARouter.getInstance().build(RouterUtils.MapModuleConfig.SEARCH_ACTIVITY).withInt(RouterUtils.MapModuleConfig.SEARCH_MODEL, 0).navigation(mapFr.activity, RESULT_POINT)
+
+        var fr = viewModel?.mapActivity.parentFragment as BaseFragment<ViewDataBinding, BaseViewModel>
+        fr.startForResult((ARouter.getInstance().build(RouterUtils.MapModuleConfig.SEARCH_ACTIVITY).navigation() as SearchActivity).setModel(0), RESULT_POINT)
+//        viewModel?.mapActivity.startForResult( (ARouter.getInstance().build(RouterUtils.MapModuleConfig.SEARCH_ACTIVITY) as SearchActivity).setModel(0),RESULT_POINT)
+
+//        ARouter.getInstance().build(RouterUtils.MapModuleConfig.SEARCH_ACTIVITY).withInt(RouterUtils.MapModuleConfig.SEARCH_MODEL, 0).navigation(mapFr.activity, RESULT_POINT)
     }
 
     fun custionView(maker: Marker?, view: View?) {
@@ -789,7 +800,8 @@ class TeamItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener {
             sendOrder(n, false)
         }
     }
-    override fun onDismiss(fr: BaseDialogFragment,value:Any) {
+
+    override fun onDismiss(fr: BaseDialogFragment, value: Any) {
         (viewModel?.items[0] as DriverItemModel).GoTeam()
         dialogFragment.functionDismiss = null
     }

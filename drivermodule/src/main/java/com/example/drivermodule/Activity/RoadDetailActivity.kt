@@ -10,47 +10,37 @@ import com.example.drivermodule.R
 import com.example.drivermodule.ViewModel.RoadDetailViewModel
 import com.example.drivermodule.databinding.ActivityRoadDetailBinding
 import com.zk.library.Base.BaseActivity
+import com.zk.library.Base.BaseFragment
 import com.zk.library.Utils.RouterUtils
 import com.zk.library.Utils.StatusbarUtils
 
 
 @Route(path = RouterUtils.MapModuleConfig.ROAD_DETAIL)
-class RoadDetailActivity : BaseActivity<ActivityRoadDetailBinding, RoadDetailViewModel>() {
+class RoadDetailActivity : BaseFragment<ActivityRoadDetailBinding, RoadDetailViewModel>() {
+    override fun initContentView(): Int {
+        return R.layout.activity_road_detail
+    }
     @Autowired(name = RouterUtils.MapModuleConfig.ROAD_DATA)
     @JvmField
     var data: ArrayList<LatLonPoint>? = null
-
     @Autowired(name = RouterUtils.MapModuleConfig.ROAD_DISTANCE)
     @JvmField
     var distance: Float = 0F
-
     @Autowired(name = RouterUtils.MapModuleConfig.ROAD_TIME)
     @JvmField
     var time: Long = 0
-
     override fun initVariableId(): Int {
         return BR.road_detail_model
     }
-
-    override fun initContentView(savedInstanceState: Bundle?): Int {
-        StatusbarUtils.setRootViewFitsSystemWindows(this, false)
-        StatusbarUtils.setTranslucentStatus(this)
-        StatusbarUtils.setStatusBarMode(this, true, 0x000000)
-        return R.layout.activity_road_detail
+    fun setValue(data: ArrayList<LatLonPoint>, distance: Float, time: Long): RoadDetailActivity {
+        this.data = data
+        this.distance = distance
+        this.time = time
+        return this@RoadDetailActivity
     }
-
-    override fun doPressBack() {
-        super.doPressBack()
-        finish()
-    }
-
-    override fun initViewModel(): RoadDetailViewModel? {
-        return ViewModelProviders.of(this)[RoadDetailViewModel::class.java]
-    }
-
     override fun initData() {
         super.initData()
-        mViewModel?.inject(this)
+        viewModel?.inject(this)
     }
 
 }

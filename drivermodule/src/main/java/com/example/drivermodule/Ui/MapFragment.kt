@@ -367,7 +367,9 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
         } else {
             if (requestCode == RESULT_POINT) {
                 (viewModel?.items!![0] as DriverItemModel).setResult(requestCode, resultCode, data)
-            }else{
+            } else if (requestCode == ROAD_DETAIL_RETURN_VALUE) {
+
+            } else {
                 if (requestCode == REQUEST_LOAD_ROADBOOK) {
                     if (data?.getSerializable("hotdata") != null) {
                         var its = data.getSerializable("hotdata") as HotData
@@ -378,7 +380,7 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
                             viewModel?.selectTab(viewModel?.currentPosition!!)
                         }
                     }
-                } else {
+                } else {0
                     (viewModel?.items!![3] as MapPointItemModel).SearchResult(requestCode, resultCode, data)
                 }
             }

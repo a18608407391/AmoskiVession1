@@ -2,6 +2,7 @@ package com.example.drivermodule.ViewModel
 
 import android.content.Intent
 import android.databinding.ObservableField
+import android.os.Bundle
 import android.text.Editable
 import android.text.TextUtils
 import android.text.TextWatcher
@@ -23,7 +24,8 @@ import org.cs.tec.library.Base.Utils.getString
 
 class ChangeTeamNameViewModel : BaseViewModel(), TitleComponent.titleComponentCallBack {
     override fun onComponentClick(view: View) {
-        teamChangeNameActivity.finish()
+//        teamChangeNameActivity.finish()
+        teamChangeNameActivity._mActivity!!.onBackPressedSupport()
     }
 
     override fun onComponentFinish(view: View) {
@@ -36,10 +38,11 @@ class ChangeTeamNameViewModel : BaseViewModel(), TitleComponent.titleComponentCa
             Toast.makeText(context, getString(R.string.teamname_not_enough), Toast.LENGTH_SHORT).show()
             return
         }
-        var intent = Intent()
-        intent.putExtra("info", teamChangeNameActivity.nickname_et.text.toString())
-        teamChangeNameActivity.setResult(REQUEST_TEAM_NAME, intent)
-        finish()
+        var intent = Bundle()
+        intent.putString("info", teamChangeNameActivity.nickname_et.text.toString())
+        teamChangeNameActivity.setFragmentResult(REQUEST_TEAM_NAME, intent)
+        teamChangeNameActivity._mActivity!!.onBackPressedSupport()
+//        finish()
     }
 
     var NickName = ObservableField<String>()

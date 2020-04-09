@@ -5,6 +5,7 @@ import android.databinding.ObservableArrayList
 import android.databinding.ObservableField
 import android.graphics.Color
 import android.graphics.Typeface
+import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Toast
@@ -56,7 +57,7 @@ class TeamManagerViewModel : BaseViewModel(), TitleComponent.titleComponentCallB
         super.doRxEven(it)
         when (it?.type) {
             RxBusEven.Team_reject_even -> {
-                finish()
+                teamManagerActivity._mActivity!!.onBackPressedSupport()
             }
         }
     }
@@ -66,14 +67,15 @@ class TeamManagerViewModel : BaseViewModel(), TitleComponent.titleComponentCallB
     }
 
     override fun onComponentClick(view: View) {
-        finish()
+        teamManagerActivity._mActivity!!.onBackPressedSupport()
     }
 
     override fun onComponentFinish(view: View) {
-        var intent = Intent()
-        intent.putExtra("info", teamManagerActivity.info)
-        teamManagerActivity.setResult(REQUEST_TEAM_MANAGER, intent)
-        finish()
+        var intent = Bundle()
+        intent.putSerializable("info", teamManagerActivity.info)
+        teamManagerActivity.setFragmentResult(REQUEST_TEAM_MANAGER, intent)
+        teamManagerActivity._mActivity!!.onBackPressedSupport()
+//        finish()
     }
 
     lateinit var teamManagerActivity: TeamManagerActivity
@@ -129,7 +131,7 @@ class TeamManagerViewModel : BaseViewModel(), TitleComponent.titleComponentCallB
     var currentItemPosition = 0
     fun onItemClick(position: Int, datas: PersonDatas) {
         currentItemPosition = position
-        DialogUtils.showGenderDialog(teamManagerActivity, genderCommand, list, getString(R.string.choice_role))
+        DialogUtils.showGenderDialog(teamManagerActivity.activity!!, genderCommand, list, getString(R.string.choice_role))
     }
 
     var list = ArrayList<String>()

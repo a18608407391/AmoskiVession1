@@ -66,6 +66,7 @@ const val FINISH = 115
 const val REQUEST_SHARE = 116
 const val START_DRIVER = 117
 const val TO_NAVIGATION = 118
+const val ROAD_DETAIL_RETURN_VALUE = 119
 //普通状态
 
 const val SOCIAL_DETAIL_RETURN = 130

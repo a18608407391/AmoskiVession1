@@ -4,6 +4,7 @@ import android.content.Intent
 import android.databinding.ObservableArrayList
 import android.databinding.ObservableField
 import android.graphics.Color
+import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import com.elder.zcommonmodule.Component.TitleComponent
@@ -36,7 +37,7 @@ import org.cs.tec.library.USERID
 class TeamerPassViewModel : BaseViewModel(), TitleComponent.titleComponentCallBack {
 
     override fun onComponentClick(view: View) {
-        finish()
+        teamerPassActivity._mActivity!!.onBackPressedSupport()
     }
 
     override fun onComponentFinish(view: View) {
@@ -71,11 +72,11 @@ class TeamerPassViewModel : BaseViewModel(), TitleComponent.titleComponentCallBa
                 pos.type = "sendData"
                 pos.gson  = Gson().toJson(so) + "\\r\\n"
                 RxBus.default?.post(pos)
-                var intent = Intent()
+                var intent = Bundle()
                 teamerPassActivity.info?.redisData?.teamer = Integer.valueOf(datas!!.memberId.get()!!)
-                intent.putExtra("info", teamerPassActivity.info)
-                teamerPassActivity.setResult(TeamSettingViewModel.REQUEST_TEAM_PASS, intent)
-                finish()
+                intent.putSerializable("info", teamerPassActivity.info)
+                teamerPassActivity.setFragmentResult(TeamSettingViewModel.REQUEST_TEAM_PASS, intent)
+                teamerPassActivity._mActivity!!.onBackPressedSupport()
             }
         }
     }
@@ -84,7 +85,7 @@ class TeamerPassViewModel : BaseViewModel(), TitleComponent.titleComponentCallBa
         super.doRxEven(it)
         when (it?.type) {
             RxBusEven.Team_reject_even -> {
-                finish()
+                teamerPassActivity._mActivity!!.onBackPressedSupport()
             }
         }
     }

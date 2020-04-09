@@ -43,12 +43,11 @@ public class HeartBeatListener implements IoServiceListener {
     @Override
     public void sessionClosed(IoSession ioSession) throws Exception {
         Log.e("result","Session关闭");
-        RxBus.Companion.getDefault().post("MINA_FORCE_CLOSE");
     }
 
     @Override
     public void sessionDestroyed(IoSession ioSession) throws Exception {
-        Log.e("result","Session销毁");
+
     }
 
 }

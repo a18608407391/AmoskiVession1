@@ -4,6 +4,7 @@ import android.content.Intent
 import android.databinding.ObservableArrayList
 import android.databinding.ObservableField
 import android.graphics.Color
+import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Toast
@@ -34,7 +35,7 @@ import org.cs.tec.library.USERID
 
 class TeamDeleteViewModel : BaseViewModel(), TitleComponent.titleComponentCallBack {
     override fun onComponentClick(view: View) {
-        finish()
+        deleteActivity._mActivity!!.onBackPressedSupport()
     }
 
     override fun onComponentFinish(view: View) {
@@ -49,10 +50,10 @@ class TeamDeleteViewModel : BaseViewModel(), TitleComponent.titleComponentCallBa
                 }
             }
             if (!flag) {
-                var intent = Intent()
-                intent.putExtra("info", deleteList)
-                deleteActivity.setResult(TeamSettingViewModel.REQUEST_TEAM_DELETE, intent)
-                finish()
+                var intent = Bundle()
+                intent.putSerializable("info", deleteList)
+                deleteActivity.setFragmentResult(TeamSettingViewModel.REQUEST_TEAM_DELETE, intent)
+                deleteActivity._mActivity!!.onBackPressedSupport()
             } else {
                 Toast.makeText(context, getString(R.string.can_not_delete_myself), Toast.LENGTH_SHORT).show()
             }
@@ -64,7 +65,7 @@ class TeamDeleteViewModel : BaseViewModel(), TitleComponent.titleComponentCallBa
         super.doRxEven(it)
         when (it?.type) {
             RxBusEven.Team_reject_even -> {
-                finish()
+                deleteActivity._mActivity!!.onBackPressedSupport()
             }
         }
     }
