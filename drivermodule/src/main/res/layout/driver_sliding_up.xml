@@ -185,13 +185,6 @@
                                 android:textColor="@color/hint_color_edit"
                                 android:textSize="@dimen/s_12" />
                         </LinearLayout>
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="@dimen/d_05"
-                        android:orientation="horizontal">
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -211,50 +204,6 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@string/fastest"
-                                android:textColor="@color/hint_color_edit"
-                                android:textSize="@dimen/s_12" />
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:gravity="center"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@{data.share.direct}"
-                                android:textColor="@color/blackTextColor"
-                                android:textSize="@dimen/s_24" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/yawan"
-                                android:textColor="@color/hint_color_edit"
-                                android:textSize="@dimen/s_12" />
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:gravity="center"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@{data.share.onehunSpeed}"
-                                android:textColor="@color/blackTextColor"
-                                android:textSize="@dimen/s_24" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="0-100M"
                                 android:textColor="@color/hint_color_edit"
                                 android:textSize="@dimen/s_12" />
                         </LinearLayout>
@@ -292,56 +241,6 @@
                 </LinearLayout>
             </RelativeLayout>
 
-            <LinearLayout
-                android:layout_width="@dimen/d_345"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/d_10"
-                android:background="@drawable/corner_dialog"
-                android:orientation="vertical">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/d_10"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginLeft="@dimen/d_15"
-                        android:layout_weight="1"
-                        android:gravity="left|center_vertical"
-                        android:text="@string/today"
-                        android:textColor="@color/nomalTextColor"
-                        android:textSize="@dimen/s_15" />
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginRight="@dimen/d_15"
-                        android:layout_weight="1"
-                        android:gravity="right|center_vertical"
-                        android:text="14℃/24℃"
-                        android:textColor="@color/blackTextColor"
-                        android:textSize="@dimen/s_18" />
-                </LinearLayout>
-
-                <HorizontalScrollView
-                    android:layout_width="@dimen/d_345"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="@dimen/d_10"
-                    android:layout_marginTop="@dimen/d_10"
-                    android:scrollbars="none">
-
-                    <LinearLayout
-                        android:id="@+id/horizontalLinear"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        app:initWeatherHori="@{data.weatherDatas}"
-                        ></LinearLayout>
-                </HorizontalScrollView>
-            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="@dimen/d_345"

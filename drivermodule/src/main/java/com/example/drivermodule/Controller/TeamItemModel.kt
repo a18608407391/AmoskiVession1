@@ -26,6 +26,7 @@ import com.amap.api.maps.model.BitmapDescriptorFactory
 import com.amap.api.maps.model.LatLng
 import com.amap.api.maps.model.Marker
 import com.amap.api.maps.model.MarkerOptions
+import com.amap.api.services.core.LatLonPoint
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.bumptech.glide.request.RequestOptions
@@ -42,6 +43,7 @@ import com.google.gson.Gson
 import com.zk.library.Base.BaseApplication
 import com.elder.zcommonmodule.Component.ItemViewModel
 import com.elder.zcommonmodule.Entity.LatLonLocal
+import com.elder.zcommonmodule.Entity.Location
 import com.elder.zcommonmodule.Entity.RemoveBody
 import com.elder.zcommonmodule.Utils.Dialog.NormalDialog
 import com.elder.zcommonmodule.Utils.Dialog.OnBtnClickL
@@ -451,11 +453,65 @@ class TeamItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener {
     }
 
     private fun toNavi(b: Boolean) {
+        if (teamer.toString() == mapFr.user.data?.id) {
+            var list = ArrayList<LatLng>()
+            if (!viewModel?.status.passPointDatas.isEmpty()) {
+                viewModel?.status.passPointDatas.forEach {
+                    list.add(LatLng(it.latitude, it.longitude))
+                }
+            }
+            viewModel?.status!!.navigationEndPoint = soketNavigation?.navigation_end
+            if (viewModel?.status.startDriver.get() == DriverCancle) {
+                viewModel?.startDriver(3)
+            } else {
+                viewModel?.startNavi(list, 3)
+            }
+            sendNavigationNotify()
 
+//            viewModel?.startNavi(viewModel?.status!!.navigationStartPoint!!, viewModel?.status!!.navigationEndPoint!!, list, flag)
+
+        } else {
+            if (soketNavigation != null) {
+                viewModel?.status.navigationEndPoint = soketNavigation?.navigation_end
+                if (!soketNavigation?.wayPoint.isNullOrEmpty()) {
+                    soketNavigation?.wayPoint!!.forEach {
+                        viewModel?.status.passPointDatas.add(Location(it.latitude, it.longitude, System.currentTimeMillis().toString(), 0F, 0.0, 0F))
+                    }
+                }
+                if (viewModel?.status.startDriver.get() == DriverCancle) {
+                    viewModel?.startDriver(3)
+                } else {
+                    var list = ArrayList<LatLng>()
+                    if (!viewModel?.status.passPointDatas.isEmpty()) {
+                        viewModel?.status.passPointDatas.forEach {
+                            list.add(LatLng(it.latitude, it.longitude))
+                        }
+                    }
+                    viewModel?.startNavi(list, 3)
+                }
+            }
+        }
     }
 
     private fun sendNavigationNotify() {
-
+        var so = Soket()
+        so.type = SocketDealType.NAVIGATION_START.code
+        so.teamCode = teamCode.get()
+        so.teamId = teamId
+        so.userId = mapFr.user.data?.memberId
+        var sos = SoketNavigation()
+        if (viewModel.status.passPointDatas != null) {
+            viewModel.status.passPointDatas.forEach {
+                sos.wayPoint!!.add(LatLonPoint(it.latitude, it.longitude))
+            }
+        }
+        sos.navigation_end = viewModel.status?.navigationEndPoint
+        so.body = Soket.SocketRequest()
+        so.body?.navigationPoint = Gson().toJson(sos)
+        var pos = ServiceEven()
+        pos.type = "sendData"
+        pos.gson = Gson().toJson(so) + "\\r\\n"
+        RxBus.default?.post(pos)
     }
 
 

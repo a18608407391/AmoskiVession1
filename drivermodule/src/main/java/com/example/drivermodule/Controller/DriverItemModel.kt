@@ -179,11 +179,13 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener, HttpI
             viewModel?.curPosition = Location(amapLocation.latitude, amapLocation.longitude, System.currentTimeMillis().toString(), amapLocation.speed, amapLocation.altitude, amapLocation.bearing, amapLocation.aoiName, amapLocation.poiName)
             if (driverStatus.get() == Drivering) {
                 if (mapFr?.mapUtils?.breatheMarker_center != null) {
-                    mapFr?.mapUtils?.breatheMarker_center!!.rotateAngle = amapLocation.bearing
+                    mapFr?.mapUtils?.breatheMarker_center!!.rotateAngle = 360 - amapLocation.bearing
                 }
+
                 if (viewModel.status.locationLat.size == 0) {
                     insertLocation(viewModel?.curPosition!!, mapFr?.user.data?.memberId!!)
                     addStartPoint(viewModel?.curPosition!!)
+                    last = viewModel?.curPosition!!
                 } else {
                     if (amapLocation.locationType == 1) {
                         if (curHeight < amapLocation.altitude) {
@@ -206,19 +208,18 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener, HttpI
                             if (viewModel?.status.maxSpeed < amapLocation.speed) {
                                 viewModel?.status.maxSpeed = amapLocation.speed
                             }
-                            if (last == null) {
-                                if (PauseMath == 2 || isPauseDriver) {
-                                    //暂停以后再骑行  距离重新运算
-                                    //当前最后一个点，与下一个点不作为计算距离的指标
-                                    last = viewModel?.curPosition
-                                    isPauseDriver = false
-                                    PauseMath = 0
-                                } else {
-                                    last = viewModel?.status.locationLat.last()
-                                    viewModel?.status.distance += AMapUtils.calculateLineDistance(LatLng(last?.latitude!!, last?.longitude!!), LatLng(amapLocation?.latitude!!, amapLocation?.longitude!!))
-                                }
+
+                            if (NeedPauseMath && PauseMath == 2 && isPauseDriver) {
+                                //暂停以后再骑行  距离重新运算
+                                //当前最后一个点，与下一个点不作为计算距离的指标
+                                last = viewModel?.curPosition
+                                isPauseDriver = false
+                                PauseMath = 0
+                            } else {
+                                viewModel?.status.distance += AMapUtils.calculateLineDistance(LatLng(last?.latitude!!, last?.longitude!!), LatLng(amapLocation?.latitude!!, amapLocation?.longitude!!))
+                                last = viewModel?.curPosition
                             }
-                            last = viewModel?.curPosition!!
+
                             viewModel?.mapActivity.mapUtils!!.setLocation(last!!)
                             var distanceTv = ""
                             if (viewModel?.status!!.distance > 1000) {
@@ -255,7 +256,9 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener, HttpI
 
 
     var isPauseDriver = false   //骑行暂停后
-    var PauseMath = 0
+    var PauseMath = 0        //骑行暂停
+    var NeedPauseMath = false
+
 
     private fun addStartPoint(amapLocation: Location) {
         mapFr.dismissProgressDialog()
@@ -285,11 +288,13 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener, HttpI
             var end = viewModel?.status?.locationLat.last()
             if (driverStatus.get() == DriverPause) {
                 isPauseDriver = true
+                PauseMath = 2
             } else if (driverStatus.get() == Drivering) {
                 //异常退出
                 isPauseDriver = false
             }
             driverController?.setLineDatas(viewModel?.status?.locationLat!!, getColor(R.color.line_color))
+            last = viewModel?.status?.locationLat.last()
             var distanceTv = ""
             if (viewModel?.status!!.distance > 1000) {
                 distanceTv = DecimalFormat("0.0").format(viewModel?.status!!.distance / 1000) + "KM"
@@ -323,10 +328,12 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener, HttpI
                     viewModel.status.startDriver.set(DriverPause)
                     //点击了暂停
                     PauseMath = 1
+
                     if (viewModel?.status.driverNetRecord!!.passPosition == null) {
                         viewModel?.status.driverNetRecord!!.passPosition = ArrayList()
                     }
                     viewModel?.status.driverNetRecord!!.passPosition!!.add(LatLng(viewModel?.status.locationLat.last().latitude, viewModel?.status.locationLat.last().longitude))
+
                     UpdateDriverStatus(viewModel?.status)
                 } else if (driverStatus.get() == DriverCancle || driverStatus.get() == TeamModel) {
                     if (viewModel.status.locationLat.size == 0) {
@@ -438,23 +445,22 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener, HttpI
     var isResultPoint = false
 
     fun setResult(requestCode: Int, resultCode: Int, data: Bundle?) {
+        Log.e("result", "onFragmentResult" + requestCode)
         when (requestCode) {
             RESULT_POINT -> {
                 if (data != null) {
-                    if (data?.getSerializable("tip") != null) {
-                        var tip = data?.getSerializable("tip") as PoiItem
+                    if (data?.getParcelable<PoiItem>("tip") != null) {
+                        var tip = data?.getParcelable("tip") as PoiItem
                         if (tip != null) {
-                            if (resultCode == RESULT_POINT) {
-                                if (tip.latLonPoint?.latitude != null && tip.latLonPoint?.longitude != null) {
-                                    mapFr?.mAmap?.isMyLocationEnabled = false
-                                    isResultPoint = true
-                                    mapFr?.mAmap?.moveCamera(CameraUpdateFactory.changeLatLng(AMapUtil.convertToLatLng(tip.latLonPoint)))
-                                    var opotion = MarkerOptions().title(tip.title).snippet(getString(R.string.go_there)).position(LatLng(tip.latLonPoint.latitude, tip.latLonPoint.longitude))
-                                            .icon(BitmapDescriptorFactory
-                                                    .defaultMarker(BitmapDescriptorFactory.HUE_RED))
-                                    var makder = mapFr?.mAmap?.addMarker(opotion)
-                                    makder?.showInfoWindow()
-                                }
+                            if (tip.latLonPoint?.latitude != null && tip.latLonPoint?.longitude != null) {
+                                mapFr?.mAmap?.isMyLocationEnabled = false
+                                isResultPoint = true
+                                mapFr?.mAmap?.moveCamera(CameraUpdateFactory.changeLatLng(AMapUtil.convertToLatLng(tip.latLonPoint)))
+                                var opotion = MarkerOptions().title(tip.title).snippet(getString(R.string.go_there)).position(LatLng(tip.latLonPoint.latitude, tip.latLonPoint.longitude))
+                                        .icon(BitmapDescriptorFactory
+                                                .defaultMarker(BitmapDescriptorFactory.HUE_RED))
+                                var makder = mapFr?.mAmap?.addMarker(opotion)
+                                makder?.showInfoWindow()
                             }
                         }
                     }
@@ -541,7 +547,8 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener, HttpI
     fun changeMap_Point_btn() {
         if (viewModel?.status.navigationType == 1) {
             //跳到导航
-
+            viewModel?.mapActivity.NavigationStart = true
+            ARouter.getInstance().build(RouterUtils.MapModuleConfig.NAVIGATION).navigation()
         } else {
             if (driverStatus.get() == Drivering && viewModel?.status.locationLat.size == 0) {
                 return
@@ -556,9 +563,7 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener, HttpI
         //检查当前进入方式
         if (BaseApplication.MinaConnected) {
             //如果当前在组队
-            Log.e("result","MinaConnected")
             if (viewModel?.TeamStatus?.teamStatus == TeamStarting) {
-                Log.e("result", "当前组队进行中")
                 var model = viewModel?.items[1] as TeamItemModel
                 mapFr.showProgressDialog(getString(R.string.http_loading))
                 model.initInfo()
@@ -566,14 +571,12 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener, HttpI
             }
         } else if (!BaseApplication.MinaConnected) {
             //如果当前未组队 检查当前个人信息
-            Log.e("result","DisMinaConnected")
             mapFr.showProgressDialog(getString(R.string.http_loading))
             HttpRequest.instance.setCheckStatusResult(this)
             var map = HashMap<String, String>()
             HttpRequest.instance.checkTeamStatus(map)
         }
     }
-
 
     override fun doRxEven(it: RxBusEven?) {
         super.doRxEven(it)
@@ -584,6 +587,7 @@ class DriverItemModel : ItemViewModel<MapFrViewModel>(), Locationlistener, HttpI
                 }
             }
             RxBusEven.NAVIGATION_FINISH -> {
+                viewModel?.mapActivity.NavigationStart = false
                 viewModel?.status.navigationType = 0
                 viewModel?.status.passPointDatas.clear()
             }

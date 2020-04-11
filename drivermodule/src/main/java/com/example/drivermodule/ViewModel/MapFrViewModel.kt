@@ -92,6 +92,10 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
                 wayPoint.add(LatLng(it.latitude, it.longitude))
             }
         }
+        if (status.navigationStartPoint == null) {
+            status.navigationStartPoint = curPosition
+        }
+
         //默认0，骑行页面点击骑行
         if (driverType != 0) {
             startNavi(wayPoint, driverType)
@@ -313,10 +317,12 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
         tab.addTab(tab.newTab().setText(getString(R.string.road_book_nomal_title)))
         tab.addOnTabSelectedListener(this)
     }
+
     fun selectTab(position: Int) {
         var tabs = tab.getTabAt(position)
         tabs?.select()
     }
+
     var currentPosition = 0
     fun changerFragment(position: Int) {
         currentPosition = position
@@ -340,7 +346,7 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
             component.rightText.set("")
             component.type.set(1)
         }
-        if(mapActivity.isAdded){
+        if (mapActivity.isAdded) {
             mapActivity.fr_main_rootlay.currentItem = currentPosition
         }
     }
@@ -349,12 +355,14 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
     fun onClick(view: View) {
         when (view.id) {
             R.id.fr_share_btn -> {
-                var fr = mapActivity.getDrverFragment()
+                var fr = mapActivity.getDrverController()
+
                 showBottomSheet.set(false)
-                RxBus.default?.postSticky(fr?.viewModel?.share!!)
-                fr.behaviors.isHideable = true
-                fr.behaviors.state = BottomSheetBehavior.STATE_EXPANDED
+//                RxBus.default?.postSticky(fr?.viewModel?.share!!)
+//                fr.behaviors.isHideable = true
+//                fr.behaviors.state = BottomSheetBehavior.STATE_EXPANDED
                 a?.dispose()
+                fr.cancleDriver(true)
                 ARouter.getInstance().build(RouterUtils.MapModuleConfig.SHARE_ACTIVITY).navigation(mapActivity.activity, object : NavCallback() {
                     override fun onArrival(postcard: Postcard?) {
                         finish()
@@ -391,18 +399,23 @@ class MapFrViewModel : BaseViewModel(), AMap.OnMarkerClickListener, AMap.OnMarke
             } else if (b == 2) {
                 //地图选点点击开始导航
             } else if (b == 3) {
+
                 //组队页面点击开始导航
+
             } else if (b == 4) {
 
             }
             mapActivity?.mAmap?.moveCamera(CameraUpdateFactory.changeLatLng(LatLng(status.navigationStartPoint!!.latitude, status.navigationStartPoint!!.longitude)))
-            ARouter.getInstance().build(RouterUtils.MapModuleConfig.NAVIGATION)
-                    .withSerializable(RouterUtils.MapModuleConfig.NAVIGATION_DATA, list)
-                    .withSerializable(RouterUtils.MapModuleConfig.NAVIGATION_START, status.navigationStartPoint)
-                    .withSerializable(RouterUtils.MapModuleConfig.NAVIGATION_End, status.navigationEndPoint)
-                    .withInt(RouterUtils.MapModuleConfig.NAVIGATION_TYPE, status.navigationType)
-                    .addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT)
-                    .navigation()
+            if (status.navigationStartPoint != null && status.navigationEndPoint != null) {
+                mapActivity.NavigationStart = true
+                ARouter.getInstance().build(RouterUtils.MapModuleConfig.NAVIGATION)
+                        .withSerializable(RouterUtils.MapModuleConfig.NAVIGATION_DATA, list)
+                        .withSerializable(RouterUtils.MapModuleConfig.NAVIGATION_START, status.navigationStartPoint)
+                        .withSerializable(RouterUtils.MapModuleConfig.NAVIGATION_End, status.navigationEndPoint)
+                        .withInt(RouterUtils.MapModuleConfig.NAVIGATION_TYPE, status.navigationType)
+                        .addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT)
+                        .navigation()
+            }
         }
     }
 }

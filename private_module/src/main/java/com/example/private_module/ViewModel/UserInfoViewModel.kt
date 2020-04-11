@@ -2,7 +2,9 @@ package com.example.private_module.ViewModel
 
 import android.databinding.ObservableArrayList
 import android.databinding.ObservableField
+import android.databinding.ViewDataBinding
 import android.graphics.drawable.Drawable
+import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import com.alibaba.android.arouter.launcher.ARouter
@@ -12,10 +14,12 @@ import com.elder.zcommonmodule.Entity.UserInfo
 import com.elder.zcommonmodule.Even.ActivityResultEven
 import com.elder.zcommonmodule.GET_USERINFO
 import com.elder.zcommonmodule.PRIVATE_DATA_RETURN
+import com.elder.zcommonmodule.Utils.Utils
 import com.elder.zcommonmodule.getImageUrl
 import com.example.private_module.BR
 import com.example.private_module.R
 import com.example.private_module.UI.UserInfoFragment
+import com.zk.library.Base.BaseFragment
 import com.zk.library.Base.BaseViewModel
 import com.zk.library.Bus.ServiceEven
 import com.zk.library.Utils.PreferenceUtils
@@ -45,29 +49,29 @@ class UserInfoViewModel : BaseViewModel() {
     fun onClick(view: View) {
         when (view.id) {
             R.id.likes -> {
-                if(loc==null){
-                    Toast.makeText(context, getString(R.string.get_http_location),Toast.LENGTH_SHORT).show()
+                if (loc == null) {
+                    Toast.makeText(context, getString(R.string.get_http_location), Toast.LENGTH_SHORT).show()
                     return
                 }
                 ARouter.getInstance().build(RouterUtils.PrivateModuleConfig.MY_LIKE_AC).withSerializable(RouterUtils.SocialConfig.SOCIAL_LOCATION, loc).navigation(userInfoFragment.activity, PRIVATE_DATA_RETURN)
             }
             R.id.foucs -> {
-                if(loc==null){
-                    Toast.makeText(context, getString(R.string.get_http_location),Toast.LENGTH_SHORT).show()
+                if (loc == null) {
+                    Toast.makeText(context, getString(R.string.get_http_location), Toast.LENGTH_SHORT).show()
                     return
                 }
                 ARouter.getInstance().build(RouterUtils.PrivateModuleConfig.MY_FOCUS_AC).withSerializable(RouterUtils.SocialConfig.SOCIAL_LOCATION, loc).navigation(userInfoFragment.activity, PRIVATE_DATA_RETURN)
             }
             R.id.fans -> {
-                if(loc==null){
-                    Toast.makeText(context, getString(R.string.get_http_location),Toast.LENGTH_SHORT).show()
+                if (loc == null) {
+                    Toast.makeText(context, getString(R.string.get_http_location), Toast.LENGTH_SHORT).show()
                     return
                 }
                 ARouter.getInstance().build(RouterUtils.PrivateModuleConfig.MY_FANS_AC).withSerializable(RouterUtils.SocialConfig.SOCIAL_LOCATION, loc).navigation(userInfoFragment.activity, PRIVATE_DATA_RETURN)
             }
             R.id.dynamics -> {
-                if(loc==null){
-                    Toast.makeText(context, getString(R.string.get_http_location),Toast.LENGTH_SHORT).show()
+                if (loc == null) {
+                    Toast.makeText(context, getString(R.string.get_http_location), Toast.LENGTH_SHORT).show()
                     return
                 }
                 ARouter.getInstance().build(RouterUtils.SocialConfig.SOCIAL_CAVALIER_HOME)
@@ -96,30 +100,31 @@ class UserInfoViewModel : BaseViewModel() {
                 ARouter.getInstance().build(RouterUtils.PrivateModuleConfig.NOTIFYCATION).navigation()
             }
             R.id.vertical_linear1 -> {
-                ARouter.getInstance().build(RouterUtils.LogRecodeConfig.LogListActivity).withInt(RouterUtils.LogRecodeConfig.LOG_LIST_ENTITY, 3).navigation()
+                enterToLogList(3)
             }
             R.id.vertical_linear2 -> {
-                ARouter.getInstance().build(RouterUtils.LogRecodeConfig.LogListActivity).withInt(RouterUtils.LogRecodeConfig.LOG_LIST_ENTITY, 2).navigation()
+                enterToLogList(2)
             }
             R.id.vertical_linear3 -> {
-                ARouter.getInstance().build(RouterUtils.LogRecodeConfig.LogListActivity).withInt(RouterUtils.LogRecodeConfig.LOG_LIST_ENTITY, 1).navigation()
+                enterToLogList(1)
             }
             R.id.vertical_linear4 -> {
-                ARouter.getInstance().build(RouterUtils.LogRecodeConfig.LogListActivity).withInt(RouterUtils.LogRecodeConfig.LOG_LIST_ENTITY, 0).navigation()
+                enterToLogList(0)
             }
             R.id.log_list_click -> {
-                ARouter.getInstance().build(RouterUtils.LogRecodeConfig.LogListActivity).withInt(RouterUtils.LogRecodeConfig.LOG_LIST_ENTITY, 0).navigation()
+                enterToLogList(0)
             }
-//            R.id.my_road_book -> {
-//                ARouter.getInstance().build(RouterUtils.MapModuleConfig.MY_ROAD_BOOK_AC).navigation()
-//            }
-//            R.id.my_active -> {
-//                ARouter.getInstance().build(RouterUtils.PrivateModuleConfig.MY_ACTIVE_WEB_AC).withInt(RouterUtils.PrivateModuleConfig.MY_ACTIVE_WEB_TYPE, 0).navigation()
-//            }
-//            R.id.my_ticket -> {
-//                ARouter.getInstance().build(RouterUtils.PrivateModuleConfig.MY_ACTIVE_WEB_AC).withInt(RouterUtils.PrivateModuleConfig.MY_ACTIVE_WEB_TYPE, 1).navigation()
-//            }
         }
+    }
+
+    fun enterToLogList(type :Int){
+        Utils.setStatusTextColor(false,userInfoFragment.activity)
+        var model = userInfoFragment.parentFragment as BaseFragment<ViewDataBinding, BaseViewModel>
+        var bundle = Bundle()
+        bundle.putInt("type", type)
+        var fr = ARouter.getInstance().build(RouterUtils.LogRecodeConfig.LogListActivity).navigation() as BaseFragment<ViewDataBinding, BaseViewModel>
+        fr.arguments = bundle
+        model.start(fr)
     }
 
     lateinit var userInfoFragment: UserInfoFragment
@@ -181,8 +186,6 @@ class UserInfoViewModel : BaseViewModel() {
 
     class IconEntity : Serializable {
         var icon: Drawable? = null
-
         var title: String? = null
-
     }
 }

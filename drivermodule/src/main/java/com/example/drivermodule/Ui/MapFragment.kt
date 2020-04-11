@@ -68,6 +68,9 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
     var onStart = false
     var mLocationOption: AMapLocationClientOption? = null
     var mListener: LocationSource.OnLocationChangedListener? = null
+
+    var NavigationStart = false
+
     lateinit var user: UserInfo
     lateinit var token: String
     override fun deactivate() {
@@ -182,16 +185,13 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
     }
 
     override fun onMapClick(p0: LatLng?) {
-
-        Log.e("result", "onMapClick")
-
         var fr = viewModel?.items!![1] as TeamItemModel
         fr?.MapClick(p0)
     }
 
 
     fun setDriverStyle() {
-        mLocationOption?.isSensorEnable = false
+        mLocationOption?.isSensorEnable = true
         mlocationClient?.setLocationOption(mLocationOption)
         myLocationStyle.myLocationType(MyLocationStyle.LOCATION_TYPE_LOCATION_ROTATE)
         myLocationStyle.showMyLocation(false)
@@ -337,7 +337,9 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        fr_map_view.onSaveInstanceState(outState)
+        if (fr_map_view != null) {
+            fr_map_view.onSaveInstanceState(outState)
+        }
     }
 
     var mlocationClient: AMapLocationClient? = null
@@ -361,6 +363,9 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
 
     override fun onFragmentResult(requestCode: Int, resultCode: Int, data: Bundle?) {
         super.onFragmentResult(requestCode, resultCode, data)
+
+        Log.e("result", "onFragmentResult")
+
         if (requestCode == REQUEST_CREATE_JOIN) {
             viewModel?.changerFragment(1)
             (viewModel?.items!![1] as TeamItemModel).doCreate(data)
@@ -380,7 +385,8 @@ class MapFragment : BaseFragment<FragmentMapBinding, MapFrViewModel>(), Location
                             viewModel?.selectTab(viewModel?.currentPosition!!)
                         }
                     }
-                } else {0
+                } else {
+                    0
                     (viewModel?.items!![3] as MapPointItemModel).SearchResult(requestCode, resultCode, data)
                 }
             }

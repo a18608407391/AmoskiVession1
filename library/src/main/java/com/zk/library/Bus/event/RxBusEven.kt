@@ -18,7 +18,9 @@ class RxBusEven {
         //骑行导航相关
         var DriverCancleByNavigation = 0x1009
         var DriverNavigationRouteChange = 0x1010
-        val NAVIGATION_FINISH = 0x1011
+        val NAVIGATION_FINISH = 0x1012
+        val SHARE_SUCCESS = 0x1003
+        val DriverNavigationChange = 0x1011
 
 
         //跳转类型
@@ -39,7 +41,7 @@ class RxBusEven {
             return even
         }
 
-        fun getInstance(type: Int,  value: Any,value2:Any): RxBusEven {
+        fun getInstance(type: Int, value: Any, value2: Any): RxBusEven {
             var even = RxBusEven()
             even.type = type
             even.value = value
@@ -53,7 +55,7 @@ class RxBusEven {
 
     var value: Any? = null
 
-    var value2 :Any ? = null
+    var value2: Any? = null
 
     var secondValue: Any? = null
 

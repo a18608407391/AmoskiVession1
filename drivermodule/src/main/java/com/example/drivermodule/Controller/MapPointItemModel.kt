@@ -34,6 +34,7 @@ import com.example.drivermodule.Utils.ErrorInfo
 import com.example.drivermodule.ViewModel.MapFrViewModel
 import com.elder.zcommonmodule.Component.ItemViewModel
 import com.example.drivermodule.Activity.RoadDetailActivity
+import com.example.drivermodule.Activity.SearchActivity
 import com.zk.library.Base.BaseFragment
 import com.zk.library.Base.BaseViewModel
 import com.zk.library.Bus.event.RxBusEven
@@ -255,7 +256,10 @@ class MapPointItemModel : ItemViewModel<MapFrViewModel>(), BaseQuickAdapter.OnIt
                 }
             }
             R.id.edit_finally -> {
-                ARouter.getInstance().build(RouterUtils.MapModuleConfig.SEARCH_ACTIVITY).withInt(RouterUtils.MapModuleConfig.SEARCH_MODEL, 3).navigation(mapFr.activity, EDIT_FINAL_POINT)
+                var fr = viewModel?.mapActivity.parentFragment as BaseFragment<ViewDataBinding, BaseViewModel>
+                fr.startForResult((ARouter.getInstance().build(RouterUtils.MapModuleConfig.SEARCH_ACTIVITY).navigation() as SearchActivity).setModel(3), EDIT_FINAL_POINT)
+//                ARouter.getInstance().build(RouterUtils.MapModuleConfig.SEARCH_ACTIVITY).withInt(RouterUtils.MapModuleConfig.SEARCH_MODEL, 3).navigation(mapFr.activity, EDIT_FINAL_POINT)
+
             }
         }
     }

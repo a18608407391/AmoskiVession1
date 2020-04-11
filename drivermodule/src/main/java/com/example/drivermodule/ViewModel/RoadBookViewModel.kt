@@ -238,7 +238,7 @@ class RoadBookViewModel : BaseViewModel(), HttpInteface.RoadBookDetail, RouteSea
 
     var pagerAdapter = BindingRecyclerViewAdapter<BottomHoriDatas>()
 
-    var itemBinding = ItemBinding.of<BottomHoriDatas>(BR.horiDatas, R.layout.roadbook_bottom_hori_item_layout).bindExtra(BR.road_model, this@RoadBookViewModel)
+    var itemBinding = ItemBinding.of<BottomHoriDatas>(BR.horiDatas, R.layout.roadbook_bottom_hori_item_layout)
 
     var items = ObservableArrayList<BottomHoriDatas>()
 

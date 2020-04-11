@@ -13,6 +13,7 @@ import com.alibaba.android.arouter.facade.annotation.Route
 import com.alibaba.android.arouter.launcher.ARouter
 import com.elder.zcommonmodule.CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE
 import com.elder.zcommonmodule.Entity.Location
+import com.elder.zcommonmodule.Entity.ShareEntity
 import com.elder.zcommonmodule.PICK_IMAGE_ACTIVITY_REQUEST_CODE
 import com.elder.zcommonmodule.REQUEST_CODE_CROP_IMAGE
 import com.elder.zcommonmodule.Utils.DialogUtils
@@ -41,8 +42,20 @@ class ShareDriverActivity : BaseFragment<ActivityShareDriverBinding, ShareDriver
     var type: String? = null
 
 
+    var entity: ShareEntity? = null
     override fun initVariableId(): Int {
         return BR.share_viewModel
+    }
+
+
+    fun setType(type: String): ShareDriverActivity {
+        this.type = type
+        return this@ShareDriverActivity
+    }
+
+    fun setEntity(entity: ShareEntity): ShareDriverActivity {
+        this.entity = entity
+        return this@ShareDriverActivity
     }
 
 //    override fun initContentView(savedInstanceState: Bundle?): Int {
@@ -76,7 +89,7 @@ class ShareDriverActivity : BaseFragment<ActivityShareDriverBinding, ShareDriver
         if (requestCode == REQUEST_CODE_CROP_IMAGE) {
             //照片裁剪回调
             if (realPath != null) {
-                if(File(realPath).exists()){
+                if (File(realPath).exists()) {
                     var date = viewModel?.adapter?.mListDatas?.get(1)
                     var bitmap = BitmapFactory.decodeFile(realPath)
                     date?.secondBitmap = bitmap

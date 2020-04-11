@@ -90,6 +90,7 @@ class NavigationViewModel : BaseViewModel() {
         mAMapNavi = AMapNavi.getInstance(context)
         mAMapNavi.addAMapNaviListener(component)
         mAMapNavi.setUseInnerVoice(true)
+
         mStartLatlng = NaviLatLng(navigationActivity.start!!.latitude, navigationActivity.start!!.longitude)
         mEndLatlng = NaviLatLng(navigationActivity.end!!.latitude, navigationActivity.end!!.longitude)
         navigationActivity.list?.forEach {
@@ -122,6 +123,9 @@ class NavigationViewModel : BaseViewModel() {
                     changeRoute(it)
                 }
             }
+            RxBusEven.DriverNavigationChange -> {
+
+            }
         }
     }
 
@@ -146,10 +150,11 @@ class NavigationViewModel : BaseViewModel() {
         mAMapNavi.calculateDriveRoute(sList, eList, mWayPointList, strategy)
     }
 
+
     fun onClick(view: View) {
         when (view.id) {
             R.id.navi_arrow -> {
-                ARouter.getInstance().build(RouterUtils.MapModuleConfig.MAP_ACTIVITY).navigation()
+                ARouter.getInstance().build(RouterUtils.ActivityPath.HOME).navigation()
                 if (navigationActivity.type < 1) {
                     finish()
                 }
@@ -205,15 +210,13 @@ class NavigationViewModel : BaseViewModel() {
             mAMapNavi.stopNavi()
             mAMapNaviView?.onDestroy()
             mAMapNavi.destroy()
-            BaseApplication.getInstance().curActivity =1
+            BaseApplication.getInstance().curActivity = 1
             RxBus.default?.post(RxBusEven.getInstance(RxBusEven.NAVIGATION_FINISH))
-            if (AppManager.get()?.getActivity(MapActivity::class.java) != null) {
-                ARouter.getInstance().build(RouterUtils.ActivityPath.HOME).withString(RouterUtils.MapModuleConfig.RESUME_MAP_ACTIVITY, "continue").navigation(navigationActivity, object : NavCallback() {
-                    override fun onArrival(postcard: Postcard?) {
-                        navigationActivity.finish()
-                    }
-                })
-            }
+            ARouter.getInstance().build(RouterUtils.ActivityPath.HOME).withString(RouterUtils.MapModuleConfig.RESUME_MAP_ACTIVITY, "continue").navigation(navigationActivity, object : NavCallback() {
+                override fun onArrival(postcard: Postcard?) {
+                    navigationActivity.finish()
+                }
+            })
         }
     }
 }

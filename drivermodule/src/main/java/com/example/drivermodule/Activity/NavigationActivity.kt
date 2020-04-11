@@ -1,13 +1,13 @@
 package com.example.drivermodule.Activity
 
 import android.arch.lifecycle.ViewModelProviders
-import android.location.Location
 import android.os.Bundle
 import android.util.Log
 import com.alibaba.android.arouter.facade.annotation.Autowired
 import com.alibaba.android.arouter.facade.annotation.Route
 import com.alibaba.android.arouter.launcher.ARouter
 import com.amap.api.maps.model.LatLng
+import com.elder.zcommonmodule.Entity.Location
 import com.elder.zcommonmodule.Utils.DialogUtils
 import com.example.drivermodule.BR
 import com.example.drivermodule.R

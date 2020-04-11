@@ -25,7 +25,10 @@ import com.bumptech.glide.request.transition.Transition
 import com.elder.zcommonmodule.Entity.HotData
 import com.example.drivermodule.ViewModel.MapFrViewModel
 import com.elder.zcommonmodule.Component.ItemViewModel
+import com.elder.zcommonmodule.DriverCancle
+import com.elder.zcommonmodule.Drivering
 import com.elder.zcommonmodule.Entity.Location
+import com.elder.zcommonmodule.Entity.SoketBody.SoketNavigation
 import com.elder.zcommonmodule.REQUEST_LOAD_ROADBOOK
 import com.elder.zcommonmodule.Service.HttpInteface
 import com.elder.zcommonmodule.Service.HttpRequest
@@ -50,6 +53,7 @@ import kotlinx.coroutines.launch
 import me.tatarka.bindingcollectionadapter2.BindingRecyclerViewAdapter
 import me.tatarka.bindingcollectionadapter2.ItemBinding
 import org.cs.tec.library.Base.Utils.*
+import org.cs.tec.library.Bus.RxBus
 import org.cs.tec.library.USERID
 import org.cs.tec.library.Utils.ConvertUtils
 import org.cs.tec.library.binding.command.BindingCommand
@@ -106,12 +110,44 @@ class RoadBookItemModel : ItemViewModel<MapFrViewModel>(), HttpInteface.RoadBook
         }
     }
 
+    fun BottomhoriClick(view: BottomHoriDatas) {
+
+    }
+
+    fun toNavi(data: BottomHoriDatas) {
+        if (viewModel?.status.navigationType == 0) {
+            viewModel?.status!!.navigationEndPoint = Location(data.lat, data.lon, System.currentTimeMillis().toString(), 0F, 0.0, 0F)
+            if (viewModel?.status.startDriver.get() == DriverCancle) {
+                viewModel?.startDriver(4)
+            } else {
+
+            }
+        } else {
+            if (viewModel?.status.navigationEndPoint?.latitude != data.lat || viewModel?.status.navigationEndPoint!!.longitude != data.lon) {
+                var socket = SoketNavigation()
+                socket.navigation_end = Location(data.lat, data.lon, System.currentTimeMillis().toString(), 0F, 0.0, 0F)
+                socket.wayPoint = ArrayList()
+                socket.type = "road"
+                RxBus.default?.post(socket)
+            }
+            var list = ArrayList<LatLng>()
+            viewModel?.status!!.navigationEndPoint = Location(data.lat, data.lon, System.currentTimeMillis().toString(), 0F, 0.0, 0F)
+
+//            viewModel?.startNavi(driverViewModel?.status!!.navigationStartPoint!!, driverViewModel?.status!!.navigationEndPoint!!, list, false)
+//        driverViewModel?.startNavi(driverViewModel?.status!!.navigationStartPoint!!, driverViewModel?.status!!.navigationEndPoint!!, list, false)
+        }
+
+    }
 
     var behavior_by_routes = ObservableField<Int>(BottomSheetBehavior.STATE_HIDDEN)
 
     override fun getRoadBookDetailError(ex: Throwable) {
         viewModel?.mapActivity.dismissProgressDialog()
         Log.e("result", "getRoadBookDetailError" + ex.message)
+    }
+
+    fun MiddleRoadClick(data: BottomHoriDatas) {
+        ARouter.getInstance().build(RouterUtils.MapModuleConfig.ROAD_BOOK_WEB_ACTIVITY).withInt(RouterUtils.MapModuleConfig.ROAD_WEB_TYPE, 0).withString(RouterUtils.MapModuleConfig.ROAD_WEB_ID, data.roadid).navigation()
     }
 
     var ScrollChangeCommand = BindingCommand(object : BindingConsumer<Int> {

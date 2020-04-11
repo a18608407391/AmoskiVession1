@@ -135,7 +135,7 @@ class DialogUtils() {
             return alertDialog
         }
 
-        fun getRealPathFromURI(activity: AppCompatActivity, contentUri: Uri): String {
+        fun getRealPathFromURI(activity: Activity, contentUri: Uri): String {
             try {
                 val proj = arrayOf(MediaStore.MediaColumns.DATA)
                 val cursor = activity.managedQuery(contentUri, proj, null, null, null)
@@ -175,7 +175,7 @@ class DialogUtils() {
         }
 
 
-        fun showYearDialog(activity: AppCompatActivity, birthdayCommand: BindingCommand<String>): DatePickerView? {
+        fun showYearDialog(activity: Activity, birthdayCommand: BindingCommand<String>): DatePickerView? {
             var buidler = AlertDialog.Builder(activity, R.style.PopupAnimation)
             var alertDialog = buidler.create()
             alertDialog!!.setCanceledOnTouchOutside(true)
@@ -460,12 +460,12 @@ class DialogUtils() {
             return dialog
         }
 
-        private fun openC(dialog: ActionSheetDialog, context: AppCompatActivity) {
+        private fun openC(dialog: ActionSheetDialog, context: Activity) {
             dialog.dismiss()
             startCamera(context)
         }
 
-        fun startCamera(context: AppCompatActivity): Uri {
+        fun startCamera(context: Activity): Uri {
             val state = Environment.getExternalStorageState()
             if (state == Environment.MEDIA_MOUNTED) {
                 val intent1 = Intent(MediaStore.ACTION_IMAGE_CAPTURE)

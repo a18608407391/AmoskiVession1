@@ -39,11 +39,7 @@ import org.cs.tec.library.binding.command.BindingConsumer
 
 class SearchViewModel : BaseViewModel(), Inputtips.InputtipsListener, SearchAdapter.OnItemClickListener, PoiSearch.OnPoiSearchListener {
     override fun onPoiItemSearched(tip: PoiItem?, p1: Int) {
-
-
         Log.e("result", "onPoiItemSearched" + tip?.snippet)
-
-
 //        if (tip?.latLonPoint != null && tip?.latLonPoint?.longitude != null && tip?.latLonPoint?.latitude != null) {
 ////            Log.e("result",Gson().toJson(tip))
 //            var intent = Intent()
@@ -79,21 +75,15 @@ class SearchViewModel : BaseViewModel(), Inputtips.InputtipsListener, SearchAdap
         if (tip != null) {
             if (tip.latLonPoint != null && tip.latLonPoint.longitude != null && tip.latLonPoint.latitude != null) {
                 var bundle = Bundle()
-//                var intent = Intent()
                 bundle.putParcelable("tip", tip)
-//                intent.putExtra("tip", tip)
                 if (searchActivity.model == 0) {
                     searchActivity.setFragmentResult(RESULT_POINT, bundle)
-//                    searchActivity.setResult(RESULT_POINT, intent)
                 } else if (searchActivity.model == 1) {
                     searchActivity.setFragmentResult(RESULT_STR, bundle)
-//                    searchActivity.setResult(RESULT_STR, intent)
                 } else if (searchActivity.model == 3) {
                     searchActivity.setFragmentResult(EDIT_FINAL_POINT, bundle)
-//                    searchActivity.setResult(EDIT_FINAL_POINT, intent)
                 }
-                searchActivity.onBackPressedSupport()
-//                searchActivity.finish()
+                searchActivity._mActivity!!.onBackPressedSupport()
             }
         }
     }
@@ -106,7 +96,6 @@ class SearchViewModel : BaseViewModel(), Inputtips.InputtipsListener, SearchAdap
             var point = it.point
             var item = PoiItem("123", point, it.name, it.district + it.address)
             mList.add(item)
-
         }
         adapter.setDatas(mList)
 //        adapter.setDatas(mList)
@@ -139,7 +128,6 @@ class SearchViewModel : BaseViewModel(), Inputtips.InputtipsListener, SearchAdap
             var tips = PoiSearch(searchActivity.activity, inputQuery)
             tips.setOnPoiSearchListener(this@SearchViewModel)
             tips.searchPOIAsyn()
-
         }
     })
 

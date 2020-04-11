@@ -30,7 +30,7 @@ class ShareAdapter : RecyclerView.Adapter<ShareAdapter.AddCarViewHolder> {
 
     constructor(activity: ShareDriverActivity) {
         this.activity = activity
-        this.mLayoutInflater = activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        this.mLayoutInflater = activity.activity!!.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
     }
 
     fun setCarDatas(list: ArrayList<ShareEntity>) {
